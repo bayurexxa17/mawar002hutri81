@@ -7,17 +7,14 @@ export interface FundingSource {
 }
 
 export const fundingSources: FundingSource[] = [
-  { id: 1, sumber: 'Kas RT/RW (Ciptaland Mawar)', jumlah: 7000000, catatan: 'Saldo kas per Juli 2026', status: 'confirmed' },
-  { id: 2, sumber: 'Donasi Warga Blok Mawar', jumlah: 15000000, catatan: '150 KK x rata-rata 100rb', status: 'confirmed' },
+  { id: 1, sumber: 'Kas RT/RW (Ciptaland Mawar)', jumlah: 2500000, catatan: 'Saldo kas per Juli 2026', status: 'confirmed' },
+  { id: 2, sumber: 'Donasi Warga Blok Mawar', jumlah: 15000000, catatan: '170 KK x rata-rata 50rb', status: 'confirmed' },
   { id: 3, sumber: 'Kelong Baba', jumlah: 1000000, catatan: 'Donatur langganan', status: 'need_confirm' },
-  { id: 4, sumber: 'Villa Bambu', jumlah: 1000000, catatan: 'Restoran lokal', status: 'need_confirm' },
   { id: 5, sumber: 'Developer Ciptaland', jumlah: 1000000, catatan: 'PT Ciptaland Properti', status: 'confirmed' },
   { id: 6, sumber: 'Biznet Home', jumlah: 1000000, catatan: 'Provider internet', status: 'need_confirm' },
   { id: 7, sumber: 'XL Axiata', jumlah: 1000000, catatan: 'Telco provider', status: 'confirmed' },
   { id: 8, sumber: 'Wesli / Usaha Warga', jumlah: 1000000, catatan: 'Warung & UMKM', status: 'need_confirm' },
   { id: 9, sumber: 'IndiHome', jumlah: 500000, catatan: 'Telkom Group', status: 'confirmed' },
-  { id: 10, sumber: 'Pak Yoga (TC 15) - Sponsor Banner', jumlah: 1000000, catatan: 'Sponsor spanduk utama', status: 'confirmed' },
-  { id: 11, sumber: 'Dito Bor Ikan / Kolam Pancing', jumlah: 500000, catatan: 'Warga RW 014', status: 'need_confirm' },
   { id: 12, sumber: 'Link Net / FirstMedia', jumlah: 1000000, catatan: 'Provider', status: 'confirmed' },
 ];
 
