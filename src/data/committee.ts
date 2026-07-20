@@ -70,23 +70,23 @@ export const committee: CommitteeMember[] = [
   },
   {
     id: 9,
-    name: 'Ibu Dewi Lestari',
-    position: 'Koordinator Konsumsi',
-    phone: '0812-3456-7896',
-    whatsapp: '6281234567896'
+    name: 'Agha',
+    position: 'Koordinator Lomba',
+    phone: '0851-9433-4760',
+    whatsapp: '6285194334760'
   },
   {
     id: 10,
-    name: 'Bapak Agus Setiawan',
-    position: 'Koordinator Perlengkapan',
-    phone: '0812-3456-7897',
-    whatsapp: '6281234567897'
+    name: 'Adib',
+    position: 'Koordinator Lomba',
+    phone: '0813-6365-2626',
+    whatsapp: '6281363652626'
   },
   {
     id: 11,
-    name: 'Ibu Rina Susanti',
-    position: 'Koordinator Dekorasi',
-    phone: '0812-3456-7898',
+    name: 'Hanif',
+    position: 'Koordinator Lomba',
+    phone: '0881-3712-0796',
     whatsapp: '6281234567898'
   },
   {
