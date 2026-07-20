@@ -91,10 +91,10 @@ export const committee: CommitteeMember[] = [
   },
   {
     id: 12,
-    name: 'Bapak Dedi Kurniawan',
-    position: 'Koordinator Keamanan',
-    phone: '0812-3456-7899',
-    whatsapp: '6281234567899'
+    name: 'Satria',
+    position: 'Koordinator Lomba',
+    phone: '0819-9201-0197',
+    whatsapp: '6281992010197'
   }
 ];
 
