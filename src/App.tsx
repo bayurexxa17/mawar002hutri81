@@ -437,8 +437,9 @@ function App() {
             <div>
               <h4 className="font-bold text-lg mb-4">Kontak Panitia</h4>
               <div className="space-y-2 text-gray-400">
-                <p>📞 0812-3456-7890 (Ketua Panitia)</p>
-                <p>📞 0812-3456-7891 (Sekretaris)</p>
+                <p>📞 0812-7129-9984 (Ketua Pembina)</p>
+                <p>📞 0812-8839-5550 (Ketua Panitia)</p>
+                <p>📞 0831-8395-0205 (Wakil Ketua)</p>
                 <p>📧 panitia@ciptaland-mawar.id</p>
               </div>
             </div>
