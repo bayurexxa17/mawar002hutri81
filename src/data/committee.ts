@@ -11,7 +11,7 @@ export interface CommitteeMember {
 export const committee: CommitteeMember[] = [
   {
     id: 1,
-    name: 'Bapak H. Ahmad Suryadi',
+    name: 'Eka Rista Y',
     position: 'Ketua Pembina',
     phone: '0812-7129-9984',
     whatsapp: '6281271299984',
@@ -19,7 +19,7 @@ export const committee: CommitteeMember[] = [
   },
   {
     id: 2,
-    name: 'Bapak Budi Santoso',
+    name: 'Bayu S.Permana',
     position: 'Ketua Panitia',
     phone: '0812-8839-5550',
     whatsapp: '6281288395550',
@@ -27,7 +27,7 @@ export const committee: CommitteeMember[] = [
   },
   {
     id: 3,
-    name: 'Ibu Siti Nurhaliza',
+    name: 'Sugiono',
     position: 'Wakil Ketua',
     phone: '0831-8395-0205',
     whatsapp: '6283183950205',
@@ -35,7 +35,7 @@ export const committee: CommitteeMember[] = [
   },
   {
     id: 4,
-    name: 'Ibu Ratna Dewi',
+    name: 'Lani',
     position: 'Sekretaris 1',
     phone: '0812-3456-7891',
     whatsapp: '6281234567891'
