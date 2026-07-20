@@ -9,25 +9,17 @@ export interface EventType {
 
 export const eventTypes: EventType[] = [
   {
-    id: 1,
-    nama: 'Mawar Volley Cup 2026 (antar RT se-RW 14)',
-    tanggal: '1–2 Agt (penyisihan)',
-    keterangan: '8–9 Agt (semifinal & final)',
-    lokasi: 'Lapangan Voli Ciptaland',
-    badge: 'Turnamen',
-  },
-  {
     id: 2,
     nama: 'Pesta Rakyat Ciptaland Mawar (HUT RI 2026)',
     tanggal: '17 Agustus 2026',
     keterangan: '06.00 – selesai',
-    lokasi: 'Sepanjang Blok Mawar',
+    lokasi: 'Fasum Musho;a Nurul Ukhuwah Blok Mawar',
     badge: 'Puncak',
   },
   {
     id: 3,
     nama: 'Malam Puncak HUT RI ke-81 Ciptaland',
-    tanggal: '22 Agustus 2026',
+    tanggal: '17 Agustus 2026',
     keterangan: '19.00 – 22.00 WIB + Doorprize',
     lokasi: 'Panggung Utama',
     badge: 'Hiburan',
@@ -47,23 +39,6 @@ export interface PanduanLombaDetail {
 }
 
 export const panduanLomba: PanduanLombaDetail[] = [
-  {
-    id: 'volley',
-    icon: '🏐',
-    title: 'Mawar Volley Cup 2026',
-    kategori: 'Turnamen · 1–9 Agustus',
-    tanggal: '1–9 Agustus 2026',
-    tim: '6 inti + 4 cadangan',
-    durasi: '±60 menit / pertandingan',
-    rules: [
-      'Setiap RT wajib mendaftarkan 1 tim putra & 1 tim putri; pemain wajib warga RT setempat (KK/KTP).',
-      'Sistem gugur; format best of 3 set, rally point 25 (set penentu 15).',
-      'Pemain hanya boleh membela satu tim; pergantian sesuai aturan umum voli.',
-      'Tim wajib hadir 15 menit sebelum jadwal; terlambat 10 menit WO.',
-      'Keputusan wasit final. Hadiah diserahkan Malam Puncak 22 Agustus.',
-    ],
-    budget: 'Rp 10.000.000',
-  },
   {
     id: 'jalan',
     icon: '🚶',
