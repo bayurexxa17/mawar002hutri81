@@ -9,22 +9,399 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        html {
-            scroll-behavior: smooth;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        .animate-bounce {
-            animation: bounce 2s infinite;
-        }
+        html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+    overflow-x:hidden;
+    background:#fff;
+}
+
+/*=========================
+LOADING SCREEN
+=========================*/
+
+#loader{
+    position:fixed;
+    inset:0;
+    background:linear-gradient(135deg,#B91C1C,#DC2626,#EF4444);
+    z-index:999999;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    transition:all .8s ease;
+}
+
+.loader-logo{
+    width:110px;
+    height:110px;
+    border-radius:50%;
+    background:white;
+    color:#dc2626;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:42px;
+    font-weight:900;
+    animation:pulseLogo 1.5s infinite;
+}
+
+.loader-title{
+    margin-top:25px;
+    color:white;
+    font-size:32px;
+    font-weight:900;
+}
+
+.loader-sub{
+    margin-top:8px;
+    color:#FEE2E2;
+    letter-spacing:2px;
+}
+
+.loader-bar{
+    width:260px;
+    height:7px;
+    background:rgba(255,255,255,.25);
+    border-radius:20px;
+    overflow:hidden;
+    margin-top:30px;
+}
+
+.loader-progress{
+    width:0;
+    height:100%;
+    background:white;
+    animation:loadingBar 2.3s forwards;
+}
+
+@keyframes loadingBar{
+    from{width:0;}
+    to{width:100%;}
+}
+
+@keyframes pulseLogo{
+    0%,100%{transform:scale(1);}
+    50%{transform:scale(1.08);}
+}
+
+/*=========================
+BACKGROUND
+=========================*/
+
+.hero-bg{
+
+position:relative;
+
+overflow:hidden;
+
+background:
+linear-gradient(135deg,#991B1B 0%,#DC2626 45%,#F87171 100%);
+}
+
+.hero-bg::before{
+
+content:'';
+
+position:absolute;
+
+width:700px;
+
+height:700px;
+
+background:rgba(255,255,255,.08);
+
+border-radius:50%;
+
+top:-220px;
+
+left:-220px;
+
+animation:float1 16s infinite alternate;
+}
+
+.hero-bg::after{
+
+content:'';
+
+position:absolute;
+
+width:550px;
+
+height:550px;
+
+background:rgba(255,255,255,.06);
+
+border-radius:50%;
+
+bottom:-200px;
+
+right:-180px;
+
+animation:float2 14s infinite alternate;
+}
+
+@keyframes float1{
+
+0%{transform:translateY(0) rotate(0deg);}
+100%{transform:translateY(60px) rotate(25deg);}
+}
+
+@keyframes float2{
+
+0%{transform:translateY(0);}
+100%{transform:translateY(-70px);}
+}
+
+/*=========================
+NAVBAR
+=========================*/
+
+.navbar{
+
+transition:.4s;
+
+}
+
+.navbar.scrolled{
+
+background:white!important;
+
+box-shadow:0 10px 35px rgba(0,0,0,.12);
+
+}
+
+.navbar.scrolled a{
+
+color:#111827!important;
+
+}
+
+.navbar.scrolled h1{
+
+color:#DC2626!important;
+
+}
+
+/*=========================
+HERO
+=========================*/
+
+.hero-title{
+
+font-size:clamp(38px,7vw,74px);
+
+font-weight:900;
+
+line-height:1.05;
+
+color:white;
+
+text-shadow:0 12px 30px rgba(0,0,0,.25);
+
+}
+
+.hero-title span{
+
+display:block;
+
+font-size:65%;
+
+font-weight:700;
+
+color:#FDE68A;
+
+}
+
+.hero-desc{
+
+margin-top:22px;
+
+font-size:20px;
+
+line-height:1.8;
+
+color:#FEE2E2;
+
+max-width:720px;
+
+}
+
+.glow-btn{
+
+background:white;
+
+color:#DC2626;
+
+padding:18px 34px;
+
+border-radius:999px;
+
+font-weight:800;
+
+transition:.35s;
+
+box-shadow:0 15px 35px rgba(0,0,0,.25);
+
+}
+
+.glow-btn:hover{
+
+transform:translateY(-5px);
+
+box-shadow:0 22px 45px rgba(0,0,0,.35);
+
+}
+
+.outline-btn{
+
+border:2px solid white;
+
+padding:18px 34px;
+
+border-radius:999px;
+
+font-weight:700;
+
+color:white;
+
+transition:.35s;
+
+}
+
+.outline-btn:hover{
+
+background:white;
+
+color:#DC2626;
+
+}
+
+/*=========================
+FLOAT ICONS
+=========================*/
+
+.flag{
+
+position:absolute;
+
+font-size:42px;
+
+animation:flagFloat 5s ease-in-out infinite;
+
+opacity:.35;
+
+}
+
+.flag:nth-child(1){
+
+left:8%;
+
+top:18%;
+
+}
+
+.flag:nth-child(2){
+
+right:12%;
+
+top:22%;
+
+animation-delay:1s;
+
+}
+
+.flag:nth-child(3){
+
+left:20%;
+
+bottom:16%;
+
+animation-delay:2s;
+
+}
+
+.flag:nth-child(4){
+
+right:20%;
+
+bottom:10%;
+
+animation-delay:3s;
+
+}
+
+@keyframes flagFloat{
+
+0%,100%{
+
+transform:translateY(0);
+
+}
+
+50%{
+
+transform:translateY(-18px);
+
+}
+
+}
     </style>
 </head>
-<body class="min-h-screen bg-white">
+<script>
+
+window.addEventListener("load",function(){
+
+setTimeout(function(){
+
+document.getElementById("loader").style.opacity="0";
+
+document.getElementById("loader").style.visibility="hidden";
+
+},2200);
+
+});
+
+const nav=document.getElementById("navbar");
+
+window.addEventListener("scroll",()=>{
+
+if(window.scrollY>60){
+
+nav.classList.add("scrolled");
+
+}else{
+
+nav.classList.remove("scrolled");
+
+}
+
+});
+
+</script>
+    <body class="min-h-screen bg-white">
+    <div id="loader">
+
+    <div class="loader-logo">
+        81
+    </div>
+
+    <div class="loader-title">
+        HUT RI KE-81
+    </div>
+
+    <div class="loader-sub">
+        RT 002 • RW 014 • Ciptaland Blok Mawar
+    </div>
+
+    <div class="loader-bar">
+        <div class="loader-progress"></div>
+    </div>
+
+</div>
     <!-- Navigation -->
     <nav class="fixed top-0 left-0 right-0 bg-gradient-to-r from-red-600 to-red-700 text-white z-50 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -48,69 +425,71 @@
     </nav>
 
     <!-- Hero Section -->
-    <section id="home" class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-red-600 via-red-500 to-white pt-20">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute top-20 left-10 w-32 h-32 bg-white rounded-full"></div>
-            <div class="absolute bottom-40 right-20 w-48 h-48 bg-white rounded-full"></div>
-            <div class="absolute top-1/2 left-1/3 w-24 h-24 bg-white rounded-full"></div>
-        </div>
-        
-        <div class="relative z-10 text-center px-4 max-w-5xl mx-auto">
-            <div class="mb-6">
-                <span class="inline-block bg-white text-red-600 px-4 py-2 rounded-full font-bold text-sm mb-4 shadow-lg">
-                    🇮🇩 Dirgahayu Republik Indonesia 🇮🇩
-                </span>
-            </div>
-            
-            <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 drop-shadow-lg">
-                HUT KEMERDEKAAN<br />
-                <span class="text-yellow-300">RI KE-81</span>
-            </h1>
-            
-            <p class="text-xl md:text-2xl text-white mb-8 max-w-3xl mx-auto">
-                Perumahan Ciptaland Blok Mawar<br />
-                <span class="text-red-100">RT 002 / RW 014</span>
-            </p>
-            
-            <div class="flex flex-col md:flex-row gap-4 justify-center">
-                <a 
-                    href="#register" 
-                    class="bg-white text-red-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-red-50 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                >
-                    📝 Daftar Lomba
-                </a>
-                <a 
-                    href="#activities" 
-                    class="border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-red-600 transition"
-                >
-                    🏆 Lihat Lomba
-                </a>
-            </div>
-            
-            <div class="mt-12 grid grid-cols-3 gap-4 max-w-2xl mx-auto">
-                <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4">
-                    <div class="text-3xl font-bold text-white">17</div>
-                    <div class="text-red-100 text-sm">Agustus 2026</div>
-                </div>
-                <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4">
-                    <div class="text-3xl font-bold text-white">8+</div>
-                    <div class="text-red-100 text-sm">Jenis Lomba</div>
-                </div>
-                <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4">
-                    <div class="text-3xl font-bold text-white">Rp 2jt+</div>
-                    <div class="text-red-100 text-sm">Total Hadiah</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Wave decoration -->
-        <div class="absolute bottom-0 left-0 right-0">
-            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 45C840 60 960 90 1080 105C1200 120 1320 120 1380 120L1440 120L1440 120L1380 120C1320 120 1200 120 1080 105C960 90 840 60 720 45C600 30 480 30 360 45C240 60 120 90 60 105L0 120Z" fill="white"/>
-            </svg>
-        </div>
-    </section>
+    <section id="home" class="hero-bg min-h-screen flex items-center relative">
 
+<span class="flag">🇮🇩</span>
+<span class="flag">🇮🇩</span>
+<span class="flag">⭐</span>
+<span class="flag">✨</span>
+
+<div class="max-w-7xl mx-auto px-6 py-36 relative z-10">
+
+<div class="grid lg:grid-cols-2 gap-16 items-center">
+
+<div>
+
+<h1 class="hero-title">
+
+DIRGAHAYU
+
+<span>REPUBLIK INDONESIA</span>
+
+KE-81
+
+</h1>
+
+<p class="hero-desc">
+
+Perayaan Hari Kemerdekaan Republik Indonesia Ke-81
+
+Perumahan Ciptaland Blok Mawar
+
+RT 002 RW 014
+
+17 Agustus 2026
+
+</p>
+
+<div class="flex flex-wrap gap-5 mt-10">
+
+<a href="#register" class="glow-btn">
+
+Daftar Lomba
+
+</a>
+
+<a href="#proposal" class="outline-btn">
+
+Lihat Proposal
+
+</a>
+
+</div>
+
+</div>
+
+<div>
+
+<img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=900"
+class="rounded-3xl shadow-2xl border-8 border-white/20">
+
+</div>
+
+</div>
+
+</div>
+
+</section>
     <!-- About Section -->
     <section id="about" class="py-20 px-4 bg-white">
         <div class="max-w-6xl mx-auto">
