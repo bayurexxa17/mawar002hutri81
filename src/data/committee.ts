@@ -95,7 +95,15 @@ export const committee: CommitteeMember[] = [
     position: 'Koordinator Lomba',
     phone: '0819-9201-0197',
     whatsapp: '6281992010197'
-  }
+  },
+  {
+    id: 13,
+    name: 'Hafiz',
+    position: 'Koordinator Lomba',
+    phone: '0818-835-875',
+    whatsapp: '62818835875'
+  },
+  {
 ];
 
 export const primaryContacts = committee.filter(c => c.isPrimary);
