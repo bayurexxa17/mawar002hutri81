@@ -42,31 +42,31 @@ export const committee: CommitteeMember[] = [
   },
   {
     id: 5,
-    name: 'Ibu Mei Ling',
-    position: 'Sekretaris 2',
+    name: 'Aulia Komari',
+    position: 'Bendahara 1',
     phone: '0812-3456-7892',
     whatsapp: '6281234567892'
   },
   {
     id: 6,
-    name: 'Bapak Joko Widodo',
-    position: 'Bendahara 1',
+    name: 'Puput',
+    position: 'Bendahara 2',
     phone: '0812-3456-7893',
     whatsapp: '6281234567893'
   },
   {
     id: 7,
-    name: 'Bapak Andi Wijaya',
-    position: 'Bendahara 2',
-    phone: '0812-3456-7894',
-    whatsapp: '6281234567894'
+    name: 'M.Dzaki',
+    position: 'MC',
+    phone: '0858-3660-5110',
+    whatsapp: '6285836605110'
   },
   {
     id: 8,
-    name: 'Bapak Rudi Hartono',
-    position: 'Koordinator Lomba',
-    phone: '0812-3456-7895',
-    whatsapp: '6281234567895'
+    name: 'M.Haikal',
+    position: 'MC',
+    phone: '0853-5574-7998',
+    whatsapp: '6285355747998'
   },
   {
     id: 9,
