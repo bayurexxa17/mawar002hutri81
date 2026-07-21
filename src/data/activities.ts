@@ -83,7 +83,7 @@ export const activities: Activity[] = [
   {
     id: 8,
     title: 'Lomba Joget Kurai',
-    category: 'bapk',
+    category: 'bapak',
     time: '11:00 WIB',
     prize: 'Rp 200.000',
     icon: '💃',
@@ -122,7 +122,7 @@ export const activities: Activity[] = [
   },
   {
     id: 12,
-    title: 'Lomba Joget Kurai',
+    title: 'Lomba Joget Kursi',
     category: 'ibu',
     time: '13:00 WIB',
     prize: 'Rp 200.000',
