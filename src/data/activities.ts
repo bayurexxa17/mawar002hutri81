@@ -14,7 +14,7 @@ export const activities: Activity[] = [
     id: 1,
     title: 'Lomba Makan Kerupuk',
     category: 'anak',
-    time: '08:00 WIB',
+    time: '08:30 WIB',
     prize: 'Rp 100.000',
     icon: '🎈',
     description: 'Lomba makan kerupuk tanpa tangan untuk anak-anak',
@@ -22,17 +22,17 @@ export const activities: Activity[] = [
   },
   {
     id: 2,
-    title: 'Lomba Panjat Pinang',
-    category: 'umum',
-    time: '10:00 WIB',
+    title: 'Futsal Mini',
+    category: 'remaja',
+    time: '09:30 WIB',
     prize: 'Rp 500.000',
     icon: '🎋',
-    description: 'Panjat pinang beregu dengan hadiah menarik di puncak',
+    description: 'Futsal Mini beregu dengan hadiah menarik di puncak',
     participants: 'Tim 5 orang'
   },
   {
     id: 3,
-    title: 'Lomba Balap Karung',
+    title: 'Lomba Balap Kelereng',
     category: 'anak',
     time: '08:30 WIB',
     prize: 'Rp 75.000',
@@ -43,8 +43,8 @@ export const activities: Activity[] = [
   {
     id: 4,
     title: 'Lomba Tarik Tambang',
-    category: 'umum',
-    time: '14:00 WIB',
+    category: 'bapak',
+    time: '11:00 WIB',
     prize: 'Rp 300.000',
     icon: '💪',
     description: 'Kompetisi tarik tambang antar RT',
@@ -52,64 +52,94 @@ export const activities: Activity[] = [
   },
   {
     id: 5,
-    title: 'Lomba Kebersihan Lingkungan',
+    title: 'Lomba Hias Tumpeng',
     category: 'ibu',
-    time: '09:00 WIB',
-    prize: 'Rp 200.000',
+    time: '13:00 WIB',
+    prize: 'Rp 250.000',
     icon: '🧹',
-    description: 'Lomba kebersihan dan keindahan halaman rumah',
+    description: 'Lomba Hias Tumpeng Kreasi Para Ibu dengan Cita Rasa dan Tampilan Menarik dan Terbaik',
     participants: 'Ibu rumah tangga'
   },
   {
     id: 6,
-    title: 'Lomba Masak Nasi Goreng',
+    title: 'Lomba Fashion Week Daster',
     category: 'ibu',
-    time: '11:00 WIB',
-    prize: 'Rp 250.000',
+    time: '13:00 WIB',
+    prize: 'Rp 200.000',
     icon: '🍳',
-    description: 'Kreasi nasi goreng nusantara',
-    participants: 'Ibu-ibu PKK'
+    description: 'Kreasikan Gaya dan Penampilan Terbaik dan Terlucu',
+    participants: 'Ibu-ibu'
   },
   {
     id: 7,
-    title: 'Lomba Egrang',
+    title: 'Salah Sambung',
     category: 'remaja',
-    time: '13:00 WIB',
+    time: '09:30 WIB',
     prize: 'Rp 150.000',
     icon: '🦵',
-    description: 'Lomba jalan pakai egrang',
+    description: 'Lomba Salah Sambung Melatih Fokus, Kekompakan, Kecepatan dan Berfikir',
     participants: 'Usia 13-17 tahun'
   },
   {
     id: 8,
-    title: 'Lomba Joget Balo',
-    category: 'umum',
-    time: '16:00 WIB',
+    title: 'Lomba Joget Kurai',
+    category: 'bapk',
+    time: '11:00 WIB',
     prize: 'Rp 200.000',
     icon: '💃',
-    description: 'Lomba joget dengan balon tanpa pecah',
+    description: 'Lomba joget dengan Keseruan ',
     participants: 'Pasangan'
   },
   {
     id: 9,
-    title: 'Lomba Cerdas Cermat',
+    title: 'Lomba Estafet Penguin',
     category: 'anak',
-    time: '09:30 WIB',
+    time: '08:30 WIB',
     prize: 'Rp 150.000',
     icon: '🧠',
-    description: 'Kuis pengetahuan umum dan sejarah Indonesia',
+    description: 'Lomba Model Baru dengan Keseruan dan Kekompakan',
     participants: 'Tim 3 anak SD'
   },
   {
     id: 10,
-    title: 'Lomba Sepeda Hias',
-    category: 'anak',
-    time: '07:00 WIB',
+    title: 'Lomba Estafet Penguin',
+    category: 'remaja',
+    time: '09:30 WIB',
     prize: 'Rp 175.000',
     icon: '🚴',
-    description: 'Parade sepeda hias bertema kemerdekaan',
-    participants: 'Usia 6-12 tahun'
-  }
+    description: 'Lomba Model Baru dengan Keseruan dan Kekompaka',
+    participants: 'Usia 13-17 tahun'
+  },
+  {
+    id: 11,
+    title: 'Lomba Estafet Tepung',
+    category: 'bapak',
+    time: '11:00 WIB',
+    prize: 'Rp 200.000',
+    icon: '🚴',
+    description: 'Lomba Estafet Tepung dengan Keseruan dan Kekompaka',
+    participants: 'Tim 3 Orang'
+  },
+  {
+    id: 12,
+    title: 'Lomba Joget Kurai',
+    category: 'ibu',
+    time: '13:00 WIB',
+    prize: 'Rp 200.000',
+    icon: '💃',
+    description: 'Lomba joget dengan Keseruan ',
+    participants: 'Tim 3 Orang'
+  },
+  {
+    id: 13,
+    title: 'Lomba Make Up Buta',
+    category: 'Keluarga',
+    time: '15:00 WIB',
+    prize: 'Rp 200.000',
+    icon: '💃',
+    description: 'Lomba Make Up Buta dengan Keseruan dan kekompakan Pasangan ',
+    participants: 'Tim 3 Pasanga'
+  },
 ];
 
 export const getActivityByCategory = (category: string) => {
