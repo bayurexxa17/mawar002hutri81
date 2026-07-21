@@ -48,7 +48,7 @@ export const budgetComponents: BudgetComponent[] = [
   {
     id: 'selisih',
     komponen: 'SELISIH (Dana Masuk - Kebutuhan)',
-    jumlah: -27000000,
+    jumlah: -17000000,
     isDeficit: true,
   },
 ];
