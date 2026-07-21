@@ -3,6 +3,7 @@ export interface BudgetDetailItem {
   item: string;
   detail: string;
   budget: number;
+  note?: string;
 }
 
 export interface BudgetComponent {
@@ -17,12 +18,12 @@ export interface BudgetComponent {
 export const budgetSummary = {
   totalKebutuhan: 17000000,
   targetDanaMasuk: 17000000,
-  selisih: -0,
+  selisih: 0,
 };
 
 export const budgetComponents: BudgetComponent[] = [
   {
-    id: 'Upacara Bendera & Aneka Perlombaan Rakyat',
+    id: 'rakyat',
     komponen: 'Total Anggaran — Aneka Perlombaan dan Pesta Rakyat (17 Agt)',
     jumlah: 10000000,
     detailKey: 'rakyat',
@@ -42,14 +43,14 @@ export const budgetComponents: BudgetComponent[] = [
   {
     id: 'dana',
     komponen: 'Total Dana Masuk (Pendanaan)',
-    jumlah: 0,
+    jumlah: 17000000,
     detailKey: 'dana',
   },
   {
     id: 'selisih',
     komponen: 'SELISIH (Dana Masuk - Kebutuhan)',
-    jumlah: -17000000,
-    isDeficit: true,
+    jumlah: 0,
+    isDeficit: false,
   },
 ];
 
@@ -60,10 +61,10 @@ export const budgetDetails: Record<string, { title: string; subtitle: string; it
     total: 10000000,
     validated: true,
     items: [
-      { no: 1, item: 'Permainan Anak-anak', detail: 'Makan Kerupuk, Balap Kelereng, Estafet Penguin - PJ: Ridho Ananda & Raihan', budget: Tahap Perencanaan Biaya },
-      { no: 2, item: 'Lomba Ibu-ibu', detail: 'Estafet tepung, Joget Rebut Kursi, Hias Tumpeng - PJ: Adib, Hafiz & Hanif', budget: Tahap Perencanaan Biaya },
-      { no: 3, item: 'Lomba Bapak-bapak', detail: 'Tarik tambang, Joget Rebut Kursi, Estafet tepung  - PJ: satria & Fahri 2', budget: Tahap Perencanaan Biaya },
-      { no: 4, item: 'Lomba Keluarga', detail: 'MAke Up Buta  - PJ: Dio & Reza', budget: Tahap Perencanaan Biaya },
+      { no: 1, item: 'Permainan Anak-anak', detail: 'Makan Kerupuk, Balap Kelereng, Estafet Penguin - PJ: Ridho Ananda & Raihan (Tahap Perencanaan Biaya)', budget: 0, note: 'Tahap Perencanaan' },
+      { no: 2, item: 'Lomba Ibu-ibu', detail: 'Estafet tepung, Joget Rebut Kursi, Hias Tumpeng - PJ: Adib, Hafiz & Hanif (Tahap Perencanaan Biaya)', budget: 0, note: 'Tahap Perencanaan' },
+      { no: 3, item: 'Lomba Bapak-bapak', detail: 'Tarik tambang, Joget Rebut Kursi, Estafet tepung - PJ: Satria & Fahri 2 (Tahap Perencanaan Biaya)', budget: 0, note: 'Tahap Perencanaan' },
+      { no: 4, item: 'Lomba Keluarga', detail: 'Make Up Buta - PJ: Dio & Reza (Tahap Perencanaan Biaya)', budget: 0, note: 'Tahap Perencanaan' },
     ],
   },
   puncak: {
@@ -77,7 +78,7 @@ export const budgetDetails: Record<string, { title: string; subtitle: string; it
       { no: 3, item: 'Baca Doa & Tausiyah', detail: 'Ustadz setempat', budget: 300000 },
       { no: 4, item: 'Spanduk & Banner', detail: 'Merah putih + backdrop panggung', budget: 1000000 },
       { no: 5, item: 'Seragam Panitia', detail: '20 pcs x Rp 50.000', budget: 1000000 },
-      { no: 6, item: 'Lain-lain', detail: 'Tak terduga + kebersihan', budget: 3000000 },
+      { no: 6, item: 'Lain-lain', detail: 'Tak terduga + kebersihan', budget: 700000 },
     ],
   },
   dana: {
@@ -88,11 +89,11 @@ export const budgetDetails: Record<string, { title: string; subtitle: string; it
       { no: 1, item: 'Kas RT/RW', detail: 'Kas Ciptaland Mawar', budget: 2500000 },
       { no: 2, item: 'Donasi Warga Mawar', detail: 'Iuran sukarela 170 KK', budget: 8500000 },
       { no: 3, item: 'Kelong Baba Seafood', detail: 'Donatur tetap', budget: 1000000 },
-      { no: 5, item: 'Developer Ciptaland', detail: 'PT. CiptaLand Properti', budget: 1000000 },
-      { no: 6, item: 'Biznet', detail: 'Provider internet', budget: 1000000 },
-      { no: 7, item: 'XL Axiata', detail: 'Provider seluler', budget: 1000000 },
-      { no: 9, item: 'IndiHome', detail: 'Telkom', budget: 500000 },
-      { no: 12, item: 'Link Net', detail: 'Provider', budget: 1000000 },
+      { no: 4, item: 'Developer Ciptaland', detail: 'PT. CiptaLand Properti', budget: 1000000 },
+      { no: 5, item: 'Biznet', detail: 'Provider internet', budget: 1000000 },
+      { no: 6, item: 'XL Axiata', detail: 'Provider seluler', budget: 1000000 },
+      { no: 7, item: 'IndiHome', detail: 'Telkom', budget: 500000 },
+      { no: 8, item: 'Link Net', detail: 'Provider', budget: 1000000 },
     ],
   },
 };
