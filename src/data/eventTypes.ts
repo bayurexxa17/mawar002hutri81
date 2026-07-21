@@ -80,13 +80,7 @@ export const panduanLomba: PanduanLombaDetail[] = [
       'Format Pertandingan: Pertandingan dimainkan secara beregu dengan sistem gugur atau setengah kompetisi sesuai kesepakatan panitia.',
       'Jumlah Pemain: Setiap tim terdiri dari 5 pemain inti di lapangan (termasuk penjaga gawang) dan beberapa pemain cadangan.',
       'Durasi Permainan: Waktu pertandingan dibagi menjadi 2 babak (misal: 2 x 10 atau 15 menit) dengan waktu istirahat singkat di antara babak.',
-      'Aturan Main:
-
-Pergantian pemain dapat dilakukan kapan saja (bebas) tanpa harus menunggu bola mati.
-
-Bola keluar garis samping dilakukan dengan tendangan ke dalam (kick-in).
-
-Pelanggaran keras atau akumulasi kartu akan dikenakan sanksi sesuai keputusan wasit lapangan yang bertugas demi menjaga sportivitas.',
+      'Aturan Main:\n\nPergantian pemain dapat dilakukan kapan saja (bebas) tanpa harus menunggu bola mati.\n\nBola keluar garis samping dilakukan dengan tendangan ke dalam (kick-in).\n\nPelanggaran keras atau akumulasi kartu akan dikenakan sanksi sesuai keputusan wasit lapangan yang bertugas demi menjaga sportivitas.',
       'Keputusan Wasit: Seluruh pemain wajib menjunjung tinggi sportivitas (fair play) dan keputusan wasit adalah mutlak serta tidak dapat diganggu gugat.',
     ],
   },
@@ -116,16 +110,10 @@ Pelanggaran keras atau akumulasi kartu akan dikenakan sanksi sesuai keputusan wa
     rules: [
       'Konsep Permainan: Lomba beregu adu kecepatan di mana setiap peserta berjalan atau berlari menuju titik tertentu dengan posisi bola atau benda diletakkan di antara kedua lutut/mata kaki (menyerupai gaya berjalan penguin), kemudian estafet ke anggota tim berikutnya.',
       'Jumlah Anggota Tim: Setiap tim terdiri dari 3 sampai 4 orang yang berbaris di jalur estafet masing-masing.',
-      'Aturan Main:
-
-Peserta wajib berjalan dengan gaya "penguin" (menjepit bola/benda di antara lutut atau kaki) tanpa menggunakan tangan untuk memegang benda tersebut selama berjalan.
-
-Jika bola atau benda terjatuh di tengah jalan, peserta harus berhenti, mengambilnya kembali, menjepitkannya ke posisi semula, baru boleh melanjutkan perjalanan.
-
-Sesampainya di garis finish atau titik estafet, benda diberikan kepada anggota tim berikutnya, begitu seterusnya hingga anggota terakhir menyelesaikan tantangan.',
+      'Aturan Main:\n\nPeserta wajib berjalan dengan gaya "penguin" (menjepit bola/benda di antara lutut atau kaki) tanpa menggunakan tangan untuk memegang benda tersebut selama berjalan.\n\nJika bola atau benda terjatuh di tengah jalan, peserta harus berhenti, mengambilnya kembali, menjepitkannya ke posisi semula, baru boleh melanjutkan perjalanan.\n\nSesampainya di garis finish atau titik estafet, benda diberikan kepada anggota tim berikutnya, begitu seterusnya hingga anggota terakhir menyelesaikan tantangan.',
       'Kriteria Pemenang: Tim yang berhasil menyelesaikan seluruh estafet dari garis start sampai finish dengan waktu tercepat keluar sebagai pemenang.',
     ],
-  ], 
+  }, 
   {
     id: 'tambang',
     icon: '💪',
@@ -152,13 +140,7 @@ Sesampainya di garis finish atau titik estafet, benda diberikan kepada anggota t
     rules: [
       'Konsep Permainan: Perlombaan merias wajah rekan satu tim, namun peserta yang bertugas sebagai make-up artist (perias) harus menutup matanya menggunakan penutup mata (blindfold).',
       'Jumlah Anggota Tim: Setiap tim terdiri dari 2 orang (1 orang perias dengan mata tertutup dan 1 orang model yang wajahnya dirias).',
-      'Aturan Main:
-
-Panitia memberikan waktu persiapan singkat bagi perias untuk meraba dan mengenali letak alat-alat make-up di depannya sebelum mata ditutup.
-
-Setelah aba-aba dimulai, perias wajib merias wajah modelnya sepenuhnya dalam keadaan mata tertutup, mengandalkan insting dan arahan suara dari modelnya (tanpa boleh saling bertukar posisi).
-
-Batas waktu yang diberikan biasanya berkisar antara 5 hingga 10 menit.',
+      'Aturan Main:\n\nPanitia memberikan waktu persiapan singkat bagi perias untuk meraba dan mengenali letak alat-alat make-up di depannya sebelum mata ditutup.\n\nSetelah aba-aba dimulai, perias wajib merias wajah modelnya sepenuhnya dalam keadaan mata tertutup, mengandalkan insting dan arahan suara dari modelnya (tanpa boleh saling bertukar posisi).\n\nBatas waktu yang diberikan biasanya berkisar antara 5 hingga 10 menit.',
       'Kriteria Pemenang: Tim yang hasil riasannya paling rapi, paling lucu/kreatif (mengingat kondisi mata tertutup), atau paling mendekati hasil riasan normal keluar sebagai pemenang.',
     ],
   },
@@ -172,20 +154,8 @@ Batas waktu yang diberikan biasanya berkisar antara 5 hingga 10 menit.',
     durasi: '±10 menit / pertandingan',
     rules: [
       'Konsep Permainan: Permainan memperebutkan kursi saat alunan musik berhenti; peserta yang tidak kebagian kursi akan tersingkir secara bertahap hingga menyisakan satu orang pemenang.',
-      'Persiapan Alat:
-
-Siapkan kursi sebanyak jumlah peserta dikurangi satu (misal: 10 peserta, kursi yang dipasang 9 buah) yang disusun melingkar dengan posisi sandaran kursi saling membelakangi di bagian dalam.
-
-Siapkan pengeras suara (speaker) untuk memutar musik.',
-      'Aturan Main:
-
-Peserta berjalan mengelilingi barisan kursi secara berputar mengikuti irama musik yang sedang dimainkan.
-
-Selama musik berbunyi, peserta tidak boleh duduk atau menyentuh kursi.
-
-Ketika musik tiba-tiba berhenti, seluruh peserta harus segera berebut dan duduk di kursi yang tersedia.
-
-Peserta yang tidak kebagian kursi dinyatakan gugur, dan panitia akan mengambil 1 buah kursi dari lingkaran untuk babak selanjutnya.',
+      'Persiapan Alat:\n\nSiapkan kursi sebanyak jumlah peserta dikurangi satu (misal: 10 peserta, kursi yang dipasang 9 buah) yang disusun melingkar dengan posisi sandaran kursi saling membelakangi di bagian dalam.\n\nSiapkan pengeras suara (speaker) untuk memutar musik.',
+      'Aturan Main:\n\nPeserta berjalan mengelilingi barisan kursi secara berputar mengikuti irama musik yang sedang dimainkan.\n\nSelama musik berbunyi, peserta tidak boleh duduk atau menyentuh kursi.\n\nKetika musik tiba-tiba berhenti, seluruh peserta harus segera berebut dan duduk di kursi yang tersedia.\n\nPeserta yang tidak kebagian kursi dinyatakan gugur, dan panitia akan mengambil 1 buah kursi dari lingkaran untuk babak selanjutnya.',
       'Kriteria Pemenang: Peserta terakhir yang berhasil menduduki kursi satu-satunya di babak final keluar sebagai juara.',
     ],
   },
@@ -200,13 +170,7 @@ Peserta yang tidak kebagian kursi dinyatakan gugur, dan panitia akan mengambil 1
     rules: [
       'Konsep Permainan: Permainan menyebarkan informasi atau kalimat secara berantai dari telinga ke telinga secara berbisik dalam satu barisan tim, di mana kalimat akhir seringkali melenceng jauh dan menjadi lucu akibat salah tangkap pesan.',
       'Jumlah Anggota Tim: Setiap tim terdiri dari 4 sampai 6 orang yang berbaris ke belakang.',
-      'Aturan Main:
-
-Panitia memberikan sebuah kalimat rahasia kepada peserta paling depan.
-
-Peserta pertama membisikkan kalimat tersebut ke peserta di belakangnya dengan cepat dan hanya satu kali kesempatan bisik, begitu seterusnya secara estafet hingga sampai ke peserta terakhir.
-
-Peserta terakhir wajib mengucapkan dengan lantang kalimat yang ia terima di hadapan juri atau penonton.',
+      'Aturan Main:\n\nPanitia memberikan sebuah kalimat rahasia kepada peserta paling depan.\n\nPeserta pertama membisikkan kalimat tersebut ke peserta di belakangnya dengan cepat dan hanya satu kali kesempatan bisik, begitu seterusnya secara estafet hingga sampai ke peserta terakhir.\n\nPeserta terakhir wajib mengucapkan dengan lantang kalimat yang ia terima di hadapan juri atau penonton.',
       'Kriteria Pemenang: Tim yang kalimat akhirnya paling mendekati kalimat asli dari panitia (atau tim yang menghasilkan pelintiran kalimat paling lucu dan menghibur) keluar sebagai pemenang.',
     ],
   },
@@ -221,13 +185,7 @@ Peserta terakhir wajib mengucapkan dengan lantang kalimat yang ia terima di hada
     rules: [
       'Konsep Acara: Ajang peragaan busana (catwalk) unik dan penuh unsur humor khusus menggunakan daster, dengan gaya berjalan serta aksi panggung paling kreatif dari para peserta.',
       'Peserta: Perwakilan warga atau ibu-ibu (bisa juga kategori bapak-bapak berdaster sebagai variasi hiburan) per RT atau kelompok.',
-      'Aturan & Cara Main:
-
-Peserta wajib mengenakan pakaian utama berupa daster dengan tambahan atribut atau aksesoris pendukung yang menarik (seperti kacamata hitam, payung, topi, tas unik, atau selendang).
-
-Peserta berjalan secara bergantian di atas catwalk atau jalur yang telah ditentukan, lalu melakukan pose-pose unik di ujung panggung diiringi musik yang meriah.
-
-Penampilan dinilai berdasarkan kreativitas gaya/aksi, kepercayaan diri (paling totalitas), serta kelucuan dan keserasian atribut yang digunakan.',
+      'Aturan & Cara Main:\n\nPeserta wajib mengenakan pakaian utama berupa daster dengan tambahan atribut atau aksesoris pendukung yang menarik (seperti kacamata hitam, payung, topi, tas unik, atau selendang).\n\nPeserta berjalan secara bergantian di atas catwalk atau jalur yang telah ditentukan, lalu melakukan pose-pose unik di ujung panggung diiringi musik yang meriah.\n\nPenampilan dinilai berdasarkan kreativitas gaya/aksi, kepercayaan diri (paling totalitas), serta kelucuan dan keserasian atribut yang digunakan.',
       'Kriteria Pemenang: Peserta yang paling menghibur, percaya diri tinggi, dan sukses mengocok perut penonton dinobatkan sebagai juara.',
     ],
   },
