@@ -13,7 +13,7 @@ export const eventTypes: EventType[] = [
     nama: 'Pesta Rakyat Ciptaland Mawar (HUT RI 2026)',
     tanggal: '17 Agustus 2026',
     keterangan: '06.00 – selesai',
-    lokasi: 'Fasum Musho;a Nurul Ukhuwah Blok Mawar',
+    lokasi: 'Fasum Mushola Nurul Ukhuwah Blok Mawar',
     badge: 'Puncak',
   },
   {
