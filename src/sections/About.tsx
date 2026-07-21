@@ -68,7 +68,7 @@ export default function About() {
                 <div className="space-y-5">
                   {[
                     { icon: '📅', label: 'Tanggal', value: 'Minggu, 17 Agustus 2026' },
-                    { icon: '⏰', label: 'Waktu', value: '06:00 - 21:00 WIB' },
+                    { icon: '⏰', label: 'Waktu', value: '06:00 - 22:00 WIB' },
                     { icon: '📍', label: 'Lokasi', value: 'Perumahan Ciptaland Blok Mawar', sub: 'RT 002 / RW 014' },
                     { icon: '👥', label: 'Peserta', value: 'Seluruh Warga & Keluarga' },
                   ].map((item, index) => (
