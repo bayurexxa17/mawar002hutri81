@@ -149,7 +149,7 @@ export default function Activities() {
                 <li className="flex gap-2"><span className="text-[#C1272D]">•</span> Peserta wajib warga Ciptaland Blok Mawar RT 002/RW 014 (dibuktikan KK)</li>
                 <li className="flex gap-2"><span className="text-[#C1272D]">•</span> Keputusan juri tidak dapat diganggu gugat</li>
                 <li className="flex gap-2"><span className="text-[#C1272D]">•</span> Peserta yang curang akan didiskualifikasi</li>
-                <li className="flex gap-2"><span className="text-[#C1272D]">•</span> Hadiah diserahkan pada Malam Puncak 22 Agustus 2026</li>
+                <li className="flex gap-2"><span className="text-[#C1272D]">•</span> Hadiah diserahkan pada Malam Puncak 17 Agustus 2026</li>
               </ul>
             </div>
 
