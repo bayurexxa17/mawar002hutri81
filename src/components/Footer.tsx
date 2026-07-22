@@ -63,7 +63,7 @@ export default function Footer() {
                 <span className="text-green-400">📱</span>
                 <div>
                   <div className="text-gray-400 text-sm">Ketua Pembina</div>
-                  <a href="tel:081271299984" className="text-white hover:text-red-400 transition text-sm font-medium">
+                  <a href="tel:821712999844" className="text-white hover:text-red-400 transition text-sm font-medium">
                     0812-7129-9984
                   </a>
                 </div>
