@@ -74,7 +74,7 @@ export default function PanitiaAdmin() {
             Masuk Dashboard
           </button>
           <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-gray-600">
-            <strong>Hint:</strong> coba <code>mawar81</code> atau hubungi Ketua Panitia 0812-8839-5550
+            <strong>Hubungi:</strong> Ketua Panitia 0812-8839-5550 <code>untuk</code> mendapatkan akses login.
           </div>
           <a href="/" className="block text-center text-sm text-gray-400 mt-4 hover:text-[#C1272D]">← Kembali ke Website</a>
         </form>
