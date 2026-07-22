@@ -97,9 +97,9 @@ export function generatePanitiaWALinks(payload: RegistrationPayload) {
   
   const panitia = [
     { name: 'Ketua Panitia - Bayu S.Permana', wa: '6281288395550' },
-    { name: 'Ketua Pembina - Eka Rista', wa: '6281271299984' },
+    { name: 'Penanggung Jawab - Eka Rista', wa: '6282171299984' },
     { name: 'Wakil Ketua - Sugiono', wa: '6283183950205' },
-    { name: 'Bendahara 1 - Aulia Komari', wa: '6281271299984' },
+    { name: 'Bendahara 1 - Aulia Komari', wa: '6281364755007' },
   ];
 
   return panitia.map(p => ({
