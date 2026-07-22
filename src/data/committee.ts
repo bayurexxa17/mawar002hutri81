@@ -13,8 +13,8 @@ export const committee: CommitteeMember[] = [
     id: 1,
     name: 'Eka Rista Y',
     position: 'Penanggung Jawab',
-    phone: '0812-7129-9984',
-    whatsapp: '6281271299984',
+    phone: '0821-7129-9984',
+    whatsapp: '082171299984',
     isPrimary: true
   },
   {
