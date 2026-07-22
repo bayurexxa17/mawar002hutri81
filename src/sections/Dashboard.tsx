@@ -184,7 +184,7 @@ export default function Dashboard() {
                       { jabatan: 'Penanggung Jawab', nama: 'Eka Rista Y' },
                       { jabatan: 'Ketua Panitia', nama: 'Bayu S,Permana (0812-8839-5550)' },
                       { jabatan: 'Wakil Ketua', nama: 'Sugiono (0831-8395-0205)' },
-                      { jabatan: 'Sekretaris', nama: 'Lani' },
+                      { jabatan: 'Sekretaris', nama: 'Lani (0813-7116-2792)' },
                       { jabatan: 'Bendahara I', nama: 'Aulia Komari (0813-6475-5007)' },
                       { jabatan: 'Bendahara II', nama: 'Aulia Komari (0831-8330-3884)' },
                     ].map((row, i) => (
