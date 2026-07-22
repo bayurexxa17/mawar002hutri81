@@ -155,6 +155,5 @@ export const categories = [
   { id: 'ibu', label: 'Ibu-ibu', icon: '👩' },
   { id: 'bapak', label: 'Bapak-bapak', icon: '👨' },
   { id: 'remaja', label: 'Remaja', icon: '🧑' },
-  { id: 'keluarga', label: 'Keluarga', icon: '👨‍👩‍👧' },
-  { id: 'umum', label: 'Umum', icon: '👥' }
+  { id: 'keluarga', label: 'Umum/Keluarga', icon: '👨‍👩‍👧' },
 ];
