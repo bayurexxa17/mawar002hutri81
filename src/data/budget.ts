@@ -92,7 +92,7 @@ export const budgetDetails: Record<string, { title: string; subtitle: string; it
       { no: 8, item: 'XL Axiata', detail: 'Provider seluler', budget: 1000000 }, 
       { no: 9, item: 'IndiHome', detail: 'Telkom', budget: 500000 }, 
       { no: 10, item: 'Proxinet', detail: 'Provider', budget: 500000 }, 
-      { no: 11, item: 'Link Net', detail: 'Provider', budget: 1000000 }, 
+      { no: 11, item: 'Link Net', detail: 'Provider', budget: 1000000 },
     ], 
   }, 
 }; 
