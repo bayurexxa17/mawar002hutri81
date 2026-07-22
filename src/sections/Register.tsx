@@ -284,7 +284,7 @@ export default function Register() {
             <p className="text-gray-600 mb-4 font-medium text-sm text-center">Atau daftar langsung via WhatsApp Panitia:</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
-                { name: 'Ketua Pembina', sub: 'Eka Rista Y', wa: '6281271299984', phone: '0812-7129-9984' },
+                { name: 'Penanggung Jawab', sub: 'Eka Rista Y', wa: '6281271299984', phone: '0812-7129-9984' },
                 { name: 'Ketua Panitia', sub: 'Bayu S.Permana', wa: '6281288395550', phone: '0812-8839-5550' },
                 { name: 'Wakil Ketua', sub: 'Sugiono', wa: '6283183950205', phone: '0831-8395-0205' },
               ].map((contact) => (
