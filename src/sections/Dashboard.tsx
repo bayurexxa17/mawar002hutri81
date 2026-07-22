@@ -159,12 +159,13 @@ export default function Dashboard() {
                   </thead>
                   <tbody>
                     {[
-                      { jabatan: 'Ketua Pembina', nama: 'Bpk. H. Ahmad Suryadi (0812-7129-9984)' },
-                      { jabatan: 'Ketua Panitia', nama: 'Bpk. Budi Santoso (0812-8839-5550)' },
-                      { jabatan: 'Wakil Ketua', nama: 'Ibu Siti Nurhaliza (0831-8395-0205)' },
-                      { jabatan: 'Sekretaris', nama: 'Ibu Ratna Dewi' },
-                      { jabatan: 'Bendahara', nama: 'Bpk. Joko Widodo' },
-                      { jabatan: 'Penanggung Jawab', nama: 'Bpk. Untung Budiawan' },
+                      { jabatan: 'Ketua Pembina', nama: 'Syamsul Piliano ' },
+                      { jabatan: 'Ketua Penanggung Jawab', nama: 'Eka Rista Y ' },
+                      { jabatan: 'Ketua Panitia', nama: 'Bayu S.Permana (0812-8839-5550)' },
+                      { jabatan: 'Wakil Ketua', nama: 'Sugionoa (0831-8395-0205)' },
+                      { jabatan: 'Sekretaris', nama: 'Lani (0812-3456-7891)' },
+                      { jabatan: 'Bendahara I', nama: 'Aulia Komari (0812-3456-7892' },
+                      { jabatan: 'Bendahara II Jawab', nama: 'Puput (0812-3456-7893)' },
                     ].map((row, i) => (
                       <tr key={i} className={i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}>
                         <td className="px-4 py-3 font-medium">{row.jabatan}</td>
