@@ -387,7 +387,7 @@ export default function Dashboard() {
                 <div>
                   <label className="text-sm font-semibold text-gray-700 mb-2 block">Pilih Lomba:</label>
                   <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border rounded-lg p-3">
-                    {['Makan Kerupuk', 'Balap Karung', 'Tarik Tambang', 'Panjat Pinang', 'Volley Cup Putra', 'Volley Cup Putri', 'Memasukkan Paku Botol', 'Bawa Kelereng', 'Estafet Tepung', 'Pukul Air'].map(l => (
+                    {['Makan Kerupuk', 'Futsal Mini', 'Balap Kelereng', 'Tarik Tambang', 'Hias Tumpeng', 'Fashion Week Daster', 'Salah Sambung', 'Joget Kursi Bapak', 'Estafet Tepung', 'Joget Kursi Ibu', 'Make Up Buta', 'Estafet Penguin Remaja', 'Estafet Penguin Anak'].map(l => (
                       <label key={l} className="flex items-center gap-2 text-sm">
                         <input type="checkbox" checked={formData.lomba.includes(l)} onChange={e => {
                           if (e.target.checked) setFormData({...formData, lomba: [...formData.lomba, l]});
