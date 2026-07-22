@@ -187,7 +187,7 @@ export default function Dashboard() {
                       { jabatan: 'Wakil Ketua', nama: 'Sugiono (0831-8395-0205)' },
                       { jabatan: 'Sekretaris', nama: 'Lani (0813-7116-2792)' },
                       { jabatan: 'Bendahara I', nama: 'Aulia Komari (0813-6475-5007)' },
-                      { jabatan: 'Bendahara II', nama: 'Aulia Komari (0831-8330-3884)' },
+                      { jabatan: 'Bendahara II', nama: 'Puput (0831-8330-3884)' },
                     ].map((row, i) => (
                       <tr key={i} className={i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}>
                         <td className="px-4 py-3 font-medium">{row.jabatan}</td>
