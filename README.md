@@ -143,9 +143,9 @@ npm run preview
 
 | Posisi | Nama | No. HP | WhatsApp Link |
 |--------|------|--------|---------------|
-| Ketua Pembina | Bpk. H. Ahmad Suryadi | 0812-7129-9984 | [Chat WA](https://wa.me/6281271299984) |
-| Ketua Panitia | Bpk. Budi Santoso | 0812-8839-5550 | [Chat WA](https://wa.me/628188395550) |
-| Wakil Ketua | Ibu Siti Nurhaliza | 0831-8395-0205 | [Chat WA](https://wa.me/6283183950205) |
+| Ketua Penanggung Jawab | Eka Rista Y | 0812-7129-9984 | [Chat WA](https://wa.me/6281271299984) |
+| Ketua Panitia | Bayu S.Permana | 0812-8839-5550 | [Chat WA](https://wa.me/628188395550) |
+| Wakil Ketua | Sugiono | 0831-8395-0205 | [Chat WA](https://wa.me/6283183950205) |
 
 ## 🌐 Deploy ke Cloudflare Pages
 
