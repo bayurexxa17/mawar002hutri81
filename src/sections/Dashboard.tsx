@@ -4,6 +4,7 @@ import { budgetSummary, budgetComponents, budgetDetails, formatRupiah } from '..
 import { fundingSources, fundingTotal } from '../data/funding';
 import { eventTypes, panduanLomba } from '../data/eventTypes';
 import { submitRegistration } from '../utils/api';
+import QrisImage from '../components/QrisImage';
 
 type TabType = 'ringkasan' | 'pendanaan' | 'panduan' | 'pendaftaran' | 'donasi';
 
@@ -179,13 +180,12 @@ export default function Dashboard() {
                   </thead>
                   <tbody>
                     {[
-                      { jabatan: 'Ketua Pembina', nama: 'Syamsul Piliano' },
-                      { jabatan: 'Penanggung Jawab', nama: 'Eka Rista Y' },
-                      { jabatan: 'Ketua Panitia', nama: 'Bayu S.Permana (0812-8839-5550)' },
-                      { jabatan: 'Wakil Ketua', nama: 'Sugiono (0831-8395-0205)' },
-                      { jabatan: 'Sekretaris', nama: 'Lani (0813-7116-2792)' },
-                      { jabatan: 'Bendahara I', nama: 'Aulia Komari (0813-6475-5007)' },
-                      { jabatan: 'Bendahara II', nama: 'Puput (0831-8330-3884)' },
+                      { jabatan: 'Ketua Pembina', nama: 'Bpk. H. Ahmad Suryadi (0812-7129-9984)' },
+                      { jabatan: 'Ketua Panitia', nama: 'Bpk. Budi Santoso (0812-8839-5550)' },
+                      { jabatan: 'Wakil Ketua', nama: 'Ibu Siti Nurhaliza (0831-8395-0205)' },
+                      { jabatan: 'Sekretaris', nama: 'Ibu Ratna Dewi' },
+                      { jabatan: 'Bendahara', nama: 'Bpk. Joko Widodo' },
+                      { jabatan: 'Penanggung Jawab', nama: 'Bpk. Untung Budiawan' },
                     ].map((row, i) => (
                       <tr key={i} className={i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}>
                         <td className="px-4 py-3 font-medium">{row.jabatan}</td>
@@ -564,16 +564,18 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div id="qris-detail" className="bg-white rounded-xl shadow-sm border p-6 text-center">
-                  <h4 className="font-bold mb-3">📱 QRIS HUT RI 81 Mawar</h4>
-                  <div className="bg-gray-100 rounded-xl p-6 aspect-square flex flex-col items-center justify-center border-2 border-dashed">
-                    <div className="text-5xl mb-2">🔲</div>
-                    <div className="text-xs text-gray-500">Upload QRIS asli ke<br/><code>public/images/qris.png</code></div>
+                <div id="qris-detail" className="bg-white rounded-xl shadow-sm border p-4 text-center">
+                  <h4 className="font-bold mb-3 flex items-center justify-center gap-2">
+                    <span>📱</span> QRIS HUT RI 81 Mawar
+                  </h4>
+                  <div className="rounded-xl overflow-hidden border">
+                    <QrisImage />
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-2 text-[11px]">
-                    <a href="https://wa.me/6281288395550?text=Halo%20saya%20mau%20donasi%20via%20QRIS" target="_blank" className="bg-green-500 text-white py-2 rounded-full font-bold">💬 WA Bendahara</a>
-                    <button onClick={()=>{navigator.clipboard.writeText(window.location.href); alert('Link donasi disalin!');}} className="bg-gray-900 text-white py-2 rounded-full font-bold">🔗 Share Link</button>
+                    <a href="https://wa.me/6281364755007?text=Halo%20Bendahara%20Aulia%20saya%20mau%20donasi%20via%20QRIS%20DANA%2062-813****5007" target="_blank" className="bg-green-500 text-white py-2.5 rounded-full font-bold hover:bg-green-600 transition">💬 WA Bendahara</a>
+                    <button onClick={()=>{navigator.clipboard.writeText(window.location.href); alert('Link donasi disalin!');}} className="bg-gray-900 text-white py-2.5 rounded-full font-bold hover:bg-black transition">🔗 Share Link</button>
                   </div>
+                  <p className="text-[10px] text-gray-400 mt-3">File: public/images/qris-placeholder - 081364755007 DANA & 901592977740 SeaBank a.n Aulia Komari</p>
                 </div>
               </div>
             </div>
