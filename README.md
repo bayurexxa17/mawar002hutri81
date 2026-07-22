@@ -22,9 +22,6 @@ Website resmi perayaan Hari Ulang Tahun Kemerdekaan Republik Indonesia ke-81 unt
   - Ketua Panitia: 0812-8839-5550
   - Wakil Ketua: 0831-8395-0205
 
-### 📊 NEW - Fitur Reference Greenbay (https://www.greenbay.my.id/hutri2026)
-Inspired dari referensi Greenbay.my.id, kini lengkap dengan:
-
 #### 1. **Dashboard Tabs** (5 Tab seperti di gambar)
 - 📊 **Ringkasan** (default active merah #C1272D)
   - 3 Cards: Total Kebutuhan Rp 32.750.000, Target Dana Masuk Rp 31.000.000, Selisih Defisit -Rp 1.750.000
