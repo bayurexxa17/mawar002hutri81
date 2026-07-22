@@ -180,6 +180,7 @@ export default function Dashboard() {
                   </thead>
                   <tbody>
                     {[
+                      { jabatan: 'Ketua Penasehat', nama: 'Jamiat' },
                       { jabatan: 'Ketua Pembina', nama: 'Syamsul Piliano' },
                       { jabatan: 'Penanggung Jawab', nama: 'Eka Rista Y' },
                       { jabatan: 'Ketua Panitia', nama: 'Bayu S,Permana (0812-8839-5550)' },
