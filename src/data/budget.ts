@@ -39,13 +39,13 @@ export const budgetComponents: BudgetComponent[] = [
   { 
     id: 'dana', 
     komponen: 'Total Dana Masuk (Pendanaan)', 
-    jumlah: 19000000, 
+    jumlah: 0, 
     detailKey: 'dana', 
   }, 
   { 
     id: 'selisih', 
     komponen: 'SELISIH (Dana Masuk - Kebutuhan)', 
-    jumlah: 2000000, 
+    jumlah: 00, 
     isDeficit: false, 
   }, 
 ]; 
