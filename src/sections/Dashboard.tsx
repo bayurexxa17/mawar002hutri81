@@ -285,7 +285,7 @@ export default function Dashboard() {
               <div className="p-3">
                 <div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-3 flex gap-2 text-sm text-gray-700">
                   <span>📌</span>
-                  <div>Beberapa nama vendor/PJ (MC, Kelong Baba, Villa Bambu, Wesli, Dito Bor Ikan) belum terkonfirmasi — mohon divalidasi ke panitia terkait sebelum finalisasi.</div>
+                  <div>Beberapa nama vendor/PJ (Kelong Baba, Alfamart, Indomaret, Developer Ciptaland, Biznet Home, XL Axiata, Proxinet, IndiHome, Link Net / FirstMedia) belum terkonfirmasi — mohon divalidasi ke panitia terkait sebelum finalisasi.</div>
                 </div>
               </div>
             </div>
