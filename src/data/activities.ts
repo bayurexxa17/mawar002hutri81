@@ -27,7 +27,7 @@ export const activities: Activity[] = [
     title: 'Futsal Mini',
     category: 'remaja',
     time: '09:30 WIB',
-    prize: 'Rp 500.000',
+    prize: '🏆 Hadiah Menarik',
     icon: '⚽',
     description: 'Futsal Mini beregu dengan hadiah menarik di puncak',
     participants: 'Tim 5 orang'
@@ -37,7 +37,7 @@ export const activities: Activity[] = [
     title: 'Lomba Balap Kelereng',
     category: 'anak',
     time: '08:30 WIB',
-    prize: 'Rp 75.000',
+    prize: '🏆 Hadiah Menarik',
     icon: '🏃',
     description: 'Balap kelereng klasik untuk anak-anak, melatih fokus dan keseimbangan',
     participants: 'Usia 7-15 tahun'
@@ -47,7 +47,7 @@ export const activities: Activity[] = [
     title: 'Lomba Tarik Tambang',
     category: 'bapak',
     time: '11:00 WIB',
-    prize: 'Rp 300.000',
+    prize: '🏆 Hadiah Menarik',
     icon: '💪',
     description: 'Kompetisi tarik tambang antar RT - adu kekuatan dan kekompakan',
     participants: 'Tim 8 orang'
@@ -57,7 +57,7 @@ export const activities: Activity[] = [
     title: 'Lomba Hias Tumpeng',
     category: 'ibu',
     time: '13:00 WIB',
-    prize: 'Rp 250.000',
+    prize: '🏆 Hadiah Menarik',
     icon: '🍛',
     description: 'Lomba Hias Tumpeng Kreasi Para Ibu dengan Cita Rasa dan Tampilan Menarik dan Terbaik',
     participants: 'Ibu rumah tangga'
@@ -67,7 +67,7 @@ export const activities: Activity[] = [
     title: 'Lomba Fashion Week Daster',
     category: 'ibu',
     time: '13:00 WIB',
-    prize: 'Rp 200.000',
+    prize: '🏆 Hadiah Menarik',
     icon: '👗',
     description: 'Kreasikan Gaya dan Penampilan Terbaik dan Terlucu',
     participants: 'Ibu-ibu'
@@ -77,7 +77,7 @@ export const activities: Activity[] = [
     title: 'Salah Sambung',
     category: 'remaja',
     time: '09:30 WIB',
-    prize: 'Rp 150.000',
+    prize: '🏆 Hadiah Menarik',
     icon: '🗣️',
     description: 'Lomba Salah Sambung Melatih Fokus, Kekompakan, Kecepatan dan Berfikir',
     participants: 'Usia 13-17 tahun'
@@ -87,7 +87,7 @@ export const activities: Activity[] = [
     title: 'Lomba Joget Kursi Bapak',
     category: 'bapak',
     time: '11:00 WIB',
-    prize: 'Rp 200.000',
+    prize: '🏆 Hadiah Menarik',
     icon: '💃',
     description: 'Lomba joget kursi dengan keseruan untuk bapak-bapak',
     participants: 'Individu'
@@ -97,7 +97,7 @@ export const activities: Activity[] = [
     title: 'Lomba Estafet Penguin Anak',
     category: 'anak',
     time: '08:30 WIB',
-    prize: 'Rp 150.000',
+    prize: '🏆 Hadiah Menarik',
     icon: '🐧',
     description: 'Lomba Model Baru dengan Keseruan dan Kekompakan',
     participants: 'Tim 3 anak SD'
@@ -107,7 +107,7 @@ export const activities: Activity[] = [
     title: 'Lomba Estafet Penguin Remaja',
     category: 'remaja',
     time: '09:30 WIB',
-    prize: 'Rp 175.000',
+    prize: '🏆 Hadiah Menarik',
     icon: '🐧',
     description: 'Lomba Model Baru dengan Keseruan dan Kekompakan',
     participants: 'Usia 13-17 tahun'
@@ -117,7 +117,7 @@ export const activities: Activity[] = [
     title: 'Lomba Estafet Tepung',
     category: 'bapak',
     time: '11:00 WIB',
-    prize: 'Rp 200.000',
+    prize: '🏆 Hadiah Menarik',
     icon: '🌾',
     description: 'Lomba Estafet Tepung dengan Keseruan dan Kekompakan',
     participants: 'Tim 3 Orang'
@@ -127,7 +127,7 @@ export const activities: Activity[] = [
     title: 'Lomba Joget Kursi Ibu',
     category: 'ibu',
     time: '13:00 WIB',
-    prize: 'Rp 200.000',
+    prize: '🏆 Hadiah Menarik',
     icon: '🪑',
     description: 'Lomba joget kursi dengan keseruan untuk ibu-ibu',
     participants: 'Tim 3 Orang'
@@ -137,7 +137,7 @@ export const activities: Activity[] = [
     title: 'Lomba Make Up Buta',
     category: 'keluarga',
     time: '15:00 WIB',
-    prize: 'Rp 200.000',
+    prize: '🏆 Hadiah Menarik',
     icon: '💄',
     description: 'Lomba Make Up Buta dengan Keseruan dan kekompakan Pasangan',
     participants: 'Tim 2 Pasang'
