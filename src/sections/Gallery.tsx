@@ -193,17 +193,17 @@ export default function Gallery() {
             {/* Upload Video Info */}
             <div className="mt-8 bg-blue-50 border border-blue-200 rounded-2xl p-4 sm:p-6">
               <h4 className="font-bold text-blue-800 mb-2 flex items-center gap-2 text-sm sm:text-base">
-                <span>🎬</span> Cara Tambah Video:
+                <span></span>
               </h4>
               <ol className="text-xs sm:text-sm text-blue-700 space-y-1 list-decimal ml-5">
-                <li>Upload video ke YouTube (Unlisted) atau Google Drive</li>
-                <li>Copy link video</li>
-                <li>Buka <code>src/data/videos.ts</code></li>
-                <li>Tambah data baru seperti contoh di atas</li>
-                <li>Pakai thumbnail dari <code>/images/gallery/</code> atau link Unsplash</li>
+                <li></li>
+                <li></li>
+                <li> <code></code></li>
+                <li></li>
+                <li> <code></code> </li>
               </ol>
               <p className="text-[10px] sm:text-xs text-blue-600 mt-3">
-                File: <code>src/data/videos.ts</code> - Tambahkan video sebanyak-banyaknya, nanti otomatis muncul di tab Video
+                <code></code>
               </p>
             </div>
           </>
