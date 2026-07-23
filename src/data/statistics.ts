@@ -24,7 +24,7 @@ export const statistics: Statistic[] = [
   },
   {
     id: 3,
-    value: 'Doorprize',
+    value: 'Prize17',
     label: 'Hadiah Menarik',
     icon: '💰',
     color: 'from-green-500 to-green-600',
