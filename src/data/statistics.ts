@@ -24,11 +24,11 @@ export const statistics: Statistic[] = [
   },
   {
     id: 3,
-    value: '2.5',
-    label: 'Total Hadiah (Juta)',
+    value: 'Hadiah Menarik',
+    label: 'Total Hadiah ()',
     icon: '💰',
     color: 'from-green-500 to-green-600',
-    suffix: 'Jt'
+    suffix: ''
   },
   {
     id: 4,
