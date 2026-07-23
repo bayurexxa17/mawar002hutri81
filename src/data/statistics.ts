@@ -24,11 +24,11 @@ export const statistics: Statistic[] = [
   },
   {
     id: 3,
-    value: 'Prize 17',
-    label: 'Hadiah Menarik',
+    value: 'Rp 50000',
+    label: 'Kontribusi Warga',
     icon: '💰',
     color: 'from-green-500 to-green-600',
-    suffix: ''
+    suffix: '/kk'
   },
   {
     id: 4,
