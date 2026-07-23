@@ -18,14 +18,14 @@ export const gallery: GalleryItem[] = [
     id: 2,
     title: 'Futsal Mini',
     category: 'lomba',
-    image: 'images/Lomba Futsal Mini',
+    image: 'images/Lomba Futsal Mini.png',
     year: 2026
   },
   {
     id: 3,
     title: 'Lomba Makan Kerupuk',
     category: 'lomba',
-    image: '/imagesLomba Makan Kerupuk.png',
+    image: 'images/Lomba Makan Kerupuk.png',
     year: 2026
   },
   {
