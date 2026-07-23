@@ -13,12 +13,12 @@ export const fundingSources: FundingSource[] = [
   { id: 4, sumber: 'Kelong Baba', jumlah: 1000000, catatan: 'Donatur langganan', status: 'need_confirm' },
   { id: 5, sumber: 'Alfamart', jumlah: 1000000, catatan: 'Minimarket', status: 'need_confirm' },
   { id: 6, sumber: 'Indomaret', jumlah: 1000000, catatan: 'Minimarket', status: 'need_confirm' },
-  { id: 8, sumber: 'Developer Ciptaland', jumlah: 1000000, catatan: 'PT Ciptaland Properti', status: 'need confirmed' },
-  { id: 9, sumber: 'Biznet Home', jumlah: 1000000, catatan: 'Provider internet', status: 'need_confirm' },
-  { id: 10, sumber: 'XL Axiata', jumlah: 1000000, catatan: 'Telco provider', status: 'need confirmed' },
-  { id: 11, sumber: 'Proxinet', jumlah: 500000, catatan: 'Provider', status: 'need confirmed' },
-  { id: 12, sumber: 'IndiHome', jumlah: 500000, catatan: 'Telkom Group', status: 'need confirmed' },
-  { id: 13, sumber: 'Link Net / FirstMedia', jumlah: 1000000, catatan: 'Provider', status: 'need confirmed' },
+  { id: 7, sumber: 'Developer Ciptaland', jumlah: 1000000, catatan: 'PT Ciptaland Properti', status: 'need confirmed' },
+  { id: 8, sumber: 'Biznet Home', jumlah: 1000000, catatan: 'Provider internet', status: 'need_confirm' },
+  { id: 9, sumber: 'XL Axiata', jumlah: 1000000, catatan: 'Telco provider', status: 'need confirmed' },
+  { id: 10, sumber: 'Proxinet', jumlah: 500000, catatan: 'Provider', status: 'need confirmed' },
+  { id: 11, sumber: 'IndiHome', jumlah: 500000, catatan: 'Telkom Group', status: 'need confirmed' },
+  { id: 12, sumber: 'Link Net / FirstMedia', jumlah: 1000000, catatan: 'Provider', status: 'need confirmed' },
 ];
 
 export const fundingTotal = fundingSources.reduce((sum, f) => sum + f.jumlah, 0);
