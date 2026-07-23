@@ -11,7 +11,7 @@ export const gallery: GalleryItem[] = [
     id: 1,
     title: 'Upacara Bendera 2025',
     category: 'upacara',
-    image: 'https://images.unsplash.com/photo-1596484552993-9c9a6ba38534?w=800',
+    image: 'images/Upcara Bendera 1.png',
     year: 2025
   },
   {
