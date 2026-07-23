@@ -16,7 +16,7 @@ export const gallery: GalleryItem[] = [
   },
   {
     id: 2,
-    title: 'Panjat Pinang Seru',
+    title: 'Lomba Makan Kerupuk',
     category: 'lomba',
     image: 'https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=800',
     year: 2025
