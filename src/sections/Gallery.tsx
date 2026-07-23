@@ -196,11 +196,6 @@ export default function Gallery() {
                 <span></span>
               </h4>
               <ol className="text-xs sm:text-sm text-blue-700 space-y-1 list-decimal ml-5">
-                <li></li>
-                <li></li>
-                <li> <code></code></li>
-                <li></li>
-                <li> <code></code> </li>
               </ol>
               <p className="text-[10px] sm:text-xs text-blue-600 mt-3">
                 <code></code>
