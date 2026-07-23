@@ -11,7 +11,7 @@ export const gallery: GalleryItem[] = [
     id: 1,
     title: 'Upacara Bendera 2025',
     category: 'upacara',
-    image: 'images/Upcara Bendera 1.png',
+    image: 'images/Upacara Bendera 1.png',
     year: 2026
   },
   {
