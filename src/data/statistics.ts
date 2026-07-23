@@ -24,7 +24,7 @@ export const statistics: Statistic[] = [
   },
   {
     id: 3,
-    value: 'Rp 50000',
+    value: 'Rp50.000',
     label: 'Kontribusi Warga',
     icon: '💰',
     color: 'from-green-500 to-green-600',
