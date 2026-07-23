@@ -70,42 +70,42 @@ export const committee: CommitteeMember[] = [
   },
   {
     id: 9,
+    name: 'Ridho Ananda',
+    position: 'Koordinator Lomba',
+    phone: '0823-8718-8929',
+    whatsapp: '6282387188929'
+  },
+  {
+    id: 10,
     name: 'Agha',
     position: 'Koordinator Lomba',
     phone: '0851-9433-4760',
     whatsapp: '6285194334760'
   },
   {
-    id: 10,
+    id: 11,
     name: 'Adib',
     position: 'Koordinator Lomba',
     phone: '0813-6365-2626',
     whatsapp: '6281363652626'
   },
   {
-    id: 11,
+    id: 12,
     name: 'Hanif',
     position: 'Koordinator Lomba',
     phone: '0881-3712-0796',
     whatsapp: '6281234567898'
   },
   {
-    id: 12,
+    id: 13,
     name: 'Satria',
     position: 'Koordinator Lomba',
     phone: '0819-9201-0197',
     whatsapp: '6281992010197'
   },
   {
-    id: 13,
-    name: 'Hafiz',
-    position: 'Koordinator Lomba',
-    phone: '0818-835-875',
-    whatsapp: '62818835875'
-  },
-  {
     id: 14,
-    name: 'Andre',
+    name: 'Andrez',
     position: 'Koordinator Lomba',
     phone: '08xx-xxx-xxx',
     whatsapp: '628xxxxxxxx'
