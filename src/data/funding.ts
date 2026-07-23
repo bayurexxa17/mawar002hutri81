@@ -9,6 +9,7 @@ export interface FundingSource {
 export const fundingSources: FundingSource[] = [
   { id: 1, sumber: 'Kas RT/RW (Ciptaland Mawar)', jumlah: 2500000, catatan: 'Saldo kas per Juli 2026', status: 'confirmed' },
   { id: 2, sumber: 'Donasi Warga Blok Mawar', jumlah: 8500000, catatan: '170 KK x rata-rata 50rb', status: 'confirmed' },
+  { id: 3, sumber: 'Sinar Pratama', jumlah: 1000000, catatan: 'Donatur langganan', status: 'need_confirm' },
   { id: 3, sumber: 'Kelong Baba', jumlah: 1000000, catatan: 'Donatur langganan', status: 'need_confirm' },
   { id: 4, sumber: 'Alfamart', jumlah: 1000000, catatan: 'Minimarket', status: 'need_confirm' },
   { id: 5, sumber: 'Indomaret', jumlah: 1000000, catatan: 'Minimarket', status: 'need_confirm' },
