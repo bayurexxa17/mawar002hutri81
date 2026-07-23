@@ -17,7 +17,7 @@ export const activities: Activity[] = [
     title: 'Lomba Makan Kerupuk',
     category: 'anak',
     time: '08:30 WIB',
-    prize: '🏆 Hadiah Menarik',
+    prize: 'Menarik',
     icon: '🎈',
     description: 'Lomba makan kerupuk tanpa tangan untuk anak-anak',
     participants: 'Usia 5-12 tahun'
