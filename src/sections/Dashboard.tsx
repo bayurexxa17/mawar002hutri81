@@ -180,7 +180,6 @@ export default function Dashboard() {
                   </thead>
                   <tbody>
                     {[
-                      { jabatan: 'Ketua Penasehat', nama: 'Jamiat' },
                       { jabatan: 'Ketua Pembina', nama: 'Syamsul Piliano' },
                       { jabatan: 'Penanggung Jawab', nama: 'Eka Rista Y' },
                       { jabatan: 'Ketua Panitia', nama: 'Bayu S,Permana (0812-8839-5550)' },
@@ -285,7 +284,8 @@ export default function Dashboard() {
               <div className="p-3">
                 <div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-3 flex gap-2 text-sm text-gray-700">
                   <span>📌</span>
-                  <div>Beberapa nama vendor/PJ (Sinar Pratama, Kelong Baba, Alfamart, Indomaret, Developer Ciptaland, Biznet Home, XL Axiata, Proxinet, IndiHome, Link Net / FirstMedia) belum terkonfirmasi — mohon divalidasi ke panitia terkait sebelum finalisasi.</div>
+                  <div>Beberapa nama vendor/PJ (Sinar Pratama, Kelong Baba, Alfamart, Indomaret, Developer Ciptaland, Biznet Home, XL Axiata, Proxinet, IndiHome, Link Net / FirstMedia) belum terkonfirmasi — mohon divalidasi ke panitia terkait sebelum finalisasi.
+</div>
                 </div>
               </div>
             </div>
@@ -335,7 +335,7 @@ export default function Dashboard() {
               </table>
             </div>
             <div className="p-4 bg-amber-50 border-t">
-              <p className="text-sm text-gray-700">📌 <strong>5 sumber dana</strong> di atas masih perlu konfirmasi nama/ejaan yang benar ke panitia sebelum difinalkan.</p>
+              <p className="text-sm text-gray-700">📌 <strong>{fundingSources.filter(f => f.status === 'need_confirm').length} sumber dana</strong> di atas masih perlu konfirmasi nama/ejaan yang benar ke panitia sebelum difinalkan.</p>
             </div>
           </div>
         )}
@@ -385,18 +385,23 @@ export default function Dashboard() {
                   <input required value={formData.hp} onChange={e => setFormData({...formData, hp: e.target.value})} placeholder="No. HP / WA" className="border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none" />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-700 mb-2 block">Pilih Lomba:</label>
-                  <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border rounded-lg p-3">
-                    {['Makan Kerupuk', 'Futsal Mini', 'Balap Kelereng', 'Tarik Tambang', 'Hias Tumpeng', 'Fashion Week Daster', 'Salah Sambung', 'Joget Kursi Bapak', 'Estafet Tepung', 'Joget Kursi Ibu', 'Make Up Buta', 'Estafet Penguin Remaja', 'Estafet Penguin Anak'].map(l => (
-                      <label key={l} className="flex items-center gap-2 text-sm">
+                  <label className="text-sm font-semibold text-gray-700 mb-2 block">Pilih Lomba: <span className="text-xs font-normal text-gray-500">(13 lomba asli - sinkron dengan data)</span></label>
+                  <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border-2 border-gray-200 rounded-lg p-3 bg-gray-50">
+                    {[
+                      'Makan Kerupuk', 'Futsal Mini', 'Balap Kelereng', 'Tarik Tambang', 'Hias Tumpeng',
+                      'Fashion Week Daster', 'Salah Sambung', 'Joget Kursi Bapak', 'Estafet Penguin Anak',
+                      'Estafet Penguin Remaja', 'Estafet Tepung', 'Joget Kursi Ibu', 'Make Up Buta'
+                    ].map(l => (
+                      <label key={l} className="flex items-center gap-2 text-sm bg-white p-2 rounded-lg border hover:border-red-300 cursor-pointer transition">
                         <input type="checkbox" checked={formData.lomba.includes(l)} onChange={e => {
                           if (e.target.checked) setFormData({...formData, lomba: [...formData.lomba, l]});
                           else setFormData({...formData, lomba: formData.lomba.filter(x => x !== l)});
-                        }} className="rounded text-[#C1272D]" />
-                        {l}
+                        }} className="rounded text-[#C1272D] w-4 h-4" />
+                        <span className="flex-1">{l}</span>
                       </label>
                     ))}
                   </div>
+                  <p className="text-[10px] text-gray-400 mt-2">📁 File: <code>src/sections/Dashboard.tsx</code> baris 386-410 - Blok Pilih Lomba dengan scroll merah</p>
                 </div>
                 <textarea value={formData.catatan} onChange={e => setFormData({...formData, catatan: e.target.value})} placeholder="Catatan (opsional)" rows={2} className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none" />
                 <button type="submit" className="w-full bg-[#C1272D] text-white font-bold py-3 rounded-lg hover:bg-red-700 transition">✅ Daftar Sekarang</button>
