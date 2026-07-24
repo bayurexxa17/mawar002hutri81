@@ -62,9 +62,9 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <span className="text-green-400">📱</span>
                 <div>
-                  <div className="text-gray-400 text-sm">Ketua Pembina</div>
+                  <div className="text-gray-400 text-sm">Penanggung Jawab</div>
                   <a href="tel:821712999844" className="text-white hover:text-red-400 transition text-sm font-medium">
-                    0812-7129-9984
+                    0821-7129-9984
                   </a>
                 </div>
               </li>
