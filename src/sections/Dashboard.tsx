@@ -143,62 +143,63 @@ export default function Dashboard() {
         </div>
 
         {/* TAB: RINGKASAN */}
-{activeTab === 'ringkasan' && (
-  <div className="space-y-6">
-    {/* 3 Cards Top - Exactly like image */}
-    <div className="grid md:grid-cols-3 gap-4">
-      <div className="bg-white rounded-xl shadow-sm border-l-4 border-gray-300 p-5">
-        <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">TOTAL KEBUTUHAN ANGGARAN</div>
-        <div className="text-2xl font-black text-gray-800">{formatRupiah(budgetSummary.totalKebutuhan)}</div>
-      </div>
-      <div className="bg-white rounded-xl shadow-sm border-l-4 border-emerald-600 p-5">
-        <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">TARGET DANA MASUK</div>
-        <div className="text-2xl font-black text-emerald-700">{formatRupiah(budgetSummary.targetDanaMasuk)}</div>
-      </div>
-      <div className="bg-white rounded-xl shadow-sm border-l-4 border-[#C1272D] p-5">
-        <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">SELISIH (DEFISIT)</div>
-        <div className="text-2xl font-black text-[#C1272D]">{formatRupiah(budgetSummary.selisih)}</div>
-      </div>
-    </div>
 
-    {/* Susunan Panitia */}
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-      <div className="p-5 pb-3">
-        <h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2">
-          <span>👥</span> Susunan Panitia
-        </h3>
-        <p className="text-sm text-gray-500 mt-1">Panitia HUT RI ke-81 — Perumahan Ciptaland Blok Mawar (RT 002 / RW 014)</p>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-[#C1272D] text-white">
-              <th className="text-left px-4 py-3 font-semibold">Jabatan</th>
-              <th className="text-left px-4 py-3 font-semibold">Nama</th>
-            </tr>
-          </thead>
-          <tbody>
-            {([
-              { jabatan: 'Ketua Penasehat', nama: 'Jamiat' },
-              { jabatan: 'Ketua Pembina', nama: 'Syamsul Piliano' },
-              { jabatan: 'Penanggung Jawab', nama: 'Eka Rista Y' },
-              { jabatan: 'Ketua Panitia', nama: 'Bayu S,Permana (0812-8839-5550)' },
-              { jabatan: 'Wakil Ketua', nama: 'Sugiono (0831-8395-0205)' },
-              { jabatan: 'Sekretaris', nama: 'Lani (0813-7116-2792)' },
-              { jabatan: 'Bendahara I', nama: 'Aulia Komari (0813-6475-5007)' },
-              { jabatan: 'Bendahara II', nama: 'Puput (0831-8330-3884)' },
-            ] as const).map((row, i) => (
-              <tr key={i} className={i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}>
-                <td className="px-4 py-3 font-medium">{row.jabatan}</td>
-                <td className="px-4 py-3">{row.nama}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-)}
+        {activeTab === 'ringkasan' && (
+          <div className="space-y-6">
+            {/* 3 Cards Top - Exactly like image */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-xl shadow-sm border-l-4 border-gray-300 p-5">
+                <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">TOTAL KEBUTUHAN ANGGARAN</div>
+                <div className="text-2xl font-black text-gray-800">{formatRupiah(budgetSummary.totalKebutuhan)}</div>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm border-l-4 border-emerald-600 p-5">
+                <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">TARGET DANA MASUK</div>
+                <div className="text-2xl font-black text-emerald-700">{formatRupiah(budgetSummary.targetDanaMasuk)}</div>
+              </div>
+              <div className="bg-white rounded-xl shadow-sm border-l-4 border-[#C1272D] p-5">
+                <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">SELISIH (DEFISIT)</div>
+                <div className="text-2xl font-black text-[#C1272D]">{formatRupiah(budgetSummary.selisih)}</div>
+              </div>
+            </div>
+
+            {/* Susunan Panitia */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-5 pb-3">
+                <h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2">
+                  <span>👥</span> Susunan Panitia
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">Panitia HUT RI ke-81 — Perumahan Ciptaland Blok Mawar (RT 002 / RW 014)</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-[#C1272D] text-white">
+                      <th className="text-left px-4 py-3 font-semibold">Jabatan</th>
+                      <th className="text-left px-4 py-3 font-semibold">Nama</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { jabatan: 'Ketua Penasehat', nama: 'Jamiat' },
+                      { jabatan: 'Ketua Pembina', nama: 'Syamsul Piliano' },
+                      { jabatan: 'Penanggung Jawab', nama: 'Eka Rista Y' },
+                      { jabatan: 'Ketua Panitia', nama: 'Bayu S,Permana (0812-8839-5550)' },
+                      { jabatan: 'Wakil Ketua', nama: 'Sugiono (0831-8395-0205)' },
+                      { jabatan: 'Sekretaris', nama: 'Lani (0813-7116-2792)' },
+                      { jabatan: 'Bendahara I', nama: 'Aulia Komari (0813-6475-5007)' },
+                      { jabatan: 'Bendahara II', nama: 'Puput (0831-8330-3884)' },
+                    ].map((row, i) => (
+                      <tr key={i} className={i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}>
+                        <td className="px-4 py-3 font-medium">{row.jabatan}</td>
+                        <td className="px-4 py-3">{row.nama}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div> 
+
+
 
             {/* Jenis Acara */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
