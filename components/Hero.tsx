@@ -96,7 +96,7 @@ export default function Hero() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto w-full px-2 animate-fade-in-up animation-delay-500">
           {[
             { value: '10+', label: 'Lomba', icon: '🏆' },
-            { value: 'Rp 2.5Jt', label: 'Total Hadiah', icon: '💰' },
+            { value: 'Raihlah', label: 'Total Hadiah', icon: '💰' },
             { value: '18', label: 'Rundown', icon: '📋' },
             { value: '17 Agu', label: '2026', icon: '📅' },
           ].map((stat, i) => (
