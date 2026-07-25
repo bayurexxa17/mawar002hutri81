@@ -64,7 +64,7 @@ export default function Footer() {
                 <div>
                   <div className="text-gray-400 text-sm">Penanggung Jawab</div>
                   <a href="tel:082171299984" className="text-white hover:text-red-400 transition text-sm font-medium">
-                    0821-7129-9984 - Eka Rista Y
+                    0821-7129-9984
                   </a>
                 </div>
               </li>
