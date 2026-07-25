@@ -12,15 +12,11 @@ export interface RegistrationPayload {
   source?: string;
 }
 
-// Fungsi untuk mengirim data pendaftaran ke Supabase Cloud
+// Fungsi untuk mengirim data pendaftaran langsung ke Supabase Cloud
 export async function submitRegistration(payload: RegistrationPayload) {
   try {
-    // 1. Simpan juga ke localStorage sebagai cadangan offline di HP/browser pendaftar
-    const existing = JSON.parse(localStorage.getItem('mawar81_registrations') || '[]');
-    localStorage.setItem('mawar81_registrations', JSON.stringify([payload, ...existing]));
-
-    // 2. Kirim data secara langsung ke database Supabase Cloud
-    const { error } = await supabase
+    // Kirim data secara langsung ke database Supabase Cloud
+    const { data, error } = await supabase
       .from('registrations')
       .insert([
         {
@@ -32,22 +28,23 @@ export async function submitRegistration(payload: RegistrationPayload) {
           catatan: payload.catatan || '',
           waktu: payload.waktu,
         }
-      ]);
+      ])
+      .select();
 
     if (error) {
-      console.error('Error Supabase:', error);
-      // Meskipun gagal ke cloud (misal gangguan internet), tetap sukses secara lokal agar user tidak panik
-      return { success: true, id: payload.id };
+      console.error('Error Supabase detail:', error);
+      alert(`Gagal menyimpan ke Database Cloud: ${error.message}`);
+      throw error;
     }
 
-    return { success: true, id: payload.id };
-  } catch (err) {
+    return { success: true, id: payload.id, data };
+  } catch (err: any) {
     console.error('Gagal menyimpan:', err);
-    return { success: true, id: payload.id };
+    throw err;
   }
 }
 
-// Fungsi untuk mengambil data di panel Admin (Dashboard)
+// Fungsi untuk mengambil data khusus dari Supabase Cloud
 export async function getRegistrations() {
   try {
     const { data, error } = await supabase
@@ -55,14 +52,15 @@ export async function getRegistrations() {
       .select('*')
       .order('waktu', { ascending: false });
 
-    if (error || !data || data.length === 0) {
-      // Fallback ke localStorage jika data di cloud kosong
-      return JSON.parse(localStorage.getItem('mawar81_registrations') || '[]');
+    if (error) {
+      console.error('Error mengambil data dari Supabase:', error);
+      return [];
     }
 
-    return data;
+    return data || [];
   } catch (err) {
-    return JSON.parse(localStorage.getItem('mawar81_registrations') || '[]');
+    console.error('Exception saat mengambil data:', err);
+    return [];
   }
 }
 
