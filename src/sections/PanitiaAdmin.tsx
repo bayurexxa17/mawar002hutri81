@@ -12,7 +12,19 @@ export default function PanitiaAdmin() {
   // Ambil data online dari Supabase dan aktifkan Realtime listener
   useEffect(() => {
     const auth = localStorage.getItem('hutri-admin-auth');
-    if (auth === 'true') setIsAuth(true);
+    
+    // Cek parameter URL untuk login otomatis dan bersihkan teks admin dari URL
+    const params = new URLSearchParams(window.location.search);
+    const adminParam = params.get('admin');
+    const allowed = ['mawar81', 'admin81', 'panitia81', 'greenbay81'];
+
+    if (auth === 'true' || (adminParam && allowed.includes(adminParam.toLowerCase()))) {
+      setIsAuth(true);
+      localStorage.setItem('hutri-admin-auth', 'true');
+      
+      // BERSIHKAN URL DARI PARAMETER ?admin=... SECARA OTOMATIS
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
 
     fetchDataFromCloud();
 
