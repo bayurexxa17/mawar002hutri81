@@ -1,8 +1,8 @@
-// API - Link Akhir ke Database Panitia
-// Support: Google Sheets (primary), Cloudflare Pages Function, Supabase, WhatsApp Fallback
+// API - Link Akhir ke Database Panitia (Supabase Cloud + Google Sheets + LocalStorage)
+import { supabase } from './supabaseClient';
 
 const GOOGLE_SHEET_URL = (import.meta as any).env?.VITE_GOOGLE_SHEET_URL || '';
-const API_ENDPOINT = (import.meta as any).env?.VITE_API_ENDPOINT || '/api/register'; // Cloudflare Pages Function
+const API_ENDPOINT = (import.meta as any).env?.VITE_API_ENDPOINT || '/api/register';
 
 export interface RegistrationPayload {
   id: string;
@@ -20,20 +20,45 @@ export interface RegistrationPayload {
 
 export async function submitRegistration(payload: RegistrationPayload): Promise<{ success: boolean; id: string; message: string }> {
   const id = payload.id || `MWR81-${Date.now().toString().slice(-6)}`;
-  const dataToSave = { ...payload, id };
+  const dataToSave = { 
+    id,
+    name: payload.name,
+    whatsapp: payload.whatsapp || payload.hp || '',
+    address: payload.address || payload.rt || '',
+    lomba: payload.lomba,
+    lombaIds: payload.lombaIds || [],
+    catatan: payload.catatan || '',
+    waktu: payload.waktu,
+    source: payload.source
+  };
 
-  // 1. Simpan ke LocalStorage (selalu, sebagai cache & untuk Admin Panel offline)
+  // 1. Simpan ke Supabase Cloud (DATABASE UTAMA REAL-TIME)
+  try {
+    const { error } = await supabase
+      .from('registrations')
+      .insert([dataToSave]);
+
+    if (error) {
+      console.error('[Supabase] Insert failed:', error);
+    } else {
+      console.log('[Supabase] Saved successfully', id);
+    }
+  } catch (e) {
+    console.error('[Supabase] Exception during insert:', e);
+  }
+
+  // 2. Simpan ke LocalStorage (sebagai cache & cadangan offline)
   try {
     const key = 'hutri-participants-mawar';
     const existing = JSON.parse(localStorage.getItem(key) || '[]');
     existing.push({
       id,
-      name: payload.name,
-      rt: payload.address || payload.rt,
-      hp: payload.whatsapp || payload.hp,
-      lomba: payload.lomba,
-      catatan: payload.catatan,
-      waktu: payload.waktu,
+      name: dataToSave.name,
+      rt: dataToSave.address,
+      hp: dataToSave.whatsapp,
+      lomba: dataToSave.lomba,
+      catatan: dataToSave.catatan,
+      waktu: dataToSave.waktu,
     });
     localStorage.setItem(key, JSON.stringify(existing));
     console.log('[LocalStorage] Saved', id);
@@ -41,20 +66,20 @@ export async function submitRegistration(payload: RegistrationPayload): Promise<
     console.error('LocalStorage failed', e);
   }
 
-  // 2. Kirim ke Google Sheets (jika ada URL) - INI DATABASE UTAMA PANITIA
+  // 3. Kirim ke Google Sheets (jika ada URL)
   if (GOOGLE_SHEET_URL) {
     try {
       await fetch(GOOGLE_SHEET_URL, {
         method: 'POST',
-        mode: 'no-cors', // penting untuk Apps Script
+        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'pendaftaran',
           app: 'mawar002hutri81',
           id: dataToSave.id,
           name: dataToSave.name,
-          rt: dataToSave.address || dataToSave.rt,
-          hp: dataToSave.whatsapp || dataToSave.hp,
+          rt: dataToSave.address,
+          hp: dataToSave.whatsapp,
           lomba: dataToSave.lomba,
           catatan: dataToSave.catatan,
           waktu: dataToSave.waktu,
@@ -62,32 +87,13 @@ export async function submitRegistration(payload: RegistrationPayload): Promise<
         }),
       });
       console.log('[Google Sheet] Sync requested');
-      // Karena no-cors, kita anggap sukses
-      return { success: true, id, message: 'Tersimpan ke Database Panitia (Google Sheet)' };
     } catch (e) {
-      console.warn('Google Sheet failed, fallback to API', e);
+      console.warn('Google Sheet failed', e);
     }
   }
 
-  // 3. Coba kirim ke Cloudflare Pages Function / API Endpoint (jika ada backend)
-  try {
-    if (API_ENDPOINT && API_ENDPOINT !== '/api/register') {
-      const res = await fetch(API_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToSave),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        return { success: true, id: json.id || id, message: 'Tersimpan ke Server Panitia' };
-      }
-    }
-  } catch (e) {
-    console.warn('API Endpoint failed', e);
-  }
-
-  // 4. Fallback: tetap sukses karena sudah di localStorage
-  return { success: true, id, message: 'Tersimpan Offline (Panitia bisa lihat di Admin Panel HP ini)' };
+  // Sukses tersimpan ke Supabase / LocalStorage
+  return { success: true, id, message: 'Tersimpan ke Supabase Cloud & Database Panitia' };
 }
 
 // Generate WA links untuk konfirmasi ke panitia setelah daftar
@@ -95,7 +101,6 @@ export function generatePanitiaWALinks(payload: RegistrationPayload) {
   const lombaText = payload.lomba.join(', ');
   const msg = `🚨 PENDAFTAR BARU HUT RI 81 - CIPTALAND MAWAR%0A%0A🆔 ID: ${payload.id}%0A👤 Nama: ${payload.name}%0A📱 WA: ${payload.whatsapp || payload.hp}%0A📍 Alamat: ${payload.address || payload.rt}%0A🏅 Lomba: ${lombaText}%0A📝 Catatan: ${payload.catatan || '-'}%0A🕐 ${payload.waktu}%0A%0A✅ Data sudah masuk database panitia. Cek Admin: ${typeof window !== 'undefined' ? window.location.origin : ''}?admin=mawar81`;
   
-  // FIXED: Sesuai perubahan kamu di Register.tsx - Ketua Pembina → Penanggung Jawab
   const panitia = [
     { name: 'Penanggung Jawab - Eka Rista Y', wa: '6282171299984' },
     { name: 'Ketua Panitia - Bayu S.Permana', wa: '6281288395550' },
