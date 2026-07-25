@@ -28,34 +28,28 @@ interface Donor {
   isAnon: boolean;
 }
 
-// Pendaftaran state (Terhubung langsung ke Supabase Cloud)
-  const [participants, setParticipants] = useState<Participant[]>([]);
+export default function Dashboard() {
+  const [activeTab, setActiveTab] = useState<TabType>('ringkasan');
+  const [detailModal, setDetailModal] = useState<string | null>(null);
+  const [panduanModal, setPanduanModal] = useState<string | null>(null);
+  
+  // Pendaftaran state
+  const [participants, setParticipants] = useState<Participant[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const saved = localStorage.getItem('hutri-participants-mawar');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [showBuktiDaftar, setShowBuktiDaftar] = useState<Participant | null>(null);
   const [formData, setFormData] = useState({ name: '', rt: '', hp: '', lomba: [] as string[], catatan: '' });
 
-  // Donasi state (Terhubung langsung ke Supabase Cloud)
-  const [donors, setDonors] = useState<Donor[]>([]);
+  // Donasi state
+  const [donors, setDonors] = useState<Donor[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const saved = localStorage.getItem('hutri-donors-mawar');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [showBuktiDonasi, setShowBuktiDonasi] = useState<Donor | null>(null);
   const [donasiForm, setDonasiForm] = useState({ name: '', alamat: '', jumlah: '', pesan: '', isAnon: false, hp: '' });
-
-  // Ambil data real-time dari Supabase Cloud saat Dashboard dimuat
-  useEffect(() => {
-    async function fetchCloudData() {
-      try {
-        const cloudParticipants = await getRegistrations();
-        if (cloudParticipants && Array.isArray(cloudParticipants)) {
-          setParticipants(cloudParticipants);
-        }
-        const cloudDonations = await getDonations();
-        if (cloudDonations && Array.isArray(cloudDonations)) {
-          setDonors(cloudDonations);
-        }
-      } catch (err) {
-        console.warn('Gagal memuat data dari Supabase Cloud:', err);
-      }
-    }
-    fetchCloudData();
-  }, []);
 
   const tabs = [
     { id: 'ringkasan' as TabType, label: 'Ringkasan', icon: '📊', activeColor: 'bg-[#C1272D] text-white' },
@@ -77,8 +71,12 @@ interface Donor {
       catatan: formData.catatan,
       waktu: new Date().toLocaleString('id-ID'),
     };
-    
-    // Kirim langsung ke Supabase Cloud
+    const updated = [...participants, newParticipant];
+    setParticipants(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hutri-participants-mawar', JSON.stringify(updated));
+    }
+    // Juga kirim ke database panitia (Google Sheets + WA) - LINK AKHIR SERVER
     try {
       await submitRegistration({
         id: newId,
@@ -92,51 +90,11 @@ interface Donor {
         waktu: new Date().toLocaleString('id-ID'),
         source: 'dashboard',
       });
-      const updated = [newParticipant, ...participants];
-      setParticipants(updated);
     } catch (err) {
-      console.error('Gagal menyimpan pendaftaran ke Cloud:', err);
-      alert('Gagal menyimpan ke database Cloud. Periksa koneksi internet.');
-      return;
+      console.warn('Sync ke Google Sheet gagal, tapi data tetap tersimpan lokal', err);
     }
-    
     setShowBuktiDaftar(newParticipant);
     setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
-  };
-
-  const handleDonasi = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const newId = `DON81-${String(donors.length + 1).padStart(4, '0')}`;
-    const newDonor: Donor = {
-      id: newId,
-      name: donasiForm.isAnon ? 'Hamba Allah' : donasiForm.name,
-      alamat: donasiForm.alamat,
-      jumlah: Number(donasiForm.jumlah),
-      pesan: donasiForm.pesan,
-      waktu: new Date().toLocaleString('id-ID'),
-      isAnon: donasiForm.isAnon,
-    };
-
-    try {
-      await submitDonation({
-        id: newId,
-        name: newDonor.name,
-        alamat: donasiForm.alamat,
-        jumlah: Number(donasiForm.jumlah),
-        pesan: donasiForm.pesan,
-        waktu: newDonor.waktu,
-        isAnon: donasiForm.isAnon,
-      });
-      const updated = [newDonor, ...donors];
-      setDonors(updated);
-    } catch (err) {
-      console.error('Gagal menyimpan donasi ke Cloud:', err);
-      alert('Gagal menyimpan donasi ke database Cloud.');
-      return;
-    }
-
-    setShowBuktiDonasi(newDonor);
-    setDonasiForm({ name: '', alamat: '', jumlah: '', pesan: '', isAnon: false, hp: '' });
   };
 
   const handleDonasi = (e: React.FormEvent) => {
@@ -222,14 +180,12 @@ interface Donor {
                   </thead>
                   <tbody>
                     {[
-                      { jabatan: 'Ketua Penasehat', nama: 'Jamiat' },
-                      { jabatan: 'Ketua Pembina', nama: 'Syamsul Piliano' },
-                      { jabatan: 'Penanggung Jawab', nama: 'Eka Rista Y' },
+                      { jabatan: 'Penanggung Jawab', nama: 'Eka Rista Y (0821-7129-9984)' },
                       { jabatan: 'Ketua Panitia', nama: 'Bayu S.Permana (0812-8839-5550)' },
                       { jabatan: 'Wakil Ketua', nama: 'Sugiono (0831-8395-0205)' },
                       { jabatan: 'Sekretaris', nama: 'Lani (0813-7116-2792)' },
-                      { jabatan: 'Bendahara I', nama: 'Aulia Komari (0813-6475-5007)' },
-                      { jabatan: 'Bendahara II', nama: 'Puput (0831-8330-3884)' },
+                      { jabatan: 'Bendahara', nama: 'Aulia Komari & Puput' },
+                      { jabatan: 'MC', nama: 'M.Dzaki & M.Haikal' },
                     ].map((row, i) => (
                       <tr key={i} className={i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}>
                         <td className="px-4 py-3 font-medium">{row.jabatan}</td>
@@ -327,7 +283,7 @@ interface Donor {
               <div className="p-3">
                 <div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-3 flex gap-2 text-sm text-gray-700">
                   <span>📌</span>
-                  <div>Beberapa nama vendor/PJ (Kelong Baba, Alfamart, 	Indomaret, 	Developer Ciptaland, 	Biznet Home, 	XL Axiata, Proxinet,	IndiHome, 	Link Net / FirstMedia ) belum terkonfirmasi — mohon divalidasi ke panitia terkait sebelum finalisasi.</div>
+                  <div>Beberapa nama vendor/PJ (MC, Kelong Baba, Villa Bambu, Wesli, Dito Bor Ikan) belum terkonfirmasi — mohon divalidasi ke panitia terkait sebelum finalisasi.</div>
                 </div>
               </div>
             </div>
