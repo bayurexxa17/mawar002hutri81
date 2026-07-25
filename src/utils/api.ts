@@ -19,9 +19,11 @@ export async function submitRegistration(payload: RegistrationPayload) {
       .from('pendaftar')
       .insert([
         {
-          nama: payload.name,       // Menyesuaikan kolom 'nama' di Supabase
-          telepon: payload.whatsapp, // Menyesuaikan kolom 'telepon' di Supabase
-          // Jika ingin menyimpan data lomba/alamat/catatan, Anda bisa tambahkan kolom baru di Supabase (tipe text)
+          nama: payload.name,
+          telepon: payload.whatsapp,
+          rt: payload.address, // Menyimpan alamat/RT ke kolom rt yang baru dibuat
+          lomba: payload.lomba.join(', '), // Menyimpan daftar lomba (diubah jadi string) ke kolom lomba
+          catatan: payload.catatan || ''
         }
       ])
       .select();
@@ -57,9 +59,9 @@ export async function getRegistrations() {
       id: String(item.id),
       name: item.nama || '',
       whatsapp: item.telepon || '',
-      address: '-',
-      lomba: [item.kategori || 'Umum'],
-      catatan: '',
+      address: item.rt || '-', // Mengambil data dari kolom rt
+      lomba: item.lomba ? item.lomba.split(', ') : [item.kategori || 'Umum'], // Mengambil data lomba
+      catatan: item.catatan || '',
       waktu: item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : ''
     }));
   } catch (err) {
