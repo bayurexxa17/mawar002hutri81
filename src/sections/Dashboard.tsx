@@ -83,7 +83,6 @@ export default function Dashboard() {
       waktu: new Date().toLocaleString('id-ID'),
     };
     
-    // Kirim langsung ke Supabase Cloud
     try {
       await submitRegistration({
         id: newId,
@@ -109,7 +108,6 @@ export default function Dashboard() {
     setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
   };
 
-  // Fungsi handleDonasi yang digabung & bersih (Cloud Supabase)
   const handleDonasi = async (e: React.FormEvent) => {
     e.preventDefault();
     const newId = `DON81-${String(donors.length + 1).padStart(4, '0')}`;
@@ -150,7 +148,7 @@ export default function Dashboard() {
   return (
     <section id="ringkasan" className="py-8 px-2 sm:px-4 bg-[#F5F5F0] min-h-screen w-full max-w-[100vw] overflow-x-hidden">
       <div className="max-w-7xl mx-auto w-full">
-        {/* Tab Navigation - Fix mobile overflow */}
+        {/* Tab Navigation */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-2 mb-6">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mb-1 snap-x">
             {tabs.map((tab) => (
