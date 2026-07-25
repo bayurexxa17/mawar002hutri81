@@ -13,7 +13,7 @@ export const videos: VideoItem[] = [
     id: 1,
     title: 'Upacara Bendera HUT RI 2024',
     category: 'upacara',
-    thumbnail: 'images/'Upacara Bendera 1.png',
+    thumbnail: 'images/Upacara Bendera 1.png',
     videoUrl: 'https://www.youtube.com/watch?v=UuPaS81n0xg&list=RDUuPaS81n0xg&start_radio=1',
     duration: '1:46',
     year: 2026
