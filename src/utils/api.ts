@@ -21,8 +21,8 @@ export async function submitRegistration(payload: RegistrationPayload) {
         {
           nama: payload.name,
           telepon: payload.whatsapp,
-          rt: payload.address, // Menyimpan alamat/RT ke kolom rt yang baru dibuat
-          lomba: payload.lomba.join(', '), // Menyimpan daftar lomba (diubah jadi string) ke kolom lomba
+          rt: payload.address, // Menyimpan alamat/RT ke kolom rt
+          lomba: payload.lomba.join(', '), // Menyimpan daftar lomba ke kolom lomba
           catatan: payload.catatan || ''
         }
       ])
@@ -54,13 +54,13 @@ export async function getRegistrations() {
       return [];
     }
 
-    // Mapping agar sesuai dengan format yang dibaca oleh tampilan web
+    // Mapping agar sesuai dengan format yang dibaca oleh tampilan web asli
     return (data || []).map((item: any) => ({
       id: String(item.id),
       name: item.nama || '',
       whatsapp: item.telepon || '',
-      address: item.rt || '-', // Mengambil data dari kolom rt
-      lomba: item.lomba ? item.lomba.split(', ') : [item.kategori || 'Umum'], // Mengambil data lomba
+      address: item.rt || '-',
+      lomba: item.lomba ? item.lomba.split(', ') : [item.kategori || 'Umum'],
       catatan: item.catatan || '',
       waktu: item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : ''
     }));
