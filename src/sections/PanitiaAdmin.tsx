@@ -7,28 +7,23 @@ export default function PanitiaAdmin() {
   const [tab, setTab] = useState<'pendaftar' | 'donasi' | 'notif'>('pendaftar');
   const [participants, setParticipants] = useState<any[]>([]);
   const [donors, setDonors] = useState<any[]>([]);
-  const [lastNotif, setLastNotif] = useState<any>(null);
 
-  // Ambil data online dari Supabase dan aktifkan Realtime listener
   useEffect(() => {
+    // 1. Cek apakah sudah login sebelumnya via localStorage
     const auth = localStorage.getItem('hutri-admin-auth');
-    
-    // Cek parameter URL untuk login otomatis dan bersihkan teks admin dari URL
-    const params = new URLSearchParams(window.location.search);
-    const adminParam = params.get('admin');
-    const allowed = ['mawar81', 'admin81', 'panitia81', 'greenbay81'];
+    if (auth === 'true') {
+      setIsAuth(true);
+    }
 
-    if (auth === 'true' || (adminParam && allowed.includes(adminParam.toLowerCase()))) {
+    // 2. Cek apakah URL persis mengandung ?admin (tanpa password di belakangnya)
+    const searchParams = window.location.search;
+    if (searchParams === '?admin') {
       setIsAuth(true);
       localStorage.setItem('hutri-admin-auth', 'true');
-      
-      // BERSIHKAN URL DARI PARAMETER ?admin=... SECARA OTOMATIS
-      window.history.replaceState({}, document.title, window.location.pathname);
     }
 
     fetchDataFromCloud();
 
-    // Realtime Listener untuk tabel pendaftar & donasi
     const channel = supabase
       .channel('public:admin_changes')
       .on(
@@ -49,14 +44,12 @@ export default function PanitiaAdmin() {
   }, []);
 
   const fetchDataFromCloud = async () => {
-    // 1. Ambil data pendaftar dari Supabase
     const { data: dataPendaftar } = await supabase
       .from('pendaftar')
       .select('*')
       .order('id', { ascending: false });
     
     if (dataPendaftar) {
-      // Petakan struktur kolom database dengan benar sesuai kolom asli Supabase
       const formattedParticipants = dataPendaftar.map(p => ({
         id: p.id,
         name: p.nama || '',
@@ -69,7 +62,6 @@ export default function PanitiaAdmin() {
       setParticipants(formattedParticipants);
     }
 
-    // 2. Ambil data donasi dari Supabase
     const { data: dataDonasi } = await supabase
       .from('donasi')
       .select('*')
@@ -102,6 +94,7 @@ export default function PanitiaAdmin() {
   const handleLogout = () => {
     setIsAuth(false);
     localStorage.removeItem('hutri-admin-auth');
+    window.history.replaceState({}, document.title, window.location.pathname);
   };
 
   const handleDeleteParticipant = async (id: string | number) => {
@@ -117,7 +110,7 @@ export default function PanitiaAdmin() {
   const handleClearAll = async () => {
     if (!confirm('HAPUS SEMUA DATA DI CLOUD? Tindakan ini tidak bisa dikembalikan!')) return;
     if (tab === 'pendaftar') {
-      await supabase.from('pendaftar').delete().neq('id', 0); // Hapus semua baris
+      await supabase.from('pendaftar').delete().neq('id', 0);
       setParticipants([]);
     } else if (tab === 'donasi') {
       await supabase.from('donasi').delete().neq('id', 0);
@@ -327,7 +320,7 @@ export default function PanitiaAdmin() {
             <div className="mt-4">
               <h4 className="font-bold mb-2">Link Admin untuk Panitia:</h4>
               <code className="block bg-black text-green-400 p-3 rounded-lg text-xs">
-                {window.location.origin}/?admin=mawar81
+                {window.location.origin}/?admin
               </code>
             </div>
           </div>
