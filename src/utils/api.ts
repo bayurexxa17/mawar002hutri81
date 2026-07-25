@@ -1,91 +1,39 @@
-import { supabase } from './supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 
-export interface RegistrationPayload {
-  id: string;
-  name: string;
-  whatsapp: string;
-  address: string;
-  lomba: string[];
-  lombaIds?: number[];
-  catatan?: string;
-  waktu: string;
-  source?: string;
+// Konfigurasi Supabase (Ganti dengan URL & Anon Key project kamu jika belum sesuai)
+const SUPABASE_URL = 'https://YOUR_SUPABASE_URL.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Fungsi Pendaftaran Lomba
+export async function submitRegistration(data: any) {
+  const { error } = await supabase.from('registrations').insert([data]);
+  if (error) throw error;
+  return true;
 }
 
-// Fungsi untuk mengirim data pendaftaran ke tabel 'pendaftar' Supabase
-export async function submitRegistration(payload: RegistrationPayload) {
-  try {
-    const { data, error } = await supabase
-      .from('pendaftar')
-      .insert([
-        {
-          nama: payload.name,
-          telepon: payload.whatsapp,
-          rt: payload.address, // Menyimpan alamat/RT ke kolom rt
-          lomba: payload.lomba.join(', '), // Menyimpan daftar lomba ke kolom lomba
-          catatan: payload.catatan || ''
-        }
-      ])
-      .select();
-
-    if (error) {
-      console.error('Error Supabase detail:', error);
-      throw error;
-    }
-
-    return { success: true, id: payload.id, data };
-  } catch (err: any) {
-    console.error('Gagal menyimpan:', err);
-    throw err;
-  }
-}
-
-// Fungsi untuk mengambil data dari tabel 'pendaftar' Supabase
 export async function getRegistrations() {
-  try {
-    const { data, error } = await supabase
-      .from('pendaftar')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error mengambil data dari Supabase:', error);
-      return [];
-    }
-
-    // Mapping agar sesuai dengan format yang dibaca oleh tampilan web asli
-    return (data || []).map((item: any) => ({
-      id: String(item.id),
-      name: item.nama || '',
-      whatsapp: item.telepon || '',
-      address: item.rt || '-',
-      rt: item.rt || '-',
-      hp: item.telepon || '',
-      lomba: item.lomba ? item.lomba.split(', ') : [item.kategori || 'Umum'],
-      catatan: item.catatan || '',
-      waktu: item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : ''
-    }));
-  } catch (err) {
-    console.error('Exception saat mengambil data:', err);
+  const { data, error } = await supabase.from('registrations').select('*').order('waktu', { ascending: false });
+  if (error) {
+    console.warn('Gagal ambil data registrasi:', error);
     return [];
   }
+  return data || [];
 }
 
-// Generator link WhatsApp konfirmasi panitia
-export function generatePanitiaWALinks(payload: RegistrationPayload) {
-  const panitiaList = [
-    { name: 'Bayu S.Permana (Ketua)', wa: '6281288395550' },
-    { name: 'Eka Rista Y (PJ)', wa: '6282171299984' },
-    { name: 'Sugiono (Wakil)', wa: '6283183950205' },
-  ];
+// Fungsi Donasi (INI YANG SEBELUMNYA KURANG)
+export async function submitDonation(data: any) {
+  const { error } = await supabase.from('donations').insert([data]);
+  if (error) throw error;
+  return true;
+}
 
-  const text = encodeURIComponent(
-    `Halo Panitia HUT RI Ke-81 Ciptaland Mawar,\n\nSaya ingin konfirmasi pendaftaran lomba:\n- ID: *${payload.id}*\n- Nama: *${payload.name}*\n- Alamat: *${payload.address}*\n- No WA: *${payload.whatsapp}*\n- Lomba: *${payload.lomba.join(', ')}*\n\nMohon verifikasinya, terima kasih!`
-  );
-
-  return panitiaList.map(p => ({
-    name: p.name,
-    wa: p.wa,
-    link: `https://wa.me/${p.wa}?text=${text}`
-  }));
+export async function getDonations() {
+  const { data, error } = await supabase.from('donations').select('*').order('waktu', { ascending: false });
+  if (error) {
+    console.warn('Gagal ambil data donasi:', error);
+    return [];
+  }
+  return data || [];
 }
