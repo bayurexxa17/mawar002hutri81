@@ -44,15 +44,15 @@ export default function PanitiaAdmin() {
       .order('id', { ascending: false });
     
     if (dataPendaftar) {
-      // Petakan struktur kolom database agar sesuai dengan tampilan tabel admin
+      // Petakan struktur kolom database dengan benar sesuai kolom asli Supabase
       const formattedParticipants = dataPendaftar.map(p => ({
         id: p.id,
-        name: p.nama ? p.nama.split(' (')[0] : '',
-        rt: p.nama && p.nama.includes('(') ? p.nama.split('(')[1].replace(')', '') : '-',
+        name: p.nama || '',
+        rt: p.rt || '-',
         hp: p.telepon || '-',
-        lomba: p.kategori ? p.kategori.split(', ') : [],
-        waktu: new Date(p.created_at).toLocaleString('id-ID'),
-        catatan: ''
+        lomba: p.lomba ? p.lomba.split(', ').map((s: string) => s.trim()) : [],
+        waktu: p.created_at ? new Date(p.created_at).toLocaleString('id-ID') : '',
+        catatan: p.catatan || ''
       }));
       setParticipants(formattedParticipants);
     }
@@ -70,7 +70,7 @@ export default function PanitiaAdmin() {
         alamat: '-',
         jumlah: Number(d.nominal) || 0,
         pesan: d.pesan || '-',
-        waktu: new Date(d.created_at).toLocaleString('id-ID')
+        waktu: d.created_at ? new Date(d.created_at).toLocaleString('id-ID') : ''
       }));
       setDonors(formattedDonors);
     }
