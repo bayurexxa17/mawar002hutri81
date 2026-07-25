@@ -6,7 +6,7 @@ export interface RegistrationPayload {
   whatsapp: string;
   address: string;
   lomba: string[];
-  lombaIds: number[];
+  lombaIds?: number[];
   catatan?: string;
   waktu: string;
   source?: string;
@@ -30,7 +30,6 @@ export async function submitRegistration(payload: RegistrationPayload) {
 
     if (error) {
       console.error('Error Supabase detail:', error);
-      alert(`Gagal menyimpan ke Database Cloud: ${error.message}`);
       throw error;
     }
 
@@ -60,6 +59,8 @@ export async function getRegistrations() {
       name: item.nama || '',
       whatsapp: item.telepon || '',
       address: item.rt || '-',
+      rt: item.rt || '-',
+      hp: item.telepon || '',
       lomba: item.lomba ? item.lomba.split(', ') : [item.kategori || 'Umum'],
       catatan: item.catatan || '',
       waktu: item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : ''
