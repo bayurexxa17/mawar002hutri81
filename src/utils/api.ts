@@ -12,20 +12,16 @@ export interface RegistrationPayload {
   source?: string;
 }
 
-// Fungsi untuk mengirim data pendaftaran langsung ke Supabase Cloud (tabel: pendaftar)
+// Fungsi untuk mengirim data pendaftaran ke tabel 'pendaftar' Supabase
 export async function submitRegistration(payload: RegistrationPayload) {
   try {
     const { data, error } = await supabase
       .from('pendaftar')
       .insert([
         {
-          id: payload.id,
-          name: payload.name,
-          whatsapp: payload.whatsapp,
-          address: payload.address,
-          lomba: payload.lomba,
-          catatan: payload.catatan || '',
-          waktu: payload.waktu,
+          nama: payload.name,       // Menyesuaikan kolom 'nama' di Supabase
+          telepon: payload.whatsapp, // Menyesuaikan kolom 'telepon' di Supabase
+          // Jika ingin menyimpan data lomba/alamat/catatan, Anda bisa tambahkan kolom baru di Supabase (tipe text)
         }
       ])
       .select();
@@ -43,20 +39,29 @@ export async function submitRegistration(payload: RegistrationPayload) {
   }
 }
 
-// Fungsi untuk mengambil data khusus dari Supabase Cloud (tabel: pendaftar)
+// Fungsi untuk mengambil data dari tabel 'pendaftar' Supabase
 export async function getRegistrations() {
   try {
     const { data, error } = await supabase
       .from('pendaftar')
       .select('*')
-      .order('waktu', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error mengambil data dari Supabase:', error);
       return [];
     }
 
-    return data || [];
+    // Mapping agar sesuai dengan format yang dibaca oleh tampilan web
+    return (data || []).map((item: any) => ({
+      id: String(item.id),
+      name: item.nama || '',
+      whatsapp: item.telepon || '',
+      address: '-',
+      lomba: [item.kategori || 'Umum'],
+      catatan: '',
+      waktu: item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : ''
+    }));
   } catch (err) {
     console.error('Exception saat mengambil data:', err);
     return [];
