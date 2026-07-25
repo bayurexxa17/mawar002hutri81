@@ -78,14 +78,11 @@ interface Donor {
       waktu: new Date().toLocaleString('id-ID'),
     };
     
-    // Kirim langsung ke Supabase Cloud
     try {
       await submitRegistration({
         id: newId,
         name: formData.name,
         whatsapp: formData.hp,
-        rt: formData.rt,
-        hp: formData.hp,
         address: formData.rt,
         lomba: formData.lomba,
         catatan: formData.catatan,
@@ -96,12 +93,45 @@ interface Donor {
       setParticipants(updated);
     } catch (err) {
       console.error('Gagal menyimpan pendaftaran ke Cloud:', err);
-      alert('Gagal menyimpan ke database Cloud. Periksa koneksi internet.');
       return;
     }
     
     setShowBuktiDaftar(newParticipant);
     setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
+  };
+
+  const handleDonasi = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const newId = `DON81-${String(donors.length + 1).padStart(4, '0')}`;
+    const newDonor: Donor = {
+      id: newId,
+      name: donasiForm.isAnon ? 'Hamba Allah' : donasiForm.name,
+      alamat: donasiForm.alamat,
+      jumlah: Number(donasiForm.jumlah),
+      pesan: donasiForm.pesan,
+      waktu: new Date().toLocaleString('id-ID'),
+      isAnon: donasiForm.isAnon,
+    };
+
+    try {
+      await submitDonation({
+        id: newId,
+        name: newDonor.name,
+        alamat: donasiForm.alamat,
+        jumlah: Number(donasiForm.jumlah),
+        pesan: donasiForm.pesan,
+        waktu: newDonor.waktu,
+        isAnon: donasiForm.isAnon,
+      });
+      const updated = [newDonor, ...donors];
+      setDonors(updated);
+    } catch (err) {
+      console.error('Gagal menyimpan donasi ke Cloud:', err);
+      return;
+    }
+
+    setShowBuktiDonasi(newDonor);
+    setDonasiForm({ name: '', alamat: '', jumlah: '', pesan: '', isAnon: false, hp: '' });
   };
 
   const handleDonasi = async (e: React.FormEvent) => {
