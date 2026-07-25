@@ -85,7 +85,7 @@ export default function Register() {
               <span className="text-4xl">✅</span>
             </div>
             <h2 className="text-3xl font-black text-gray-800 mb-2">Pendaftaran Berhasil!</h2>
-            <p className="text-gray-600 mb-6">Data kamu sudah masuk ke Database Panitia</p>
+            <p className="text-gray-600 mb-6">Data kamu sudah masuk ke Database Supabase Cloud Panitia</p>
             
             <div className="bg-gradient-to-br from-red-50 to-white border-2 border-dashed border-[#C1272D] rounded-2xl p-6 text-left max-w-md mx-auto">
               <div className="space-y-3 text-sm">
@@ -107,7 +107,7 @@ export default function Register() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Status</span>
-                  <span className="text-green-600 font-bold">✅ Terkirim ke Panitia</span>
+                  <span className="text-green-600 font-bold">✅ Terkirim ke Cloud</span>
                 </div>
               </div>
               <p className="text-[11px] text-gray-500 mt-4 text-center">📸 Screenshot bukti ini & tunjukkan saat registrasi ulang jam 06.00 di Fasum</p>
@@ -155,18 +155,18 @@ export default function Register() {
       <div className="max-w-4xl mx-auto w-full">
         <div className="text-center mb-8 sm:mb-12 px-2">
           <span className="inline-block bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full font-bold text-xs sm:text-sm mb-4">
-            PENDAFTARAN - TERHUBUNG DATABASE PANITIA
+            PENDAFTARAN - TERHUBUNG CLOUD SUPABASE
           </span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mt-2">
             Daftar Lomba Sekarang!
           </h2>
           <div className="w-24 h-1.5 bg-white mx-auto mt-4 sm:mt-6 rounded-full" />
           <p className="text-red-100 mt-3 sm:mt-4 text-xs sm:text-sm px-2">
-            Data otomatis masuk ke Google Sheets Panitia + LocalStorage + Notif WA
+            Data otomatis masuk ke Database Cloud Supabase Panitia + Notif WA
           </p>
           <div className="mt-3 inline-flex items-center gap-2 bg-green-500/20 border border-green-300/30 text-green-100 text-[10px] sm:text-xs px-3 py-1.5 rounded-full">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-            Server: { (import.meta as any).env?.VITE_GOOGLE_SHEET_URL ? '✅ Google Sheets Connected' : '⚠️ Local Mode (Setup Google Sheet di PANITIA_SETUP.md)' }
+            Server: ✅ Supabase Cloud Connected
           </div>
         </div>
 
@@ -265,7 +265,7 @@ export default function Register() {
               {isSubmitting ? (
                 <>
                   <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  Mengirim ke Database Panitia...
+                  Menyimpan ke Cloud Supabase...
                 </>
               ) : (
                 <>
@@ -275,8 +275,7 @@ export default function Register() {
             </button>
             
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-[11px] text-blue-800">
-              <strong>🔗 Alur Data:</strong> Tombol ini akan: 1) Simpan ke LocalStorage (bisa dilihat di ?admin=mawar81) 2) Kirim ke Google Sheets Panitia (jika sudah setup) 3) Generate link WA konfirmasi otomatis ke Ketua Panitia Bayu 0812-8839-5550.
-              <br/>Lihat panduan di <code>PANITIA_SETUP.md</code>
+              <strong>🔗 Alur Data:</strong> Tombol ini akan: 1) Menyimpan langsung ke Database Supabase Cloud 2) Generate link WA konfirmasi otomatis ke Ketua Panitia Bayu 0812-8839-5550.
             </div>
           </form>
 
@@ -310,7 +309,7 @@ export default function Register() {
         {/* Server Info */}
         <div className="mt-6 text-center">
           <p className="text-[11px] text-red-200">
-            Database: LocalStorage + Google Sheets (env: VITE_GOOGLE_SHEET_URL) + WA Gateway • Admin: <a href="?admin=mawar81" className="underline font-bold">?admin=mawar81</a>
+            Database: Supabase Cloud • Admin: <a href="?admin=mawar81" className="underline font-bold">?admin=mawar81</a>
           </p>
         </div>
       </div>
