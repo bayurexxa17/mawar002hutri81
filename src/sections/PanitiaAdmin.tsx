@@ -18,15 +18,11 @@ export default function PanitiaAdmin() {
     const adminValue = params.get('admin');
     const allowed = ['mawar81', 'admin81', 'panitia81', 'greenbay81'];
 
-    // Jika parameter admin berisi password yang benar (misal: ?admin=mawar81)
     if (adminValue && allowed.includes(adminValue.toLowerCase())) {
       setIsAuth(true);
       localStorage.setItem('hutri-admin-auth', 'true');
-      
-      // Hapus kata sandinya dari URL, sehingga hanya menyisakan ?admin saja
       window.history.replaceState({}, document.title, `${window.location.pathname}?admin`);
     } else if (params.has('admin') && !adminValue) {
-      // Jika URL sudah bersih menjadi ?admin saja
       setIsAuth(true);
       localStorage.setItem('hutri-admin-auth', 'true');
     }
