@@ -108,9 +108,9 @@ function notifyPanitiaWA(p: ParticipantDB) {
   // Kita buat notifikasi di browser + simpan log agar panitia cek
   // Untuk auto-kirim beneran, pakai Fonnte / Wablas / WA Gateway
   const panitiaNumbers = [
-    '6281271299984', // Ketua Pembina
-    '6281288395550', // Ketua Panitia Bayu
-    '6283183950205', // Wakil
+    '6282171299984 ', // Penanggung Jawab
+    '6281288395550', // Ketua Panitia
+    '6283183950205', // Wakil Ketua
   ];
   const msg = `🚨 PENDAFTAR BARU HUT RI 81 MAWAR%0A%0A👤 Nama: ${p.name}%0A📍 RT: ${p.rt}%0A📱 HP: ${p.hp}%0A🏅 Lomba: ${p.lomba.join(', ')}%0A🕐 ${p.waktu}%0A%0ABuka Admin: ${window.location.origin}?admin=mawar81`;
   
