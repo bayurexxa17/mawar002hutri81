@@ -12,12 +12,11 @@ export interface RegistrationPayload {
   source?: string;
 }
 
-// Fungsi untuk mengirim data pendaftaran langsung ke Supabase Cloud
+// Fungsi untuk mengirim data pendaftaran langsung ke Supabase Cloud (tabel: pendaftar)
 export async function submitRegistration(payload: RegistrationPayload) {
   try {
-    // Kirim data secara langsung ke database Supabase Cloud
     const { data, error } = await supabase
-      .from('registrations')
+      .from('pendaftar')
       .insert([
         {
           id: payload.id,
@@ -44,11 +43,11 @@ export async function submitRegistration(payload: RegistrationPayload) {
   }
 }
 
-// Fungsi untuk mengambil data khusus dari Supabase Cloud
+// Fungsi untuk mengambil data khusus dari Supabase Cloud (tabel: pendaftar)
 export async function getRegistrations() {
   try {
     const { data, error } = await supabase
-      .from('registrations')
+      .from('pendaftar')
       .select('*')
       .order('waktu', { ascending: false });
 
