@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../utils/supabaseClient';
 
-// Daftar pilihan lomba sesuai dengan gambar
 const daftarLombaOptions = [
   'Lomba Makan Kerupuk',
   'Futsal Mini',
@@ -56,12 +55,16 @@ export default function LandingRegisterForm() {
 
     setLoading(true);
 
+    // Payload ganda untuk mengantisipasi perbedaan nama kolom di database Supabase (Indonesia/Inggris)
     const payload = {
       nama: formData.name.trim(),
+      name: formData.name.trim(),
       telepon: formData.hp.trim(),
+      hp: formData.hp.trim(),
       rt: formData.rt.trim(),
+      address: formData.rt.trim(),
       lomba: formData.lomba.join(', '),
-      catatan: formData.catatan.trim() || 'Terdaftar via Form Landing Page',
+      catatan: formData.catatan.trim() || 'Terdaftar via Landing Page',
     };
 
     try {
@@ -71,13 +74,14 @@ export default function LandingRegisterForm() {
         .select();
 
       if (error) {
-        throw error;
+        console.error('Detail Error Supabase:', error);
+        throw new Error(error.message || JSON.stringify(error));
       }
 
       alert('🎉 Pendaftaran berhasil! Data Anda telah tersimpan otomatis ke database.');
       setFormData({ name: '', hp: '', rt: '', lomba: [], catatan: '' });
-    } catch (err: any) {
-      alert('Gagal menyimpan pendaftaran: ' + (err.message || 'Terjadi kesalahan pada koneksi database.'));
+    } cat (err: any) {
+      alert('Gagal menyimpan ke database Supabase:\n' + (err.message || 'Periksa koneksi atau struktur kolom tabel pendaftar.'));
     } finally {
       setLoading(false);
     }
@@ -85,7 +89,6 @@ export default function LandingRegisterForm() {
 
   return (
     <div className="bg-[#C1272D] py-12 px-4 min-h-screen flex flex-col items-center">
-      {/* Header Section */}
       <div className="text-center text-white max-w-2xl mb-8">
         <h2 className="text-3xl sm:text-4xl font-black mb-3 tracking-wide">Daftar Lomba Sekarang!</h2>
         <div className="w-24 h-1 bg-white mx-auto mb-4 rounded-full"></div>
@@ -98,7 +101,6 @@ export default function LandingRegisterForm() {
         </div>
       </div>
 
-      {/* Form Card */}
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl p-6 sm:p-8 text-gray-800">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
@@ -156,7 +158,7 @@ export default function LandingRegisterForm() {
                     <input
                       type="checkbox"
                       checked={isChecked}
-                      onChange={() => {}} // Ditangani oleh wrapper div agar area klik lebih luas
+                      onChange={() => {}}
                       className="mt-0.5 rounded text-[#C1272D] focus:ring-[#C1272D]"
                     />
                     <div className="text-xs">
