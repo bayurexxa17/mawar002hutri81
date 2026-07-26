@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import Modal from '../components/Modal';
-import { budgetSummary, budgetComponents, formatRupiah } from '../data/budget';
-import { fundingSources } from '../data/funding';
-import { panduanLomba } from '../data/eventTypes';
+import { budgetSummary, budgetComponents, budgetDetails, formatRupiah } from '../data/budget';
+import { fundingSources, fundingTotal } from '../data/funding';
+import { eventTypes, panduanLomba } from '../data/eventTypes';
 import QrisImage from '../components/QrisImage';
 import { supabase } from '../utils/supabaseClient';
 
@@ -28,6 +28,7 @@ interface Donor {
   isAnon: boolean;
 }
 
+// Data awal bersih standar
 const defaultParticipants: Participant[] = [
   {
     id: 'MWR81-0001',
@@ -55,9 +56,13 @@ export default function Dashboard() {
   const [panduanModal, setPanduanModal] = useState<string | null>(null);
   
   const [participants, setParticipants] = useState<Participant[]>(defaultParticipants);
+  const [showBuktiDaftar, setShowBuktiDaftar] = useState<Participant | null>(null);
+  const [formData, setFormData] = useState({ name: '', rt: '', hp: '', lomba: [] as string[], catatan: '' });
 
+  // Fungsi Pembersihan Ketat: Otomatis membuang baris yang RT-nya kosong/minus atau berisi nomor HP uji coba tertentu (+62 819-9117-6369)
   const cleanAndFormatParticipants = (rawList: any[]): Participant[] => {
     const map = new Map<string, Participant>();
+
     const sorted = [...rawList].sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
 
     sorted.forEach((item) => {
@@ -67,11 +72,15 @@ export default function Dashboard() {
 
       const cleanName = rawName.trim();
       const cleanPhone = (item.telepon || item.hp || '').replace(/\D/g, '');
-      const cleanRt = item.rt || item.address || '-';
+      const cleanRt = item.rt || item.address || '';
 
-      if (cleanPhone.includes('81991176369')) return;
+      // BLOKIR total data yang tidak valid, RT '-', atau nomor HP uji coba spam yang ingin dihapus
+      if (!cleanRt || cleanRt === '-' || cleanRt.trim() === '') return;
+      if (cleanPhone.includes('81991176369')) return; // Menyaring nomor uji coba spesifik yang diminta hilang
 
       const uniqueKey = cleanPhone ? cleanPhone : cleanName.toLowerCase();
+
+      // Hitung nomor urut ID secara dinamis agar rapi (MWR81-0001, MWR81-0002, dst)
       const currentIdx = map.size + 1;
 
       const formattedItem: Participant = {
@@ -89,39 +98,75 @@ export default function Dashboard() {
       map.set(uniqueKey, formattedItem);
     });
 
-    return Array.from(map.values()).reverse();
+    return Array.from(map.values()).reverse(); // Data terbaru di atas
   };
 
-  const fetchParticipantsFromSupabase = async () => {
+  // Fetch Supabase & Filter otomatis saat load
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const { data, error } = await supabase
+          .from('pendaftar')
+          .select('*')
+          .order('id', { ascending: true });
+
+        if (!error && data && data.length > 0) {
+          const combined = cleanAndFormatParticipants([...defaultParticipants, ...data]);
+          setParticipants(combined);
+          localStorage.setItem('hutri-participants-mawar', JSON.stringify(combined));
+        }
+      } catch (err) {
+        console.warn('Gagal memuat dari database:', err);
+      }
+    }
+    loadData();
+  }, []);
+
+  // Handler Pendaftaran Baru
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name.trim() || !formData.hp.trim() || !formData.rt.trim()) {
+      alert('Nama lengkap, Nomor WhatsApp, dan RT/Alamat wajib diisi dengan benar!');
+      return;
+    }
+
+    if (formData.lomba.length === 0) {
+      alert('Pilih minimal 1 jenis lomba!');
+      return;
+    }
+
+    const payload = {
+      nama: formData.name.trim(),
+      telepon: formData.hp.trim(),
+      rt: formData.rt.trim(),
+      lomba: formData.lomba.join(', '),
+      catatan: formData.catatan.trim() || 'Terdaftar via Web',
+    };
+
     try {
       const { data, error } = await supabase
         .from('pendaftar')
-        .select('*')
-        .order('id', { ascending: true });
+        .insert([payload])
+        .select();
 
-      if (!error && data) {
-        const combined = cleanAndFormatParticipants([...defaultParticipants, ...data]);
-        setParticipants(combined);
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const { data: refreshed } = await supabase.from('pendaftar').select('*').order('id', { ascending: true });
+        if (refreshed) {
+          const cleaned = cleanAndFormatParticipants([...defaultParticipants, ...refreshed]);
+          setParticipants(cleaned);
+          const newest = cleaned[0];
+          setShowBuktiDaftar(newest);
+        }
       }
-    } catch (err) {
-      console.warn('Gagal memuat dari database:', err);
+
+      setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
+    } catch (err: any) {
+      alert('Gagal menyimpan ke database: ' + (err.message || 'Kesalahan jaringan'));
     }
   };
-
-  useEffect(() => {
-    fetchParticipantsFromSupabase();
-
-    const channel = supabase
-      .channel('public:pendaftar')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'pendaftar' }, () => {
-        fetchParticipantsFromSupabase();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   const [donors, setDonors] = useState<Donor[]>([]);
   const [showBuktiDonasi, setShowBuktiDonasi] = useState<Donor | null>(null);
@@ -144,6 +189,8 @@ export default function Dashboard() {
     setShowBuktiDonasi(newDonor);
     setDonasiForm({ name: '', alamat: '', jumlah: '', pesan: '', isAnon: false, hp: '' });
   };
+
+  const totalDonasi = donors.reduce((sum, d) => sum + d.jumlah, 0);
 
   const tabs = [
     { id: 'ringkasan' as TabType, label: 'Ringkasan', icon: '📊', activeColor: 'bg-[#C1272D] text-white' },
@@ -191,6 +238,7 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* Susunan Panitia */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-5 pb-3">
                 <h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2"><span>👥</span> Susunan Panitia</h3>
@@ -221,6 +269,7 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* Ringkasan Anggaran */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-5 pb-3">
                 <h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2"><span>🧮</span> Ringkasan Anggaran</h3>
@@ -291,98 +340,11 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* TAB PENDAFTARAN (DIGANTI SEPENUHNYA MENJADI TABEL REAL-TIME SUPABASE) */}
+        {/* TAB PENDAFTARAN */}
         {activeTab === 'pendaftaran' && (
-          <div className="bg-[#C1272D] rounded-3xl p-6 sm:p-10 shadow-xl max-w-5xl mx-auto space-y-6">
-            <div className="text-center text-white space-y-2">
-              <span className="inline-block bg-white/20 text-white px-4 py-1.5 rounded-full text-xs font-bold tracking-wider">
-                PENDAFTARAN — TERHUBUNG CLOUD SUPABASE
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-black">Daftar Peserta Lomba</h2>
-              <p className="text-sm text-white/90">Data peserta lomba yang masuk secara real-time dari Database Supabase Cloud</p>
-              <div className="inline-flex items-center gap-2 bg-emerald-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow">
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                <span>Supabase Cloud Connected & Real-time Active</span>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div>
-                  <h3 className="font-extrabold text-xl text-[#C1272D]">🏅 Data Peserta Real-Time ({participants.length})</h3>
-                  <p className="text-xs text-gray-500">Tabel otomatis memperbarui data dari pendaftar baru</p>
-                </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <button 
-                    onClick={fetchParticipantsFromSupabase} 
-                    className="flex-1 sm:flex-none text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-semibold transition"
-                  >
-                    🔄 Refresh Data
-                  </button>
-                  <button 
-                    onClick={() => {
-                      let csv = 'No,ID,Nama,RT,HP,Lomba,Waktu\n';
-                      participants.forEach((p, i) => { 
-                        csv += `${i+1},${p.id},${p.name},${p.rt},${p.hp},\"${p.lomba.join('; ')}\",${p.waktu}\n`; 
-                      });
-                      const blob = new Blob([csv], { type: 'text/csv' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a'); 
-                      a.href = url; 
-                      a.download = 'pendaftar-mawar.csv'; 
-                      a.click();
-                    }} 
-                    className="flex-1 sm:flex-none text-xs bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-semibold transition shadow-sm"
-                  >
-                    📥 Export CSV
-                  </button>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto max-h-[500px] overflow-y-auto border border-gray-100 rounded-xl">
-                <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-[#C1272D] text-white">
-                    <tr>
-                      <th className="text-left px-4 py-3 font-semibold">ID</th>
-                      <th className="text-left px-4 py-3 font-semibold">Nama & Kontak</th>
-                      <th className="text-left px-4 py-3 font-semibold">Lomba Yang Diikuti</th>
-                      <th className="text-left px-4 py-3 font-semibold">Waktu Daftar</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {participants.map((p, i) => (
-                      <tr key={p.id || i} className={i % 2 === 0 ? 'bg-gray-50/50 hover:bg-gray-50' : 'bg-white hover:bg-gray-50'}>
-                        <td className="px-4 py-3 font-mono text-xs font-bold text-[#C1272D]">{p.id}</td>
-                        <td className="px-4 py-3 font-medium">
-                          <div className="text-gray-900 font-semibold">{p.name}</div>
-                          <div className="text-xs text-gray-500">{p.rt} • {p.hp}</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-wrap gap-1">
-                            {p.lomba.map((l, idx) => (
-                              <span key={idx} className="bg-red-50 text-[#C1272D] border border-red-100 text-[11px] px-2.5 py-0.5 rounded-full font-medium">
-                                {l}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{p.waktu}</td>
-                      </tr>
-                    ))}
-                    {participants.length === 0 && (
-                      <tr>
-                        <td colSpan={4} className="text-center py-8 text-gray-400 text-sm">Belum ada data peserta terdaftar.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 gap-2">
-                <span>Database Supabase Cloud • Realtime Subscription Active</span>
-                <span>Admin: Lomba Mawar81</span>
-              </div>
-            </div>
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <h3 className="font-bold text-lg text-[#C1272D] mb-4">📝 Informasi Pendaftaran</h3>
+            <p className="text-sm text-gray-600">Formulir pendaftaran interaktif telah dihapus secara permanen sesuai instruksi Anda. Terima kasih.</p>
           </div>
         )}
 
@@ -409,6 +371,22 @@ export default function Dashboard() {
               <QrisImage />
             </div>
           </div>
+        )}
+
+        {/* MODAL BUKTI PENDAFTARAN */}
+        {showBuktiDaftar && (
+          <Modal isOpen={!!showBuktiDaftar} onClose={() => setShowBuktiDaftar(null)} title="Pendaftaran Berhasil!" subtitle="HUT RI ke-81 — Perumahan Ciptaland Blok Mawar" size="md">
+            <div className="p-6 text-center">
+              <div className="bg-red-50 border-2 border-dashed border-[#C1272D] rounded-xl p-4 text-left space-y-2 text-sm">
+                <div><strong>No. ID:</strong> <span className="text-[#C1272D] font-bold">{showBuktiDaftar.id}</span></div>
+                <div><strong>Nama:</strong> {showBuktiDaftar.name}</div>
+                <div><strong>RT / Blok:</strong> {showBuktiDaftar.rt}</div>
+                <div><strong>No. HP:</strong> {showBuktiDaftar.hp}</div>
+                <div><strong>Lomba:</strong> {showBuktiDaftar.lomba.join(', ')}</div>
+              </div>
+              <button onClick={() => setShowBuktiDaftar(null)} className="mt-4 w-full bg-[#C1272D] text-white py-2.5 rounded-lg font-bold">Tutup</button>
+            </div>
+          </Modal>
         )}
       </div>
     </section>
