@@ -206,7 +206,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <section id="ringkasan" className="py-8 px-2 sm:px-4 bg-[#F5F5F0] min-h-screen w-full max-w-[100vw] overflow-x-hidden">
+    <section id="ringkasan" className="py-8 px-2 sm:px-4 bg-[#C1272D] min-h-screen w-full max-w-[100vw] overflow-x-hidden">
       <div className="max-w-7xl mx-auto w-full">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-2 mb-6">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mb-1">
@@ -341,75 +341,81 @@ export default function Dashboard() {
         )}
 
         {activeTab === 'pendaftaran' && (
-          <div className="grid lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="font-bold text-lg text-[#C1272D] mb-4">📝 Form Pendaftaran Lomba</h3>
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div>
-                  <label className="text-xs font-semibold text-gray-600 block mb-1">Nama Lengkap *</label>
-                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Contoh: Abiyu Rexxa" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-600 block mb-1">Nomor WhatsApp *</label>
-                  <input required value={formData.hp} onChange={e => setFormData({...formData, hp: e.target.value})} placeholder="08xxxxxxxxxx" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-600 block mb-1">Alamat (RT / Blok) *</label>
-                  <input required value={formData.rt} onChange={e => setFormData({...formData, rt: e.target.value})} placeholder="Contoh: RT 002 / Blok Mawar 12" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-600 block mb-1">Pilih Lomba * ({formData.lomba.length} dipilih)</label>
-                  <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border rounded-lg p-2 bg-gray-50">
-                    {['Makan Kerupuk', 'Futsal Mini', 'Balap Kelereng', 'Tarik Tambang', 'Hias Tumpeng', 'Fashion Week Daster', 'Estafet Tepung'].map(l => (
-                      <label key={l} className="flex items-center gap-2 text-sm bg-white p-2 rounded border cursor-pointer">
-                        <input type="checkbox" checked={formData.lomba.includes(l)} onChange={e => {
-                          if (e.target.checked) setFormData({...formData, lomba: [...formData.lomba, l]});
-                          else setFormData({...formData, lomba: formData.lomba.filter(x => x !== l)});
-                        }} className="rounded text-[#C1272D]" />
-                        <span>{l}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <button type="submit" className="w-full bg-[#C1272D] text-white font-bold py-3 rounded-xl hover:bg-red-700 transition text-sm">✅ Daftar Sekarang</button>
-              </form>
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="text-center text-white space-y-2">
+              <span className="inline-block bg-white/20 text-white px-3 py-1 rounded-full text-xs font-semibold">PENDAFTARAN — TERHUBUNG CLOUD SUPABASE</span>
+              <h2 className="text-3xl font-black">Informasi Daftar Peserta</h2>
+              <p className="text-xs text-white/90">Data peserta lomba yang masuk secara real-time dari database Supabase</p>
+              <div className="inline-flex items-center gap-2 bg-emerald-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow">
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                <span>Server Connected & Real-time Active</span>
+              </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-lg text-[#C1272D]">🏅 Daftar Peserta ({participants.length})</h3>
-                <button onClick={() => {
-                  let csv = 'No,ID,Nama,RT,HP,Lomba,Waktu\n';
-                  participants.forEach((p, i) => { csv += `${i+1},${p.id},${p.name},${p.rt},${p.hp},\"${p.lomba.join('; ')}\",${p.waktu}\n`; });
-                  const blob = new Blob([csv], {type: 'text/csv'});
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a'); a.href = url; a.download = 'pendaftar-mawar.csv'; a.click();
-                }} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-full font-semibold">📥 Export CSV</button>
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                  <h3 className="font-bold text-xl text-[#C1272D]">🏅 Daftar Peserta Real-Time ({participants.length})</h3>
+                  <p className="text-xs text-gray-500">Terintegrasi otomatis dengan database Supabase Cloud</p>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <button onClick={fetchParticipantsFromSupabase} className="flex-1 sm:flex-none text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-semibold transition">
+                    🔄 Refresh Data
+                  </button>
+                  <button onClick={() => {
+                    let csv = 'No,ID,Nama,RT,HP,Lomba,Waktu\n';
+                    participants.forEach((p, i) => { csv += `${i+1},${p.id},${p.name},${p.rt},${p.hp},\"${p.lomba.join('; ')}\",${p.waktu}\n`; });
+                    const blob = new Blob([csv], {type: 'text/csv'});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = 'pendaftar-mawar.csv'; a.click();
+                  }} className="flex-1 sm:flex-none text-xs bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition shadow-sm">
+                    📥 Export CSV
+                  </button>
+                </div>
               </div>
-              <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
+
+              <div className="overflow-x-auto max-h-[500px] overflow-y-auto border border-gray-100 rounded-xl">
                 <table className="w-full text-sm">
                   <thead className="sticky top-0 bg-[#C1272D] text-white">
                     <tr>
-                      <th className="text-left px-3 py-2">ID</th>
-                      <th className="text-left px-3 py-2">Nama & Kontak</th>
-                      <th className="text-left px-3 py-2">Lomba</th>
-                      <th className="text-left px-3 py-2">Waktu</th>
+                      <th className="text-left px-4 py-3 font-semibold">ID</th>
+                      <th className="text-left px-4 py-3 font-semibold">Nama & Kontak</th>
+                      <th className="text-left px-4 py-3 font-semibold">Lomba Yang Diikuti</th>
+                      <th className="text-left px-4 py-3 font-semibold">Waktu Daftar</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-gray-100">
                     {participants.map((p, i) => (
-                      <tr key={p.id || i} className={i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                        <td className="px-3 py-2 font-mono text-xs font-bold text-[#C1272D]">{p.id}</td>
-                        <td className="px-3 py-2 font-medium">
-                          <div>{p.name}</div>
+                      <tr key={p.id || i} className={i % 2 === 0 ? 'bg-gray-50/50 hover:bg-gray-50' : 'bg-white hover:bg-gray-50'}>
+                        <td className="px-4 py-3 font-mono text-xs font-bold text-[#C1272D]">{p.id}</td>
+                        <td className="px-4 py-3 font-medium">
+                          <div className="text-gray-900 font-semibold">{p.name}</div>
                           <div className="text-xs text-gray-500">{p.rt} • {p.hp}</div>
                         </td>
-                        <td className="px-3 py-2 text-xs">{p.lomba.join(', ')}</td>
-                        <td className="px-3 py-2 text-[11px] text-gray-500">{p.waktu}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-1">
+                            {p.lomba.map((l, idx) => (
+                              <span key={idx} className="bg-red-50 text-[#C1272D] border border-red-100 text-[11px] px-2 py-0.5 rounded-full font-medium">
+                                {l}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{p.waktu}</td>
                       </tr>
                     ))}
+                    {participants.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="text-center py-8 text-gray-400 text-sm">Belum ada data peserta terdaftar.</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 gap-2">
+                <span>Database Supabase Cloud • Realtime Subscription Active</span>
+                <span>Admin: Lomba Mawar81</span>
               </div>
             </div>
           </div>
