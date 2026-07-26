@@ -14,21 +14,6 @@ export default function PanitiaAdmin() {
       setIsAuth(true);
     }
 
-    const params = new URLSearchParams(window.location.search);
-    const adminValue = params.get('admin');
-    
-    // Hanya mengizinkan admin81 dan panitia81
-    const allowed = ['admin81', 'panitia81'];
-
-    if (adminValue && allowed.includes(adminValue.toLowerCase())) {
-      setIsAuth(true);
-      localStorage.setItem('hutri-admin-auth', 'true');
-      window.history.replaceState({}, document.title, `${window.location.pathname}?admin`);
-    } else if (params.has('admin') && !adminValue) {
-      setIsAuth(true);
-      localStorage.setItem('hutri-admin-auth', 'true');
-    }
-
     fetchDataFromCloud();
 
     const channel = supabase
@@ -108,7 +93,6 @@ export default function PanitiaAdmin() {
   const handleLogout = () => {
     setIsAuth(false);
     localStorage.removeItem('hutri-admin-auth');
-    window.history.replaceState({}, document.title, window.location.pathname);
   };
 
   const handleDeleteParticipant = async (id: string | number) => {
@@ -326,12 +310,6 @@ export default function PanitiaAdmin() {
           <div className="bg-white rounded-xl border p-6">
             <h3 className="font-bold text-lg mb-3">🔔 Status Koneksi Cloud</h3>
             <p className="text-sm text-gray-600 mb-4">Dashboard Panitia ini sekarang sudah terhubung langsung ke Supabase Cloud. Setiap kali ada warga yang mendaftar atau berdonasi lewat website utama, data akan masuk secara otomatis tanpa perlu *refresh*.</p>
-            <div className="mt-4">
-              <h4 className="font-bold mb-2">Link Admin untuk Panitia:</h4>
-              <code className="block bg-black text-green-400 p-3 rounded-lg text-xs">
-                {window.location.origin}/?admin
-              </code>
-            </div>
           </div>
         )}
       </div>
