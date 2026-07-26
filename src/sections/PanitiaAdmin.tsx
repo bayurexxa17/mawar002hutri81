@@ -91,7 +91,7 @@ export default function PanitiaAdmin() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const allowed = ['admin81', 'panitia81'];
+    const allowed = ['mawar81', 'admin81', 'panitia81', 'greenbay81'];
     if (allowed.includes(password.toLowerCase())) {
       setIsAuth(true);
       localStorage.setItem('hutri-admin-auth', 'true');
