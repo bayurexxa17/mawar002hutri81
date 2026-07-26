@@ -59,14 +59,13 @@ export default function Dashboard() {
   const [showBuktiDaftar, setShowBuktiDaftar] = useState<Participant | null>(null);
   const [formData, setFormData] = useState({ name: '', rt: '', hp: '', lomba: [] as string[], catatan: '' });
 
-  // Fungsi Pembersihan & Deduplikasi Ketat (Membuang data tanpa RT/Nama '-'/duplikat nomor HP)
+  // Fungsi Pembersihan Ketat: Otomatis membuang baris yang RT-nya kosong/minus atau berisi nomor HP uji coba tertentu (+62 819-9117-6369)
   const cleanAndFormatParticipants = (rawList: any[]): Participant[] => {
     const map = new Map<string, Participant>();
 
-    // Urutkan dari yang lama ke baru agar ID terurut rapi
     const sorted = [...rawList].sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
 
-    sorted.forEach((item, index) => {
+    sorted.forEach((item) => {
       if (!item) return;
       const rawName = item.nama || item.name || '';
       if (!rawName || rawName.trim() === '') return;
@@ -75,14 +74,17 @@ export default function Dashboard() {
       const cleanPhone = (item.telepon || item.hp || '').replace(/\D/g, '');
       const cleanRt = item.rt || item.address || '';
 
-      // Abaikan data sampah test / data kosong tanpa RT atau nama tidak wajar
+      // BLOKIR total data yang tidak valid, RT '-', atau nomor HP uji coba spam yang ingin dihapus
       if (!cleanRt || cleanRt === '-' || cleanRt.trim() === '') return;
+      if (cleanPhone.includes('81991176369')) return; // Menyaring nomor uji coba spesifik yang diminta hilang
 
-      // Kunci unik berdasarkan Nomor HP atau Nama
       const uniqueKey = cleanPhone ? cleanPhone : cleanName.toLowerCase();
 
+      // Hitung nomor urut ID secara dinamis agar rapi (MWR81-0001, MWR81-0002, dst)
+      const currentIdx = map.size + 1;
+
       const formattedItem: Participant = {
-        id: `MWR81-${String(index + 1).padStart(4, '0')}`,
+        id: `MWR81-${String(currentIdx).padStart(4, '0')}`,
         name: cleanName,
         rt: cleanRt,
         hp: item.telepon || item.hp || '-',
@@ -96,10 +98,10 @@ export default function Dashboard() {
       map.set(uniqueKey, formattedItem);
     });
 
-    return Array.from(map.values()).reverse(); // Terbaru di atas
+    return Array.from(map.values()).reverse(); // Data terbaru di atas
   };
 
-  // Fetch Supabase & Sinkronisasi
+  // Fetch Supabase & Filter otomatis saat load
   useEffect(() => {
     async function loadData() {
       try {
@@ -120,7 +122,7 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  // Handler Pendaftaran
+  // Handler Pendaftaran Baru
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -148,17 +150,14 @@ export default function Dashboard() {
         .insert([payload])
         .select();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       if (data && data.length > 0) {
-        // Refresh data dari database agar sinkron
         const { data: refreshed } = await supabase.from('pendaftar').select('*').order('id', { ascending: true });
         if (refreshed) {
           const cleaned = cleanAndFormatParticipants([...defaultParticipants, ...refreshed]);
           setParticipants(cleaned);
-          const newest = cleaned.find(p => p.hp.replace(/\D/g, '') === formData.hp.replace(/\D/g, '')) || cleaned[0];
+          const newest = cleaned[0];
           setShowBuktiDaftar(newest);
         }
       }
@@ -448,7 +447,7 @@ export default function Dashboard() {
             <div className="p-6 text-center">
               <div className="bg-red-50 border-2 border-dashed border-[#C1272D] rounded-xl p-4 text-left space-y-2 text-sm">
                 <div><strong>No. ID:</strong> <span className="text-[#C1272D] font-bold">{showBuktiDaftar.id}</span></div>
-                <div><strong>Nama:</strong> {showBuktiDafftarName => showBuktiDaftar.name}</div>
+                <div><strong>Nama:</strong> {showBuktiDaftar.name}</div>
                 <div><strong>RT / Blok:</strong> {showBuktiDaftar.rt}</div>
                 <div><strong>No. HP:</strong> {showBuktiDaftar.hp}</div>
                 <div><strong>Lomba:</strong> {showBuktiDaftar.lomba.join(', ')}</div>
