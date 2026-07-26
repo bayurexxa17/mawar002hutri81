@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import Modal from '../components/Modal';
-import { budgetSummary, budgetComponents, budgetDetails, formatRupiah } from '../data/budget';
-import { fundingSources, fundingTotal } from '../data/funding';
-import { eventTypes, panduanLomba } from '../data/eventTypes';
+import { budgetSummary, budgetComponents, formatRupiah } from '../data/budget';
+import { fundingSources } from '../data/funding';
+import { panduanLomba } from '../data/eventTypes';
 import QrisImage from '../components/QrisImage';
 import { supabase } from '../utils/supabaseClient';
 
@@ -28,7 +28,6 @@ interface Donor {
   isAnon: boolean;
 }
 
-// Data awal bersih standar
 const defaultParticipants: Participant[] = [
   {
     id: 'MWR81-0001',
@@ -59,10 +58,8 @@ export default function Dashboard() {
   const [showBuktiDaftar, setShowBuktiDaftar] = useState<Participant | null>(null);
   const [formData, setFormData] = useState({ name: '', rt: '', hp: '', lomba: [] as string[], catatan: '' });
 
-  // Fungsi Pembersihan Ketat: Otomatis membuang baris yang RT-nya kosong/minus atau berisi nomor HP uji coba tertentu (+62 819-9117-6369)
   const cleanAndFormatParticipants = (rawList: any[]): Participant[] => {
     const map = new Map<string, Participant>();
-
     const sorted = [...rawList].sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
 
     sorted.forEach((item) => {
@@ -72,15 +69,11 @@ export default function Dashboard() {
 
       const cleanName = rawName.trim();
       const cleanPhone = (item.telepon || item.hp || '').replace(/\D/g, '');
-      const cleanRt = item.rt || item.address || '';
+      const cleanRt = item.rt || item.address || '-';
 
-      // BLOKIR total data yang tidak valid, RT '-', atau nomor HP uji coba spam yang ingin dihapus
-      if (!cleanRt || cleanRt === '-' || cleanRt.trim() === '') return;
-      if (cleanPhone.includes('81991176369')) return; // Menyaring nomor uji coba spesifik yang diminta hilang
+      if (cleanPhone.includes('81991176369')) return;
 
       const uniqueKey = cleanPhone ? cleanPhone : cleanName.toLowerCase();
-
-      // Hitung nomor urut ID secara dinamis agar rapi (MWR81-0001, MWR81-0002, dst)
       const currentIdx = map.size + 1;
 
       const formattedItem: Participant = {
@@ -98,31 +91,40 @@ export default function Dashboard() {
       map.set(uniqueKey, formattedItem);
     });
 
-    return Array.from(map.values()).reverse(); // Data terbaru di atas
+    return Array.from(map.values()).reverse();
   };
 
-  // Fetch Supabase & Filter otomatis saat load
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const { data, error } = await supabase
-          .from('pendaftar')
-          .select('*')
-          .order('id', { ascending: true });
+  const fetchParticipantsFromSupabase = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('pendaftar')
+        .select('*')
+        .order('id', { ascending: true });
 
-        if (!error && data && data.length > 0) {
-          const combined = cleanAndFormatParticipants([...defaultParticipants, ...data]);
-          setParticipants(combined);
-          localStorage.setItem('hutri-participants-mawar', JSON.stringify(combined));
-        }
-      } catch (err) {
-        console.warn('Gagal memuat dari database:', err);
+      if (!error && data) {
+        const combined = cleanAndFormatParticipants([...defaultParticipants, ...data]);
+        setParticipants(combined);
       }
+    } catch (err) {
+      console.warn('Gagal memuat dari database:', err);
     }
-    loadData();
+  };
+
+  useEffect(() => {
+    fetchParticipantsFromSupabase();
+
+    const channel = supabase
+      .channel('public:pendaftar')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'pendaftar' }, () => {
+        fetchParticipantsFromSupabase();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
-  // Handler Pendaftaran Baru
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -152,14 +154,19 @@ export default function Dashboard() {
 
       if (error) throw error;
 
+      await fetchParticipantsFromSupabase();
+
       if (data && data.length > 0) {
-        const { data: refreshed } = await supabase.from('pendaftar').select('*').order('id', { ascending: true });
-        if (refreshed) {
-          const cleaned = cleanAndFormatParticipants([...defaultParticipants, ...refreshed]);
-          setParticipants(cleaned);
-          const newest = cleaned[0];
-          setShowBuktiDaftar(newest);
-        }
+        const newest: Participant = {
+          id: `MWR81-${String(participants.length + 1).padStart(4, '0')}`,
+          name: payload.nama,
+          rt: payload.rt,
+          hp: payload.telepon,
+          lomba: formData.lomba,
+          catatan: payload.catatan,
+          waktu: new Date().toLocaleString('id-ID'),
+        };
+        setShowBuktiDaftar(newest);
       }
 
       setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
@@ -190,8 +197,6 @@ export default function Dashboard() {
     setDonasiForm({ name: '', alamat: '', jumlah: '', pesan: '', isAnon: false, hp: '' });
   };
 
-  const totalDonasi = donors.reduce((sum, d) => sum + d.jumlah, 0);
-
   const tabs = [
     { id: 'ringkasan' as TabType, label: 'Ringkasan', icon: '📊', activeColor: 'bg-[#C1272D] text-white' },
     { id: 'pendanaan' as TabType, label: 'Pendanaan', icon: '💰', activeColor: 'bg-[#C1272D] text-white' },
@@ -220,7 +225,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* TAB RINGKASAN */}
         {activeTab === 'ringkasan' && (
           <div className="space-y-6">
             <div className="grid md:grid-cols-3 gap-4">
@@ -238,7 +242,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Susunan Panitia */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-5 pb-3">
                 <h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2"><span>👥</span> Susunan Panitia</h3>
@@ -269,7 +272,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Ringkasan Anggaran */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <div className="p-5 pb-3">
                 <h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2"><span>🧮</span> Ringkasan Anggaran</h3>
@@ -302,7 +304,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* TAB PENDANAAN */}
         {activeTab === 'pendanaan' && (
           <div className="bg-white rounded-xl shadow-sm border p-6">
             <h3 className="font-bold text-xl text-[#C1272D] mb-4">💰 Pendanaan</h3>
@@ -327,7 +328,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* TAB PANDUAN */}
         {activeTab === 'panduan' && (
           <div className="grid md:grid-cols-3 gap-4">
             {panduanLomba.map((p) => (
@@ -340,7 +340,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* TAB PENDAFTARAN */}
         {activeTab === 'pendaftaran' && (
           <div className="grid lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-xl shadow-sm border p-6">
@@ -416,7 +415,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* TAB DONASI */}
         {activeTab === 'donasi' && (
           <div className="grid lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-xl shadow-sm border p-6">
@@ -441,7 +439,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* MODAL BUKTI PENDAFTARAN */}
         {showBuktiDaftar && (
           <Modal isOpen={!!showBuktiDaftar} onClose={() => setShowBuktiDaftar(null)} title="Pendaftaran Berhasil!" subtitle="HUT RI ke-81 — Perumahan Ciptaland Blok Mawar" size="md">
             <div className="p-6 text-center">
