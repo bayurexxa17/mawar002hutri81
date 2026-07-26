@@ -56,7 +56,6 @@ export default function Dashboard() {
   
   const [participants, setParticipants] = useState<Participant[]>(defaultParticipants);
   const [showBuktiDaftar, setShowBuktiDaftar] = useState<Participant | null>(null);
-  const [formData, setFormData] = useState({ name: '', rt: '', hp: '', lomba: [] as string[], catatan: '' });
 
   const cleanAndFormatParticipants = (rawList: any[]): Participant[] => {
     const map = new Map<string, Participant>();
@@ -125,56 +124,6 @@ export default function Dashboard() {
     };
   }, []);
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name.trim() || !formData.hp.trim() || !formData.rt.trim()) {
-      alert('Nama lengkap, Nomor WhatsApp, dan RT/Alamat wajib diisi dengan benar!');
-      return;
-    }
-
-    if (formData.lomba.length === 0) {
-      alert('Pilih minimal 1 jenis lomba!');
-      return;
-    }
-
-    const payload = {
-      nama: formData.name.trim(),
-      telepon: formData.hp.trim(),
-      rt: formData.rt.trim(),
-      lomba: formData.lomba.join(', '),
-      catatan: formData.catatan.trim() || 'Terdaftar via Web',
-    };
-
-    try {
-      const { data, error } = await supabase
-        .from('pendaftar')
-        .insert([payload])
-        .select();
-
-      if (error) throw error;
-
-      await fetchParticipantsFromSupabase();
-
-      if (data && data.length > 0) {
-        const newest: Participant = {
-          id: `MWR81-${String(participants.length + 1).padStart(4, '0')}`,
-          name: payload.nama,
-          rt: payload.rt,
-          hp: payload.telepon,
-          lomba: formData.lomba,
-          catatan: payload.catatan,
-          waktu: new Date().toLocaleString('id-ID'),
-        };
-        setShowBuktiDaftar(newest);
-      }
-
-      setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
-    } catch (err: any) {
-      alert('Gagal menyimpan ke database: ' + (err.message || 'Kesalahan jaringan'));
-    }
-  };
-
   const [donors, setDonors] = useState<Donor[]>([]);
   const [showBuktiDonasi, setShowBuktiDonasi] = useState<Donor | null>(null);
   const [donasiForm, setDonasiForm] = useState({ name: '', alamat: '', jumlah: '', pesan: '', isAnon: false, hp: '' });
@@ -206,7 +155,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <section id="ringkasan" className="py-8 px-2 sm:px-4 bg-[#C1272D] min-h-screen w-full max-w-[100vw] overflow-x-hidden">
+    <section id="ringkasan" className="py-8 px-2 sm:px-4 bg-[#F5F5F0] min-h-screen w-full max-w-[100vw] overflow-x-hidden">
       <div className="max-w-7xl mx-auto w-full">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-2 mb-6">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mb-1">
@@ -341,25 +290,25 @@ export default function Dashboard() {
         )}
 
         {activeTab === 'pendaftaran' && (
-          <div className="max-w-4xl mx-auto space-y-6">
+          <div className="bg-[#C1272D] rounded-3xl p-6 sm:p-10 shadow-xl max-w-5xl mx-auto space-y-6">
             <div className="text-center text-white space-y-2">
-              <span className="inline-block bg-white/20 text-white px-3 py-1 rounded-full text-xs font-semibold">PENDAFTARAN — TERHUBUNG CLOUD SUPABASE</span>
-              <h2 className="text-3xl font-black">Informasi Daftar Peserta</h2>
-              <p className="text-xs text-white/90">Data peserta lomba yang masuk secara real-time dari database Supabase</p>
+              <span className="inline-block bg-white/20 text-white px-4 py-1.5 rounded-full text-xs font-bold tracking-wider">PENDAFTARAN — TERHUBUNG CLOUD SUPABASE</span>
+              <h2 className="text-3xl sm:text-4xl font-black">Daftar Peserta Lomba</h2>
+              <p className="text-sm text-white/90">Data peserta lomba yang masuk secara real-time dari Database Supabase Cloud</p>
               <div className="inline-flex items-center gap-2 bg-emerald-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow">
                 <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                <span>Server Connected & Real-time Active</span>
+                <span>Supabase Cloud Connected & Real-time Active</span>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
-                  <h3 className="font-bold text-xl text-[#C1272D]">🏅 Daftar Peserta Real-Time ({participants.length})</h3>
-                  <p className="text-xs text-gray-500">Terintegrasi otomatis dengan database Supabase Cloud</p>
+                  <h3 className="font-extrabold text-xl text-[#C1272D]">🏅 Data Peserta Real-Time ({participants.length})</h3>
+                  <p className="text-xs text-gray-500">Tabel otomatis memperbarui data dari pendaftar baru</p>
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <button onClick={fetchParticipantsFromSupabase} className="flex-1 sm:flex-none text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg font-semibold transition">
+                  <button onClick={fetchParticipantsFromSupabase} className="flex-1 sm:flex-none text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-semibold transition">
                     🔄 Refresh Data
                   </button>
                   <button onClick={() => {
@@ -368,7 +317,7 @@ export default function Dashboard() {
                     const blob = new Blob([csv], {type: 'text/csv'});
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a'); a.href = url; a.download = 'pendaftar-mawar.csv'; a.click();
-                  }} className="flex-1 sm:flex-none text-xs bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition shadow-sm">
+                  }} className="flex-1 sm:flex-none text-xs bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-semibold transition shadow-sm">
                     📥 Export CSV
                   </button>
                 </div>
@@ -395,7 +344,7 @@ export default function Dashboard() {
                         <td className="px-4 py-3">
                           <div className="flex flex-wrap gap-1">
                             {p.lomba.map((l, idx) => (
-                              <span key={idx} className="bg-red-50 text-[#C1272D] border border-red-100 text-[11px] px-2 py-0.5 rounded-full font-medium">
+                              <span key={idx} className="bg-red-50 text-[#C1272D] border border-red-100 text-[11px] px-2.5 py-0.5 rounded-full font-medium">
                                 {l}
                               </span>
                             ))}
@@ -443,21 +392,6 @@ export default function Dashboard() {
               <QrisImage />
             </div>
           </div>
-        )}
-
-        {showBuktiDaftar && (
-          <Modal isOpen={!!showBuktiDaftar} onClose={() => setShowBuktiDaftar(null)} title="Pendaftaran Berhasil!" subtitle="HUT RI ke-81 — Perumahan Ciptaland Blok Mawar" size="md">
-            <div className="p-6 text-center">
-              <div className="bg-red-50 border-2 border-dashed border-[#C1272D] rounded-xl p-4 text-left space-y-2 text-sm">
-                <div><strong>No. ID:</strong> <span className="text-[#C1272D] font-bold">{showBuktiDaftar.id}</span></div>
-                <div><strong>Nama:</strong> {showBuktiDaftar.name}</div>
-                <div><strong>RT / Blok:</strong> {showBuktiDaftar.rt}</div>
-                <div><strong>No. HP:</strong> {showBuktiDaftar.hp}</div>
-                <div><strong>Lomba:</strong> {showBuktiDaftar.lomba.join(', ')}</div>
-              </div>
-              <button onClick={() => setShowBuktiDaftar(null)} className="mt-4 w-full bg-[#C1272D] text-white py-2.5 rounded-lg font-bold">Tutup</button>
-            </div>
-          </Modal>
         )}
       </div>
     </section>
