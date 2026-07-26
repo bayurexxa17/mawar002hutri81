@@ -28,6 +28,7 @@ interface Donor {
   isAnon: boolean;
 }
 
+// Data utama bersih tanpa duplikasi huruf kecil/besar (Fatimah Az Zahra & Ameera Hanania R)
 const initialParticipants: Participant[] = [
   {
     id: 'MWR81-0001',
@@ -58,7 +59,7 @@ export default function Dashboard() {
   const [showBuktiDaftar, setShowBuktiDaftar] = useState<Participant | null>(null);
   const [formData, setFormData] = useState({ name: '', rt: '', hp: '', lomba: [] as string[], catatan: '' });
 
-  // 1. Fetch data dari Supabase saat halaman dimuat (Pembersihan duplikasi dengan Normalisasi Nama & ID)
+  // 1. Fetch data dari Supabase dengan normalisasi & deduplikasi ketat (menghapus duplikat huruf kecil/besar)
   useEffect(() => {
     async function fetchParticipants() {
       try {
@@ -76,27 +77,35 @@ export default function Dashboard() {
           const formatted: Participant[] = data.map((item: any) => ({
             id: `MWR81-${String(item.id).padStart(4, '0')}`,
             name: item.nama || '',
-            rt: item.rt || '-',
+            rt: item.rt || item.address || '-',
             hp: item.telepon || item.hp || '',
             lomba: typeof item.lomba === 'string' ? item.lomba.split(', ') : (Array.isArray(item.lomba) ? item.lomba : []),
             catatan: item.catatan || '',
             waktu: item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : new Date().toLocaleString('id-ID')
           }));
 
-          // Gabungkan dengan initial data dan bersihkan duplikat berdasarkan Nama (case-insensitive) & Nomor HP
           setParticipants(prev => {
             const combined = [...initialParticipants, ...formatted, ...prev];
             const uniqueMap = new Map<string, Participant>();
             
             combined.forEach(p => {
-              const cleanKey = `${p.name.trim().toLowerCase()}-${p.hp.replace(/\D/g, '')}`;
-              if (!uniqueMap.has(cleanKey)) {
-                uniqueMap.set(cleanKey, p);
+              // Normalisasi nama ke Title Case yang rapi & bersihkan spasi/nomor HP untuk mencegah duplikat huruf kecil
+              const cleanName = p.name.trim().toLowerCase();
+              const cleanPhone = p.hp.replace(/\D/g, '');
+              const uniqueKey = cleanPhone ? `${cleanName}-${cleanPhone}` : cleanName;
+
+              if (!uniqueMap.has(uniqueKey)) {
+                uniqueMap.set(uniqueKey, p);
               } else {
-                // Jika sudah ada, pilih data yang memiliki ID format MWR81-XXXX atau penulisan nama yang lebih rapi
-                const existing = uniqueMap.get(cleanKey)!;
-                if (p.id.startsWith('MWR81-') && !existing.id.startsWith('MWR81-')) {
-                  uniqueMap.set(cleanKey, p);
+                // Utamakan data dengan ID format MWR81-XXXX atau penulisan nama yang benar (bukan huruf kecil semua)
+                const existing = uniqueMap.get(uniqueKey)!;
+                const isCurrentLowercase = p.name === p.name.toLowerCase();
+                const isExistingLowercase = existing.name === existing.name.toLowerCase();
+
+                if (isExistingLowercase && !isCurrentLowercase) {
+                  uniqueMap.set(uniqueKey, p);
+                } else if (p.id.startsWith('MWR81-') && !existing.id.startsWith('MWR81-')) {
+                  uniqueMap.set(uniqueKey, p);
                 }
               }
             });
@@ -127,7 +136,7 @@ export default function Dashboard() {
           const formattedParticipant: Participant = {
             id: `MWR81-${String(newItem.id).padStart(4, '0')}`,
             name: newItem.nama,
-            rt: newItem.rt || '-',
+            rt: newItem.rt || newItem.address || '-',
             hp: newItem.telepon || newItem.hp || '',
             lomba: typeof newItem.lomba === 'string' ? newItem.lomba.split(', ') : (Array.isArray(newItem.lomba) ? newItem.lomba : []),
             catatan: newItem.catatan || '',
@@ -135,8 +144,16 @@ export default function Dashboard() {
           };
 
           setParticipants(prev => {
-            const cleanKey = `${formattedParticipant.name.trim().toLowerCase()}-${formattedParticipant.hp.replace(/\D/g, '')}`;
-            if (prev.some(p => `${p.name.trim().toLowerCase()}-${p.hp.replace(/\D/g, '')}` === cleanKey)) return prev;
+            const cleanName = formattedParticipant.name.trim().toLowerCase();
+            const cleanPhone = formattedParticipant.hp.replace(/\D/g, '');
+            const uniqueKey = cleanPhone ? `${cleanName}-${cleanPhone}` : cleanName;
+
+            if (prev.some(p => {
+              const pName = p.name.trim().toLowerCase();
+              const pPhone = p.hp.replace(/\D/g, '');
+              return (pPhone ? `${pName}-${pPhone}` : pName) === uniqueKey;
+            })) return prev;
+
             return [formattedParticipant, ...prev];
           });
         }
@@ -165,7 +182,7 @@ export default function Dashboard() {
     { id: 'donasi' as TabType, label: 'Donasi', icon: '❤️', activeColor: 'bg-[#C1272D] text-white' },
   ];
 
-  // 3. Fungsi Register yang benar-benar melakukan INSERT ke tabel Supabase & update state UI
+  // 3. Fungsi Register yang benar-benar menyimpan ke database Supabase & memastikan data langsung tampil di tabel
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -190,7 +207,7 @@ export default function Dashboard() {
 
       if (error) {
         console.error('GAGAL INSERT SUPABASE:', error);
-        alert(`Gagal menyimpan ke Database Supabase!\nPesan: ${error.message}\nDetail: ${error.details || 'Cek RLS/Policy Supabase'}`);
+        alert(`Gagal menyimpan ke Database Supabase!\nPesan: ${error.message}\nDetail: ${error.details || 'Cek kembali policy RLS Supabase Anda'}`);
         return;
       } 
 
@@ -199,7 +216,7 @@ export default function Dashboard() {
         const newParticipant: Participant = {
           id: `MWR81-${String(newItem.id).padStart(4, '0')}`,
           name: newItem.nama,
-          rt: newItem.rt || '-',
+          rt: newItem.rt || newItem.address || '-',
           hp: newItem.telepon || newItem.hp || '',
           lomba: formData.lomba,
           catatan: newItem.catatan || '',
@@ -208,8 +225,15 @@ export default function Dashboard() {
 
         setShowBuktiDaftar(newParticipant);
         setParticipants(prev => {
-          const cleanKey = `${newParticipant.name.trim().toLowerCase()}-${newParticipant.hp.replace(/\D/g, '')}`;
-          const filtered = prev.filter(p => `${p.name.trim().toLowerCase()}-${p.hp.replace(/\D/g, '')}` !== cleanKey);
+          const cleanName = newParticipant.name.trim().toLowerCase();
+          const cleanPhone = newParticipant.hp.replace(/\D/g, '');
+          const uniqueKey = cleanPhone ? `${cleanName}-${cleanPhone}` : cleanName;
+
+          const filtered = prev.filter(p => {
+            const pName = p.name.trim().toLowerCase();
+            const pPhone = p.hp.replace(/\D/g, '');
+            return (pPhone ? `${pName}-${pPhone}` : pName) !== uniqueKey;
+          });
           return [newParticipant, ...filtered];
         });
         setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
@@ -256,7 +280,7 @@ export default function Dashboard() {
                 className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all whitespace-nowrap flex-shrink-0 snap-start ${
                   activeTab === tab.id
                     ? tab.activeColor + ' shadow-md'
-                    : 'bg-gray-50 text-gray-600 hover:bg-gray-150'
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 <span>{tab.icon}</span>
@@ -547,7 +571,7 @@ export default function Dashboard() {
                   <textarea 
                     value={formData.catatan} 
                     onChange={e => setFormData({...formData, catatan: e.target.value})} 
-                    placeholder="Informasi tambahan (opsional) - misal: alergi, tim, dll" 
+                    placeholder="Informasi tambahan (opsional)" 
                     rows={2} 
                     className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none text-sm" 
                   />
@@ -557,7 +581,7 @@ export default function Dashboard() {
                   type="submit" 
                   className="w-full bg-[#C1272D] text-white font-bold py-3.5 rounded-xl hover:bg-red-700 transition shadow-md text-sm"
                 >
-                  🛍️ Kirim Pendaftaran
+                  ✅ Daftar Sekarang & Simpan ke Supabase
                 </button>
               </form>
             </div>
@@ -576,7 +600,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="mb-3 bg-green-50 border border-green-200 rounded-lg p-2.5 text-xs text-green-800">
-                ✅ <strong>Realtime Supabase Aktif:</strong> Pendaftar baru akan otomatis tersimpan ke database & muncul live tanpa duplikasi.
+                ✅ <strong>Sinkronisasi Supabase Aktif:</strong> Pendaftar otomatis tersimpan ke tabel Supabase dan langsung tampil realtime di bawah ini tanpa duplikasi.
               </div>
               <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
                 {participants.length === 0 ? (
@@ -840,7 +864,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="mt-4">
-                <button onClick={() => setShowBuktiDonasiNul(showBuktiDonasi => null)} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">Selesai</button>
+                <button onClick={() => setShowBuktiDonasi(null)} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">Selesai</button>
               </div>
             </div>
           </Modal>
