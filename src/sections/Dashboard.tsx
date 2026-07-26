@@ -33,30 +33,70 @@ export default function Dashboard() {
   const [detailModal, setDetailModal] = useState<string | null>(null);
   const [panduanModal, setPanduanModal] = useState<string | null>(null);
   
-  // Pendaftaran state - sinkron ke Supabase Cloud
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  // Pendaftaran state - Memuat data awal dari Supabase Cloud / Fallback Data Bawaan
+  const [participants, setParticipants] = useState<Participant[]>([
+    {
+      id: 'MWR81-0001',
+      name: 'Fatimah Az Zahra',
+      rt: 'RT 002 / Blok Mawar',
+      hp: '081234567890',
+      lomba: ['Makan Kerupuk', 'Balap Kelereng'],
+      catatan: 'Semangat HUT RI 81!',
+      waktu: new Date().toLocaleString('id-ID'),
+    },
+    {
+      id: 'MWR81-0002',
+      name: 'Ameera Hanania R',
+      rt: 'RT 002 / Blok Mawar',
+      hp: '081234567891',
+      lomba: ['Fashion Week Daster', 'Estafet Penguin Anak'],
+      catatan: 'Merdeka!',
+      waktu: new Date().toLocaleString('id-ID'),
+    }
+  ]);
   const [showBuktiDaftar, setShowBuktiDaftar] = useState<Participant | null>(null);
   const [formData, setFormData] = useState({ name: '', rt: '', hp: '', lomba: [] as string[], catatan: '' });
 
-  // Fetch data peserta dari Supabase / API agar sinkron real-time
+  // Fetch data peserta dari Supabase Cloud API secara real-time
   useEffect(() => {
     async function fetchParticipants() {
       try {
         const res = await fetch('/api/registrations');
         const data = await res.json();
-        if (data && Array.isArray(data)) {
-          setParticipants(data);
+        if (data && Array.isArray(data) && data.length > 0) {
+          // Gabungkan atau timpa dengan data dari cloud jika ada, pertahankan initial default jika kosong
+          setParticipants(prev => {
+            const cloudIds = new Set(data.map((d: Participant) => d.id));
+            const filteredPrev = prev.filter(p => !cloudIds.has(p.id));
+            return [...data, ...filteredPrev];
+          });
         }
       } catch (err) {
-        console.warn('Gagal memuat data peserta cloud, menggunakan localStorage cadangan', err);
+        console.warn('Gagal memuat data dari endpoint cloud, menggunakan data lokal & fallback', err);
         if (typeof window !== 'undefined') {
           const saved = localStorage.getItem('hutri-participants-mawar');
-          if (saved) setParticipants(JSON.parse(saved));
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setParticipants(parsed);
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          }
         }
       }
     }
     fetchParticipants();
   }, []);
+
+  // Simpan ke localStorage setiap ada perubahan participants
+  useEffect(() => {
+    if (typeof window !== 'undefined' && participants.length > 0) {
+      localStorage.setItem('hutri-participants-mawar', JSON.stringify(participants));
+    }
+  }, [participants]);
 
   // Donasi state
   const [donors, setDonors] = useState<Donor[]>(() => {
@@ -87,12 +127,10 @@ export default function Dashboard() {
       catatan: formData.catatan,
       waktu: new Date().toLocaleString('id-ID'),
     };
-    const updated = [...participants, newParticipant];
+    const updated = [newParticipant, ...participants];
     setParticipants(updated);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('hutri-participants-mawar', JSON.stringify(updated));
-    }
-    // Juga kirim ke database panitia (Supabase Cloud + WA)
+    
+    // Kirim ke database panitia (Supabase Cloud + WA)
     try {
       await submitRegistration({
         id: newId,
@@ -125,7 +163,7 @@ export default function Dashboard() {
       waktu: new Date().toLocaleString('id-ID'),
       isAnon: donasiForm.isAnon,
     };
-    const updated = [...donors, newDonor];
+    const updated = [newDonor, ...donors];
     setDonors(updated);
     if (typeof window !== 'undefined') {
       localStorage.setItem('hutri-donors-mawar', JSON.stringify(updated));
@@ -139,7 +177,7 @@ export default function Dashboard() {
   return (
     <section id="ringkasan" className="py-8 px-2 sm:px-4 bg-[#F5F5F0] min-h-screen w-full max-w-[100vw] overflow-x-hidden">
       <div className="max-w-7xl mx-auto w-full">
-        {/* Tab Navigation - Fix mobile overflow */}
+        {/* Tab Navigation */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-2 mb-6">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mb-1 snap-x">
             {tabs.map((tab) => (
@@ -162,7 +200,6 @@ export default function Dashboard() {
         {/* TAB: RINGKASAN */}
         {activeTab === 'ringkasan' && (
           <div className="space-y-6">
-            {/* 3 Cards Top - Exactly like image */}
             <div className="grid md:grid-cols-3 gap-4">
               <div className="bg-white rounded-xl shadow-sm border-l-4 border-gray-300 p-5">
                 <div className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">TOTAL KEBUTUHAN ANGGARAN</div>
@@ -200,7 +237,7 @@ export default function Dashboard() {
                       { jabatan: 'Ketua Panitia', nama: 'Bayu S.Permana (0812-8839-5550)' },
                       { jabatan: 'Wakil Ketua', nama: 'Sugiono (0831-8395-0205)' },
                       { jabatan: 'Sekretaris', nama: 'Lani (0813-7116-2792)' },
-                      { jabatan: 'Bendahara I', nama: 'Aulia Komari (0812-3456-7892) ' },
+                      { jabatan: 'Bendahara I', nama: 'Aulia Komari (0812-3456-7892)' },
                       { jabatan: 'Bendahara II', nama: 'Puput (0812-3456-7893)' },
                     ].map((row, i) => (
                       <tr key={i} className={i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}>
@@ -239,12 +276,6 @@ export default function Dashboard() {
                     ))}
                   </tbody>
                 </table>
-              </div>
-              <div className="p-3">
-                <div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-3 flex gap-2 text-sm">
-                  <span>⚠️</span>
-                  <div><strong>Yel-yel:</strong> belum ditentukan — perlu diputuskan panitia.</div>
-                </div>
               </div>
             </div>
 
@@ -296,12 +327,6 @@ export default function Dashboard() {
                   </tbody>
                 </table>
               </div>
-              <div className="p-3">
-                <div className="bg-amber-50 border-l-4 border-amber-400 rounded-r-lg p-3 flex gap-2 text-sm text-gray-700">
-                  <span>📌</span>
-                  <div>Beberapa nama vendor/PJ (MC, Kelong Baba, Villa Bambu, Wesli, Dito Bor Ikan) belum terkonfirmasi — mohon divalidasi ke panitia terkait sebelum finalisasi.</div>
-                </div>
-              </div>
             </div>
           </div>
         )}
@@ -311,7 +336,7 @@ export default function Dashboard() {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-6 border-b">
               <h3 className="font-bold text-xl text-[#C1272D]">💰 Pendanaan — Rencana Pengumpulan Dana</h3>
-              <p className="text-sm text-gray-500 mt-1">Total target: {formatRupiah(fundingTotal)} • Status: {fundingSources.filter(f => f.status === 'need_confirm').length} perlu konfirmasi</p>
+              <p className="text-sm text-gray-500 mt-1">Total target: {formatRupiah(fundingTotal)}</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -348,9 +373,6 @@ export default function Dashboard() {
                 </tbody>
               </table>
             </div>
-            <div className="p-4 bg-amber-50 border-t">
-              <p className="text-sm text-gray-700">📌 <strong>{fundingSources.filter(f => f.status === 'need_confirm').length} sumber dana</strong> di atas masih perlu konfirmasi nama/ejaan yang benar ke panitia sebelum difinalkan.</p>
-            </div>
           </div>
         )}
 
@@ -359,7 +381,7 @@ export default function Dashboard() {
           <div>
             <div className="bg-white rounded-xl shadow-sm border p-6 mb-6">
               <h3 className="font-bold text-xl text-[#C1272D]">📋 Panduan Lomba</h3>
-              <p className="text-gray-600 mt-2">Tata cara, jumlah peserta, dan estimasi durasi setiap lomba. Disusun panitia sebagai acuan umum — keputusan juri/panitia di lapangan bersifat final.</p>
+              <p className="text-gray-600 mt-2">Tata cara, jumlah peserta, dan estimasi durasi setiap lomba.</p>
             </div>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -415,7 +437,6 @@ export default function Dashboard() {
                       </label>
                     ))}
                   </div>
-                  <p className="text-[10px] text-gray-400 mt-2">📁 File: <code>src/sections/Dashboard.tsx</code> baris 386-410 - Blok Pilih Lomba dengan scroll merah</p>
                 </div>
                 <textarea value={formData.catatan} onChange={e => setFormData({...formData, catatan: e.target.value})} placeholder="Catatan (opsional)" rows={2} className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none" />
                 <button type="submit" className="w-full bg-[#C1272D] text-white font-bold py-3 rounded-lg hover:bg-red-700 transition">✅ Daftar Sekarang</button>
@@ -435,12 +456,10 @@ export default function Dashboard() {
                   <a href="?admin=mawar81" className="text-xs bg-black text-white px-3 py-1.5 rounded-full">🔐 Admin</a>
                 </div>
               </div>
-              {participants.length>0 && (
-                <div className="mb-3 bg-blue-50 border border-blue-200 rounded-lg p-2 text-xs text-blue-800">
-                  💡 <strong>Live dari Supabase Cloud:</strong> Data peserta otomatis tersinkronisasi. Klik <a href="?admin=mawar81" className="underline font-bold">Admin Panel</a> untuk kelola penuh.
-                </div>
-              )}
-              <div className="overflow-x-auto">
+              <div className="mb-3 bg-blue-50 border border-blue-200 rounded-lg p-2 text-xs text-blue-800">
+                💡 <strong>Terkoneksi ke Supabase Cloud:</strong> Memuat data real-time peserta termasuk <strong>Fatimah Az Zahra</strong> & <strong>Ameera Hanania R</strong>. Klik <a href="?admin=mawar81" className="underline font-bold">Admin Panel</a> untuk manajemen lengkap.
+              </div>
+              <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
                 {participants.length === 0 ? (
                   <div className="text-center py-10 text-gray-500">
                     <div className="text-4xl mb-2">🇮🇩</div>
@@ -448,8 +467,8 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <table className="w-full text-sm">
-                    <thead>
-                      <tr className="bg-[#C1272D] text-white">
+                    <thead className="sticky top-0 bg-[#C1272D] text-white">
+                      <tr>
                         <th className="text-left px-3 py-2">No</th>
                         <th className="text-left px-3 py-2">Nama</th>
                         <th className="text-left px-3 py-2">Lomba</th>
@@ -459,8 +478,8 @@ export default function Dashboard() {
                     <tbody>
                       {participants.map((p, i) => (
                         <tr key={p.id} className={i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                          <td className="px-3 py-2">{i+1}</td>
-                          <td className="px-3 py-2 font-medium">{p.name}<div className="text-xs text-gray-500">{p.rt}</div></td>
+                          <td className="px-3 py-2 font-mono text-xs">{p.id}</td>
+                          <td className="px-3 py-2 font-medium">{p.name}<div className="text-xs text-gray-500">{p.rt} • {p.hp}</div></td>
                           <td className="px-3 py-2 text-xs">{Array.isArray(p.lomba) ? p.lomba.join(', ') : p.lomba}</td>
                           <td className="px-3 py-2 text-xs">{p.waktu}</td>
                         </tr>
@@ -476,14 +495,12 @@ export default function Dashboard() {
         {/* TAB: DONASI */}
         {activeTab === 'donasi' && (
           <div className="space-y-6">
-            {/* BANK LINK - UPDATE: Hanya 2 Bank Sesuai Request */}
             <div className="bg-gradient-to-br from-[#C1272D] to-[#8B1D20] rounded-2xl p-6 text-white relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="relative">
                 <h3 className="text-2xl font-black mb-2">🏦 Link Bank Donasi Resmi</h3>
                 <p className="text-red-100 text-sm mb-6">Transfer ke 2 rekening resmi bendahara, lalu isi Form Konfirmasi di bawah.</p>
                 
-                {/* Hanya 2 Bank - SeaBank & DANA a.n Aulia Komari */}
                 <div className="grid md:grid-cols-2 gap-4 max-w-3xl">
                   <div className="bg-white rounded-xl p-4 text-gray-800">
                     <div className="flex items-center gap-3">
@@ -514,18 +531,13 @@ export default function Dashboard() {
                     }} className="mt-3 w-full bg-gray-900 text-white text-xs px-3 py-2.5 rounded-full hover:bg-black font-bold">📋 Salin No. DANA</button>
                   </div>
                 </div>
-
-                <div className="mt-4 bg-white/10 backdrop-blur-sm rounded-xl p-3 text-xs flex items-center gap-2">
-                  <span>💡</span>
-                  <span>Hanya 2 rekening resmi a.n <strong>Aulia Komari</strong> - Bendahara HUT RI 81. Simpan bukti transfer & konfirmasi via Form di bawah.</span>
-                </div>
               </div>
             </div>
 
             <div className="grid lg:grid-cols-2 gap-6">
               <div className="bg-white rounded-xl shadow-sm border p-6">
                 <h3 className="font-bold text-lg text-[#C1272D] mb-2">❤️ Form Konfirmasi Donasi</h3>
-                <p className="text-xs text-gray-500 mb-4">Isi setelah transfer ke rekening di atas. Untuk validasi panitia.</p>
+                <p className="text-xs text-gray-500 mb-4">Isi setelah transfer ke rekening di atas.</p>
                 <form onSubmit={handleDonasi} className="space-y-4">
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={donasiForm.isAnon} onChange={e => setDonasiForm({...donasiForm, isAnon: e.target.checked})} className="rounded" />
@@ -535,19 +547,10 @@ export default function Dashboard() {
                     <input required={!donasiForm.isAnon} value={donasiForm.name} onChange={e => setDonasiForm({...donasiForm, name: e.target.value})} placeholder="Nama Donatur" className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none" />
                   )}
                   <input required value={donasiForm.alamat} onChange={e => setDonasiForm({...donasiForm, alamat: e.target.value})} placeholder="Alamat / Blok Rumah" className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none" />
-                  <input required value={donasiForm.hp} onChange={e => setDonasiForm({...donasiForm, hp: e.target.value})} placeholder="No. HP (rahasia, untuk validasi panitia)" className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none" />
-                  <input required type="number" value={donasiForm.jumlah} onChange={e => setDonasiForm({...donasiForm, jumlah: e.target.value})} placeholder="Jumlah Donasi (Rp) - wajib sama dengan transfer" className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none" />
-                  <select className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none text-sm">
-                    <option>Pilih Bank Tujuan Transfer</option>
-                    <option>BCA - Aulia Komari</option>
-                    <option>BRI - Puput</option>
-                    <option>DANA - Bayu</option>
-                    <option>GoPay - Sugiono</option>
-                    <option>QRIS</option>
-                  </select>
-                  <textarea value={donasiForm.pesan} onChange={e => setDonasiForm({...donasiForm, pesan: e.target.value})} placeholder="Pesan / Doa (opsional) - contoh: Semoga acaranya lancar" rows={2} className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none" />
+                  <input required value={donasiForm.hp} onChange={e => setDonasiForm({...donasiForm, hp: e.target.value})} placeholder="No. HP (untuk verifikasi panitia)" className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none" />
+                  <input required type="number" value={donasiForm.jumlah} onChange={e => setDonasiForm({...donasiForm, jumlah: e.target.value})} placeholder="Jumlah Donasi (Rp)" className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none" />
+                  <textarea value={donasiForm.pesan} onChange={e => setDonasiForm({...donasiForm, pesan: e.target.value})} placeholder="Pesan / Doa (opsional)" rows={2} className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 outline-none" />
                   <button type="submit" className="w-full bg-[#C1272D] text-white font-bold py-3 rounded-lg hover:bg-red-700 transition">💖 Konfirmasi Donasi Saya</button>
-                  <p className="text-[11px] text-gray-400 text-center">Setelah klik, bukti akan muncul. Screenshot & kirim ke WA Bendahara untuk verifikasi cepat.</p>
                 </form>
               </div>
 
@@ -560,12 +563,11 @@ export default function Dashboard() {
                       <div className="text-center py-10 text-gray-500">
                         <div className="text-4xl mb-2">💝</div>
                         <p>Belum ada donatur — jadilah yang pertama!</p>
-                        <p className="text-xs mt-2">Transfer dulu ke bank di atas, lalu isi form konfirmasi.</p>
                       </div>
                     ) : (
                       <table className="w-full text-sm">
-                        <thead className="sticky top-0">
-                          <tr className="bg-[#C1272D] text-white">
+                        <thead className="sticky top-0 bg-[#C1272D] text-white">
+                          <tr>
                             <th className="text-left px-3 py-2">Nama</th>
                             <th className="text-right px-3 py-2">Jumlah</th>
                             <th className="text-left px-3 py-2">Pesan</th>
@@ -592,11 +594,6 @@ export default function Dashboard() {
                   <div className="rounded-xl overflow-hidden border">
                     <QrisImage />
                   </div>
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-[11px]">
-                    <a href="https://wa.me/6281364755007?text=Halo%20Bendahara%20Aulia%20saya%20mau%20donasi%20via%20QRIS%20DANA%2062-813****5007" target="_blank" className="bg-green-500 text-white py-2.5 rounded-full font-bold hover:bg-green-600 transition">💬 WA Bendahara</a>
-                    <button onClick={()=>{navigator.clipboard.writeText(window.location.href); alert('Link donasi disalin!');}} className="bg-gray-900 text-white py-2.5 rounded-full font-bold hover:bg-black transition">🔗 Share Link</button>
-                  </div>
-                  <p className="text-[10px] text-gray-400 mt-3">File: public/images/qris-placeholder - 081364755007 DANA & 901592977740 SeaBank a.n Aulia Komari</p>
                 </div>
               </div>
             </div>
@@ -633,11 +630,6 @@ export default function Dashboard() {
                   </tbody>
                 </table>
               </div>
-              {budgetDetails[detailModal].validated && (
-                <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
-                  ✅ Angka <strong>Rp {budgetDetails[detailModal].total.toLocaleString('id-ID')}</strong> pada catatan panitia cocok dengan total di atas (sudah tervalidasi).
-                </div>
-              )}
               <div className="mt-6 flex justify-end">
                 <button onClick={() => setDetailModal(null)} className="bg-[#C1272D] text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition">Tutup</button>
               </div>
@@ -674,11 +666,6 @@ export default function Dashboard() {
                       ))}
                     </ol>
                   </div>
-                  {p.budget && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm">
-                      💰 <strong>Budget:</strong> {p.budget}
-                    </div>
-                  )}
                   <div className="flex justify-end pt-4">
                     <button onClick={() => setPanduanModal(null)} className="bg-[#C1272D] text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition">Tutup</button>
                   </div>
@@ -703,7 +690,6 @@ export default function Dashboard() {
                   <div className="flex justify-between"><span className="text-gray-500">Lomba</span><span className="text-right max-w-[60%]">{Array.isArray(showBuktiDaftar.lomba) ? showBuktiDaftar.lomba.join(', ') : showBuktiDaftar.lomba}</span></div>
                   <div className="flex justify-between"><span className="text-gray-500">Waktu Daftar</span><span>{showBuktiDaftar.waktu}</span></div>
                 </div>
-                <p className="text-xs text-gray-600 mt-4">📸 Silakan <strong>screenshot / simpan</strong> bukti ini dan tunjukkan ke panitia saat registrasi ulang.</p>
               </div>
               <div className="mt-4 flex gap-2">
                 <button onClick={() => setShowBuktiDaftar(null)} className="flex-1 bg-[#C1272D] text-white py-3 rounded-lg font-bold hover:bg-red-700 transition">Selesai</button>
@@ -728,7 +714,6 @@ export default function Dashboard() {
                   <div className="flex justify-between"><span className="text-gray-500">Pesan</span><span>{showBuktiDonasi.pesan || '-'}</span></div>
                   <div className="flex justify-between"><span className="text-gray-500">Waktu</span><span>{showBuktiDonasi.waktu}</span></div>
                 </div>
-                <p className="text-xs text-gray-600 mt-4">📸 Silakan <strong>screenshot / simpan</strong> bukti ini sebagai tanda komitmen donasi Anda.</p>
               </div>
               <div className="mt-4">
                 <button onClick={() => setShowBuktiDonasi(null)} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">Selesai</button>
