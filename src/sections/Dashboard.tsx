@@ -55,40 +55,32 @@ export default function LandingRegisterForm() {
 
     setLoading(true);
 
-    // Payload ganda untuk mengantisipasi perbedaan nama kolom di database Supabase (Indonesia/Inggris)
     const payload = {
       nama: formData.name.trim(),
-      name: formData.name.trim(),
       telepon: formData.hp.trim(),
-      hp: formData.hp.trim(),
       rt: formData.rt.trim(),
-      address: formData.rt.trim(),
       lomba: formData.lomba.join(', '),
       catatan: formData.catatan.trim() || 'Terdaftar via Landing Page',
     };
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('pendaftar')
-        .insert([payload])
-        .select();
+        .insert([payload]);
 
-      if (error) {
-        console.error('Detail Error Supabase:', error);
-        throw new Error(error.message || JSON.stringify(error));
-      }
+      if (error) throw error;
 
       alert('🎉 Pendaftaran berhasil! Data Anda telah tersimpan otomatis ke database.');
       setFormData({ name: '', hp: '', rt: '', lomba: [], catatan: '' });
-    } cat (err: any) {
-      alert('Gagal menyimpan ke database Supabase:\n' + (err.message || 'Periksa koneksi atau struktur kolom tabel pendaftar.'));
+    } catch (err: any) {
+      alert('Gagal menyimpan ke database: ' + (err.message || 'Kesalahan koneksi'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-[#C1272D] py-12 px-4 min-h-screen flex flex-col items-center">
+    <div className="bg-[#C1272D] py-12 px-4 w-full flex flex-col items-center">
       <div className="text-center text-white max-w-2xl mb-8">
         <h2 className="text-3xl sm:text-4xl font-black mb-3 tracking-wide">Daftar Lomba Sekarang!</h2>
         <div className="w-24 h-1 bg-white mx-auto mb-4 rounded-full"></div>
@@ -169,17 +161,6 @@ export default function LandingRegisterForm() {
                 );
               })}
             </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-gray-700 block mb-2 uppercase tracking-wider">Catatan Tambahan (Opsional)</label>
-            <textarea
-              value={formData.catatan}
-              onChange={e => setFormData({...formData, catatan: e.target.value})}
-              placeholder="Informasi tambahan jika ada..."
-              rows={3}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#C1272D] focus:outline-none"
-            ></textarea>
           </div>
 
           <button
