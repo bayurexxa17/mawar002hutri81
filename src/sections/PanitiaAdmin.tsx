@@ -16,7 +16,7 @@ export default function PanitiaAdmin() {
 
     const params = new URLSearchParams(window.location.search);
     const adminValue = params.get('admin');
-    const allowed = ['mawar81', 'admin81', 'panitia81', 'greenbay81'];
+    const allowed = ['admin81', 'panitia81'];
 
     if (adminValue && allowed.includes(adminValue.toLowerCase())) {
       setIsAuth(true);
