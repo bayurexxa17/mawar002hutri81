@@ -342,9 +342,77 @@ export default function Dashboard() {
 
         {/* TAB PENDAFTARAN */}
         {activeTab === 'pendaftaran' && (
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h3 className="font-bold text-lg text-[#C1272D] mb-4">📝 Informasi Pendaftaran</h3>
-            <p className="text-sm text-gray-600">Formulir pendaftaran interaktif telah dihapus secara permanen sesuai instruksi Anda. Terima kasih.</p>
+          <div className="grid lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl shadow-sm border p-6">
+              <h3 className="font-bold text-lg text-[#C1272D] mb-4">📝 Form Pendaftaran Lomba</h3>
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 block mb-1">Nama Lengkap *</label>
+                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Contoh: Abiyu Rexxa" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 block mb-1">Nomor WhatsApp *</label>
+                  <input required value={formData.hp} onChange={e => setFormData({...formData, hp: e.target.value})} placeholder="08xxxxxxxxxx" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 block mb-1">Alamat (RT / Blok) *</label>
+                  <input required value={formData.rt} onChange={e => setFormData({...formData, rt: e.target.value})} placeholder="Contoh: RT 002 / Blok Mawar 12" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 block mb-1">Pilih Lomba * ({formData.lomba.length} dipilih)</label>
+                  <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border rounded-lg p-2 bg-gray-50">
+                    {['Makan Kerupuk', 'Futsal Mini', 'Balap Kelereng', 'Tarik Tambang', 'Hias Tumpeng', 'Fashion Week Daster', 'Estafet Tepung'].map(l => (
+                      <label key={l} className="flex items-center gap-2 text-sm bg-white p-2 rounded border cursor-pointer">
+                        <input type="checkbox" checked={formData.lomba.includes(l)} onChange={e => {
+                          if (e.target.checked) setFormData({...formData, lomba: [...formData.lomba, l]});
+                          else setFormData({...formData, lomba: formData.lomba.filter(x => x !== l)});
+                        }} className="rounded text-[#C1272D]" />
+                        <span>{l}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <button type="submit" className="w-full bg-[#C1272D] text-white font-bold py-3 rounded-xl hover:bg-red-700 transition text-sm">✅ Daftar Sekarang</button>
+              </form>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-lg text-[#C1272D]">🏅 Daftar Peserta ({participants.length})</h3>
+                <button onClick={() => {
+                  let csv = 'No,ID,Nama,RT,HP,Lomba,Waktu\n';
+                  participants.forEach((p, i) => { csv += `${i+1},${p.id},${p.name},${p.rt},${p.hp},\"${p.lomba.join('; ')}\",${p.waktu}\n`; });
+                  const blob = new Blob([csv], {type: 'text/csv'});
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a'); a.href = url; a.download = 'pendaftar-mawar.csv'; a.click();
+                }} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-full font-semibold">📥 Export CSV</button>
+              </div>
+              <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-[#C1272D] text-white">
+                    <tr>
+                      <th className="text-left px-3 py-2">ID</th>
+                      <th className="text-left px-3 py-2">Nama & Kontak</th>
+                      <th className="text-left px-3 py-2">Lomba</th>
+                      <th className="text-left px-3 py-2">Waktu</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {participants.map((p, i) => (
+                      <tr key={p.id || i} className={i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                        <td className="px-3 py-2 font-mono text-xs font-bold text-[#C1272D]">{p.id}</td>
+                        <td className="px-3 py-2 font-medium">
+                          <div>{p.name}</div>
+                          <div className="text-xs text-gray-500">{p.rt} • {p.hp}</div>
+                        </td>
+                        <td className="px-3 py-2 text-xs">{p.lomba.join(', ')}</td>
+                        <td className="px-3 py-2 text-[11px] text-gray-500">{p.waktu}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
 
