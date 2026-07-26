@@ -5,6 +5,7 @@ import { fundingSources, fundingTotal } from '../data/funding';
 import { eventTypes, panduanLomba } from '../data/eventTypes';
 import { submitRegistration } from '../utils/api';
 import QrisImage from '../components/QrisImage';
+import { supabase } from '../utils/supabaseClient';
 
 type TabType = 'ringkasan' | 'pendanaan' | 'panduan' | 'pendaftaran' | 'donasi';
 
@@ -28,7 +29,6 @@ interface Donor {
   isAnon: boolean;
 }
 
-// Data awal default (hardcoded fallback utama agar Fatimah Az Zahra & Ameera Hanania R langsung tampil tanpa menunggu fetch cloud)
 const initialParticipants: Participant[] = [
   {
     id: 'MWR81-0001',
@@ -51,11 +51,10 @@ const initialParticipants: Participant[] = [
 ];
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<TabType>('pendaftaran'); // Default langsung ke tab pendaftaran agar langsung terlihat
+  const [activeTab, setActiveTab] = useState<TabType>('pendaftaran');
   const [detailModal, setDetailModal] = useState<string | null>(null);
   const [panduanModal, setPanduanModal] = useState<string | null>(null);
   
-  // Pendaftaran state diinisialisasi dengan data default Fatimah & Ameera + localStorage jika ada
   const [participants, setParticipants] = useState<Participant[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('hutri-participants-mawar');
@@ -63,7 +62,6 @@ export default function Dashboard() {
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            // Pastikan Fatimah & Ameera selalu ada di dalam list jika belum ada di localStorage
             const hasFatimah = parsed.some((p: Participant) => p.name.includes('Fatimah'));
             if (!hasFatimah) {
               return [...initialParticipants, ...parsed];
@@ -81,32 +79,75 @@ export default function Dashboard() {
   const [showBuktiDaftar, setShowBuktiDaftar] = useState<Participant | null>(null);
   const [formData, setFormData] = useState({ name: '', rt: '', hp: '', lomba: [] as string[], catatan: '' });
 
-  // Sinkronisasi tambahan dari API Supabase Cloud (jika endpoint aktif)
+  // 1. Fetch awal data dari Supabase (Tabel: pendaftar)
   useEffect(() => {
     async function fetchParticipants() {
       try {
-        const res = await fetch('/api/registrations');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && Array.isArray(data) && data.length > 0) {
-            setParticipants(prev => {
-              const existingIds = new Set(prev.map(p => p.id));
-              const newItems = data.filter((d: Participant) => !existingIds.has(d.id));
-              if (newItems.length > 0) {
-                return [...newItems, ...prev];
-              }
-              return prev;
-            });
-          }
+        const { data, error } = await supabase
+          .from('pendaftar')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          const formatted: Participant[] = data.map((item: any) => ({
+            id: `MWR81-${String(item.id).padStart(4, '0')}`,
+            name: item.nama,
+            rt: item.rt || '-',
+            hp: item.telepon || '',
+            lomba: typeof item.lomba === 'string' ? item.lomba.split(', ') : (Array.isArray(item.lomba) ? item.lomba : []),
+            catatan: item.catatan || '',
+            waktu: item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : new Date().toLocaleString('id-ID')
+          }));
+
+          setParticipants(formatted);
         }
       } catch (err) {
-        console.warn('Menggunakan data lokal & data wajib (Fatimah & Ameera)', err);
+        console.warn('Gagal fetch awal supabase:', err);
       }
     }
     fetchParticipants();
   }, []);
 
-  // Simpan otomatis ke localStorage setiap ada perubahan
+  // 2. SUPABASE REALTIME SUBSCRIPTION (Tabel: pendaftar)
+  useEffect(() => {
+    const channel = supabase
+      .channel('public:pendaftar')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'pendaftar',
+        },
+        (payload) => {
+          console.log('Data baru masuk via Realtime Supabase:', payload);
+          const newItem = payload.new;
+          
+          const formattedParticipant: Participant = {
+            id: `MWR81-${String(newItem.id).padStart(4, '0')}`,
+            name: newItem.nama,
+            rt: newItem.rt || '-',
+            hp: newItem.telepon || '',
+            lomba: typeof newItem.lomba === 'string' ? newItem.lomba.split(', ') : (Array.isArray(newItem.lomba) ? newItem.lomba : []),
+            catatan: newItem.catatan || '',
+            waktu: newItem.created_at ? new Date(newItem.created_at).toLocaleString('id-ID') : new Date().toLocaleString('id-ID')
+          };
+
+          setParticipants(prev => {
+            if (prev.some(p => p.id === formattedParticipant.id || p.name === formattedParticipant.name)) return prev;
+            return [formattedParticipant, ...prev];
+          });
+        }
+      )
+      .subscribe((status) => {
+        console.log('Status Realtime Supabase:', status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   useEffect(() => {
     if (typeof window !== 'undefined' && participants.length > 0) {
       localStorage.setItem('hutri-participants-mawar', JSON.stringify(participants));
@@ -132,9 +173,11 @@ export default function Dashboard() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newId = `MWR81-${String(participants.length + 1).padStart(4, '0')}`;
+    
+    // Optimistic data sementara
+    const tempId = `MWR81-NEW`;
     const newParticipant: Participant = {
-      id: newId,
+      id: tempId,
       name: formData.name,
       rt: formData.rt,
       hp: formData.hp,
@@ -142,26 +185,31 @@ export default function Dashboard() {
       catatan: formData.catatan,
       waktu: new Date().toLocaleString('id-ID'),
     };
-    const updated = [newParticipant, ...participants];
-    setParticipants(updated);
     
-    try {
-      await submitRegistration({
-        id: newId,
-        name: formData.name,
-        whatsapp: formData.hp,
-        rt: formData.rt,
-        hp: formData.hp,
-        address: formData.rt,
-        lomba: formData.lomba,
-        catatan: formData.catatan,
-        waktu: new Date().toLocaleString('id-ID'),
-        source: 'dashboard',
-      });
-    } catch (err) {
-      console.warn('Sync cloud:', err);
-    }
     setShowBuktiDaftar(newParticipant);
+
+    try {
+      // Kirim ke database Supabase (tabel 'pendaftar')
+      const { data, error } = await supabase.from('pendaftar').insert([
+        {
+          nama: formData.name,
+          telepon: formData.hp,
+          rt: formData.rt,
+          lomba: formData.lomba.join(', '),
+          catatan: formData.catatan,
+        }
+      ]).select();
+
+      if (error) {
+        console.error('GAGAL INSERT SUPABASE:', error.message);
+        alert('Gagal menyimpan ke Database Supabase: ' + error.message);
+      } else {
+        console.log('Berhasil masuk database:', data);
+      }
+    } catch (err) {
+      console.warn('Sync cloud error:', err);
+    }
+    
     setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
   };
 
@@ -201,7 +249,7 @@ export default function Dashboard() {
                 className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all whitespace-nowrap flex-shrink-0 snap-start ${
                   activeTab === tab.id
                     ? tab.activeColor + ' shadow-md'
-                    : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                    : 'bg-gray-50 text-gray-600 hover:bg-gray-150'
                 }`}
               >
                 <span>{tab.icon}</span>
@@ -464,14 +512,14 @@ export default function Dashboard() {
                   <button onClick={()=>{
                     if(participants.length===0) return alert('Belum ada data');
                     let csv='No,ID,Nama,RT,HP,Lomba,Waktu\n';
-                    participants.forEach((p,i)=>{csv+=`${i+1},${p.id},${p.name},${p.rt},${p.hp},\"${p.lomba.join('; ')}\",${p.waktu}\n`});
+                    participants.forEach((p,i)=>{csv+=`${i+1},${p.id},${p.name},${p.rt},${p.hp},\"${Array.isArray(p.lomba)?p.lomba.join('; '):p.lomba}\",${p.waktu}\n`});
                     const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`pendaftar-${new Date().toISOString().slice(0,10)}.csv`; a.click();
                   }} className="text-xs bg-green-600 text-white px-3 py-1.5 rounded-full">📥 Export CSV</button>
                   <a href="?admin=mawar81" className="text-xs bg-black text-white px-3 py-1.5 rounded-full">🔐 Admin</a>
                 </div>
               </div>
               <div className="mb-3 bg-green-50 border border-green-200 rounded-lg p-2.5 text-xs text-green-800">
-                ✅ <strong>Data Cloud Sinkron:</strong> Memuat pendaftar utama: <strong>Fatimah Az Zahra</strong> & <strong>Ameera Hanania R</strong> beserta pendaftar lainnya secara real-time.
+                ✅ <strong>Realtime Supabase Aktif:</strong> Pendaftar baru akan otomatis masuk ke database & muncul live.
               </div>
               <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
                 {participants.length === 0 ? (
@@ -705,7 +753,7 @@ export default function Dashboard() {
                   <div className="flex justify-between"><span className="text-gray-500">No. Registrasi</span><span className="font-bold text-[#C1272D]">{showBuktiDaftar.id}</span></div>
                   <div className="flex justify-between"><span className="text-gray-500">Nama</span><span className="font-semibold">{showBuktiDaftar.name}</span></div>
                   <div className="flex justify-between"><span className="text-gray-500">RT / Blok</span><span>{showBuktiDaftar.rt}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">No. HP</span><span>{showBuktiDafftar.hp}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-500">No. HP</span><span>{showBuktiDaftar.hp}</span></div>
                   <div className="flex justify-between"><span className="text-gray-500">Lomba</span><span className="text-right max-w-[60%]">{Array.isArray(showBuktiDaftar.lomba) ? showBuktiDaftar.lomba.join(', ') : showBuktiDaftar.lomba}</span></div>
                   <div className="flex justify-between"><span className="text-gray-500">Waktu Daftar</span><span>{showBuktiDaftar.waktu}</span></div>
                 </div>
