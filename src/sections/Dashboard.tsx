@@ -59,7 +59,7 @@ export default function Dashboard() {
   const [showBuktiDaftar, setShowBuktiDaftar] = useState<Participant | null>(null);
   const [formData, setFormData] = useState({ name: '', rt: '', hp: '', lomba: [] as string[], catatan: '' });
 
-  // Fungsi Pembersihan yang disesuaikan agar data dari Supabase pasti lolos dan tampil di tabel
+  // Fungsi Pembersihan Ketat: Otomatis membuang baris yang RT-nya kosong/minus atau berisi nomor HP uji coba tertentu (+62 819-9117-6369)
   const cleanAndFormatParticipants = (rawList: any[]): Participant[] => {
     const map = new Map<string, Participant>();
 
@@ -72,10 +72,11 @@ export default function Dashboard() {
 
       const cleanName = rawName.trim();
       const cleanPhone = (item.telepon || item.hp || '').replace(/\D/g, '');
-      const cleanRt = item.rt || item.address || '-';
+      const cleanRt = item.rt || item.address || '';
 
-      // Hanya menyaring nomor uji coba spam spesifik jika ada
-      if (cleanPhone.includes('81991176369')) return; 
+      // BLOKIR total data yang tidak valid, RT '-', atau nomor HP uji coba spam yang ingin dihapus
+      if (!cleanRt || cleanRt === '-' || cleanRt.trim() === '') return;
+      if (cleanPhone.includes('81991176369')) return; // Menyaring nomor uji coba spesifik yang diminta hilang
 
       const uniqueKey = cleanPhone ? cleanPhone : cleanName.toLowerCase();
 
@@ -109,7 +110,7 @@ export default function Dashboard() {
           .select('*')
           .order('id', { ascending: true });
 
-        if (!error && data) {
+        if (!error && data && data.length > 0) {
           const combined = cleanAndFormatParticipants([...defaultParticipants, ...data]);
           setParticipants(combined);
           localStorage.setItem('hutri-participants-mawar', JSON.stringify(combined));
@@ -121,7 +122,7 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  // Handler Pendaftaran Baru yang terhubung langsung ke Supabase
+  // Handler Pendaftaran Baru
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -151,13 +152,13 @@ export default function Dashboard() {
 
       if (error) throw error;
 
-      // Ambil ulang data terbaru dari Supabase agar sinkron dengan tabel
-      const { data: refreshed } = await supabase.from('pendaftar').select('*').order('id', { ascending: true });
-      if (refreshed) {
-        const cleaned = cleanAndFormatParticipants([...defaultParticipants, ...refreshed]);
-        setParticipants(cleaned);
-        if (cleaned.length > 0) {
-          setShowBuktiDaftar(cleaned[0]);
+      if (data && data.length > 0) {
+        const { data: refreshed } = await supabase.from('pendaftar').select('*').order('id', { ascending: true });
+        if (refreshed) {
+          const cleaned = cleanAndFormatParticipants([...defaultParticipants, ...refreshed]);
+          setParticipants(cleaned);
+          const newest = cleaned[0];
+          setShowBuktiDaftar(newest);
         }
       }
 
