@@ -67,7 +67,12 @@ export default function Dashboard() {
           .select('*')
           .order('id', { ascending: false });
 
-        if (!error && data && data.length > 0) {
+        if (error) {
+          console.error('Error fetching pendaftar:', error.message);
+          return;
+        }
+
+        if (data && data.length > 0) {
           const formatted: Participant[] = data.map((item: any) => ({
             id: `MWR81-${String(item.id).padStart(4, '0')}`,
             name: item.nama || '',
@@ -146,21 +151,27 @@ export default function Dashboard() {
     e.preventDefault();
     
     try {
-      // Kirim tanpa menyertakan 'id' karena kolom id di Supabase bersifat auto-increment (int8)
-      const { data, error } = await supabase.from('pendaftar').insert([
-        {
-          nama: formData.name,
-          telepon: formData.hp,
-          rt: formData.rt,
-          lomba: formData.lomba.join(', '),
-          catatan: formData.catatan,
-        }
-      ]).select();
+      // Mengirim data ke Supabase tanpa menyertakan id (biar auto-increment oleh database)
+      const payloadData = {
+        nama: formData.name,
+        telepon: formData.hp,
+        rt: formData.rt,
+        lomba: formData.lomba.join(', '),
+        catatan: formData.catatan,
+      };
+
+      const { data, error } = await supabase
+        .from('pendaftar')
+        .insert([payloadData])
+        .select();
 
       if (error) {
-        console.error('GAGAL INSERT SUPABASE:', error.message);
-        alert('Gagal menyimpan ke Database Supabase: ' + error.message);
-      } else if (data && data.length > 0) {
+        console.error('GAGAL INSERT SUPABASE:', error);
+        alert(`Gagal menyimpan ke Database Supabase!\nPesan: ${error.message}\nDetail: ${error.details || 'Cek RLS/Policy Supabase'}`);
+        return;
+      } 
+
+      if (data && data.length > 0) {
         console.log('Berhasil masuk database:', data);
         const newItem = data[0];
         const newParticipant: Participant = {
@@ -175,13 +186,12 @@ export default function Dashboard() {
 
         setShowBuktiDaftar(newParticipant);
         setParticipants(prev => [newParticipant, ...prev.filter(p => p.id !== newParticipant.id)]);
+        setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn('Sync cloud error:', err);
-      alert('Terjadi kesalahan koneksi ke server.');
+      alert('Terjadi kesalahan koneksi ke server: ' + (err?.message || err));
     }
-    
-    setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
   };
 
   const handleDonasi = (e: React.FormEvent) => {
