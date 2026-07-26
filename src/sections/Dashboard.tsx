@@ -3,7 +3,6 @@ import Modal from '../components/Modal';
 import { budgetSummary, budgetComponents, budgetDetails, formatRupiah } from '../data/budget';
 import { fundingSources, fundingTotal } from '../data/funding';
 import { eventTypes, panduanLomba } from '../data/eventTypes';
-import { submitRegistration } from '../utils/api';
 import QrisImage from '../components/QrisImage';
 import { supabase } from '../utils/supabaseClient';
 
@@ -55,27 +54,7 @@ export default function Dashboard() {
   const [detailModal, setDetailModal] = useState<string | null>(null);
   const [panduanModal, setPanduanModal] = useState<string | null>(null);
   
-  const [participants, setParticipants] = useState<Participant[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('hutri-participants-mawar');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const hasFatimah = parsed.some((p: Participant) => p.name.includes('Fatimah'));
-            if (!hasFatimah) {
-              return [...initialParticipants, ...parsed];
-            }
-            return parsed;
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
-    return initialParticipants;
-  });
-
+  const [participants, setParticipants] = useState<Participant[]>(initialParticipants);
   const [showBuktiDaftar, setShowBuktiDaftar] = useState<Participant | null>(null);
   const [formData, setFormData] = useState({ name: '', rt: '', hp: '', lomba: [] as string[], catatan: '' });
 
@@ -86,12 +65,12 @@ export default function Dashboard() {
         const { data, error } = await supabase
           .from('pendaftar')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('id', { ascending: false });
 
         if (!error && data && data.length > 0) {
           const formatted: Participant[] = data.map((item: any) => ({
             id: `MWR81-${String(item.id).padStart(4, '0')}`,
-            name: item.nama,
+            name: item.nama || '',
             rt: item.rt || '-',
             hp: item.telepon || '',
             lomba: typeof item.lomba === 'string' ? item.lomba.split(', ') : (Array.isArray(item.lomba) ? item.lomba : []),
@@ -134,25 +113,17 @@ export default function Dashboard() {
           };
 
           setParticipants(prev => {
-            if (prev.some(p => p.id === formattedParticipant.id || p.name === formattedParticipant.name)) return prev;
+            if (prev.some(p => p.id === formattedParticipant.id)) return prev;
             return [formattedParticipant, ...prev];
           });
         }
       )
-      .subscribe((status) => {
-        console.log('Status Realtime Supabase:', status);
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && participants.length > 0) {
-      localStorage.setItem('hutri-participants-mawar', JSON.stringify(participants));
-    }
-  }, [participants]);
 
   // Donasi state
   const [donors, setDonors] = useState<Donor[]>(() => {
@@ -174,22 +145,8 @@ export default function Dashboard() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Optimistic data sementara
-    const tempId = `MWR81-NEW`;
-    const newParticipant: Participant = {
-      id: tempId,
-      name: formData.name,
-      rt: formData.rt,
-      hp: formData.hp,
-      lomba: formData.lomba,
-      catatan: formData.catatan,
-      waktu: new Date().toLocaleString('id-ID'),
-    };
-    
-    setShowBuktiDaftar(newParticipant);
-
     try {
-      // Kirim ke database Supabase (tabel 'pendaftar')
+      // Kirim tanpa menyertakan 'id' karena kolom id di Supabase bersifat auto-increment (int8)
       const { data, error } = await supabase.from('pendaftar').insert([
         {
           nama: formData.name,
@@ -203,11 +160,25 @@ export default function Dashboard() {
       if (error) {
         console.error('GAGAL INSERT SUPABASE:', error.message);
         alert('Gagal menyimpan ke Database Supabase: ' + error.message);
-      } else {
+      } else if (data && data.length > 0) {
         console.log('Berhasil masuk database:', data);
+        const newItem = data[0];
+        const newParticipant: Participant = {
+          id: `MWR81-${String(newItem.id).padStart(4, '0')}`,
+          name: newItem.nama,
+          rt: newItem.rt || '-',
+          hp: newItem.telepon || '',
+          lomba: typeof newItem.lomba === 'string' ? newItem.lomba.split(', ') : formData.lomba,
+          catatan: newItem.catatan || '',
+          waktu: newItem.created_at ? new Date(newItem.created_at).toLocaleString('id-ID') : new Date().toLocaleString('id-ID'),
+        };
+
+        setShowBuktiDaftar(newParticipant);
+        setParticipants(prev => [newParticipant, ...prev.filter(p => p.id !== newParticipant.id)]);
       }
     } catch (err) {
       console.warn('Sync cloud error:', err);
+      alert('Terjadi kesalahan koneksi ke server.');
     }
     
     setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
