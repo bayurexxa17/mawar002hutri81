@@ -59,33 +59,35 @@ export default function Dashboard() {
   const [showBuktiDaftar, setShowBuktiDaftar] = useState<Participant | null>(null);
   const [formData, setFormData] = useState({ name: '', rt: '', hp: '', lomba: [] as string[], catatan: '' });
 
-  // Fungsi helper terpusat untuk membersihkan & mendeduplikasi array participant secara ketat
-  const mergeAndDedupParticipants = (incoming: Participant[]): Participant[] => {
+  // Fungsi helper pembersihan & deduplikasi total berbasis Normalisasi String & No HP (Case-Insensitive & Trim)
+  const sanitizeAndDedup = (rawList: Participant[]): Participant[] => {
     const map = new Map<string, Participant>();
 
-    incoming.forEach(p => {
-      if (!p || !p.name) return;
-      const cleanName = p.name.trim().toLowerCase();
-      const cleanPhone = p.hp ? p.hp.replace(/\D/g, '') : '';
+    rawList.forEach((item) => {
+      if (!item || !item.name) return;
+
+      const cleanName = item.name.trim().toLowerCase();
+      // Ambil angka saja dari no HP agar format berbeda (+62 / 08 / spasi) tetap terbaca sebagai entitas yang sama
+      const cleanPhone = item.hp ? item.hp.replace(/\D/g, '') : '';
       
-      // Kunci unik gabungan nama dan nomor HP (jika HP kosong, fallback ke nama saja)
+      // Kunci unik gabungan nama dan nomor HP. Jika HP kosong, gunakan nama.
       const uniqueKey = cleanPhone ? `${cleanName}-${cleanPhone}` : cleanName;
 
       if (!map.has(uniqueKey)) {
-        map.set(uniqueKey, p);
+        map.set(uniqueKey, item);
       } else {
         const existing = map.get(uniqueKey)!;
         
-        // Prioritaskan data yang memiliki info RT/Lomba lebih lengkap atau ID yang valid (bukan duplikat rekaan)
+        // Pilih data yang memiliki kelengkapan informasi lebih baik (RT/Blok terisi, Lomba terisi)
         const existingScore = (existing.rt && existing.rt !== '-' ? 2 : 0) + (existing.lomba && existing.lomba.length > 0 ? 2 : 0);
-        const incomingScore = (p.rt && p.rt !== '-' ? 2 : 0) + (p.lomba && p.lomba.length > 0 ? 2 : 0);
+        const incomingScore = (item.rt && item.rt !== '-' ? 2 : 0) + (item.lomba && item.lomba.length > 0 ? 2 : 0);
 
         if (incomingScore > existingScore) {
-          map.set(uniqueKey, p);
+          map.set(uniqueKey, item);
         } else if (incomingScore === existingScore) {
-          // Jika skor sama, utamakan penulisan nama yang rapi (tidak lowercase semua) atau format ID resmi MWR81
-          if (existing.name === existing.name.toLowerCase() && p.name !== p.name.toLowerCase()) {
-            map.set(uniqueKey, p);
+          // Utamakan format ID resmi MWR81 jika salah satu duplikat memiliki ID acak sementara
+          if (existing.id.includes('863413') && !item.id.includes('863413')) {
+            map.set(uniqueKey, item);
           }
         }
       }
@@ -120,7 +122,7 @@ export default function Dashboard() {
           }));
 
           setParticipants(prev => {
-            const combined = mergeAndDedupParticipants([...initialParticipants, ...prev, ...formatted]);
+            const combined = sanitizeAndDedup([...initialParticipants, ...prev, ...formatted]);
             if (typeof window !== 'undefined') {
               localStorage.setItem('hutri-participants-mawar', JSON.stringify(combined));
             }
@@ -134,7 +136,7 @@ export default function Dashboard() {
     fetchParticipants();
   }, []);
 
-  // 2. Realtime Subscription Supabase dengan penanganan unik tanpa duplikasi
+  // 2. Realtime Subscription Supabase dengan filter anti-duplikasi langsung
   useEffect(() => {
     const channel = supabase
       .channel('public:pendaftar')
@@ -158,7 +160,7 @@ export default function Dashboard() {
           };
 
           setParticipants(prev => {
-            const updated = mergeAndDedupParticipants([formattedParticipant, ...prev]);
+            const updated = sanitizeAndDedup([formattedParticipant, ...prev]);
             if (typeof window !== 'undefined') {
               localStorage.setItem('hutri-participants-mawar', JSON.stringify(updated));
             }
@@ -190,7 +192,7 @@ export default function Dashboard() {
     { id: 'donasi' as TabType, label: 'Donasi', icon: '❤️', activeColor: 'bg-[#C1272D] text-white' },
   ];
 
-  // 3. Fungsi Register yang benar: Simpan ke Supabase & LocalStorage dengan proteksi duplikat total
+  // 3. Fungsi Register Aman: Proteksi 100% dari data double/ganda sebelum masuk state & database
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -199,12 +201,27 @@ export default function Dashboard() {
       return;
     }
 
+    const cleanInputName = formData.name.trim().toLowerCase();
+    const cleanInputPhone = formData.hp.replace(/\D/g, '');
+
+    // Cek apakah data dengan nama & no HP yang sama sudah terdaftar di state aktif
+    const isAlreadyRegistered = participants.some(p => {
+      const pName = p.name.trim().toLowerCase();
+      const pPhone = p.hp ? p.hp.replace(/\D/g, '') : '';
+      return pName === cleanInputName && (pPhone === cleanInputPhone || (!cleanInputPhone && !pPhone));
+    });
+
+    if (isAlreadyRegistered) {
+      alert(`⚠️ Peringatan: Peserta atas nama "${formData.name}" dengan nomor kontak tersebut sudah terdaftar di Daftar Peserta!`);
+      return;
+    }
+
     const payloadData = {
-      nama: formData.name,
-      telepon: formData.hp,
-      rt: formData.rt,
+      nama: formData.name.trim(),
+      telepon: formData.hp.trim(),
+      rt: formData.rt.trim(),
       lomba: formData.lomba.join(', '),
-      catatan: formData.catatan || '',
+      catatan: formData.catatan.trim() || '',
     };
 
     let newParticipant: Participant;
@@ -220,14 +237,14 @@ export default function Dashboard() {
         console.error('SUPABASE INSERT ERROR:', error);
         newParticipant = {
           id: tempId,
-          name: formData.name,
-          rt: formData.rt,
-          hp: formData.hp,
+          name: formData.name.trim(),
+          rt: formData.rt.trim(),
+          hp: formData.hp.trim(),
           lomba: formData.lomba,
           catatan: formData.catatan || 'Terdaftar lokal (offline/sync pending)',
           waktu: new Date().toLocaleString('id-ID'),
         };
-        alert('Perhatian: Gagal terhubung langsung ke Supabase (' + error.message + '). Data berhasil disimpan di memori lokal perangkat Anda.');
+        alert('Perhatian: Gagal terhubung langsung ke Supabase (' + error.message + '). Data berhasil disimpan secara lokal.');
       } else if (data && data.length > 0) {
         const newItem = data[0];
         newParticipant = {
@@ -242,9 +259,9 @@ export default function Dashboard() {
       } else {
         newParticipant = {
           id: tempId,
-          name: formData.name,
-          rt: formData.rt,
-          hp: formData.hp,
+          name: formData.name.trim(),
+          rt: formData.rt.trim(),
+          hp: formData.hp.trim(),
           lomba: formData.lomba,
           catatan: formData.catatan || '',
           waktu: new Date().toLocaleString('id-ID'),
@@ -254,7 +271,7 @@ export default function Dashboard() {
       setShowBuktiDaftar(newParticipant);
       
       setParticipants(prev => {
-        const updated = mergeAndDedupParticipants([newParticipant, ...prev]);
+        const updated = sanitizeAndDedup([newParticipant, ...prev]);
         if (typeof window !== 'undefined') {
           localStorage.setItem('hutri-participants-mawar', JSON.stringify(updated));
         }
@@ -267,16 +284,16 @@ export default function Dashboard() {
       console.warn('Register exception:', err);
       newParticipant = {
         id: tempId,
-        name: formData.name,
-        rt: formData.rt,
-        hp: formData.hp,
+        name: formData.name.trim(),
+        rt: formData.rt.trim(),
+        hp: formData.hp.trim(),
         lomba: formData.lomba,
         catatan: formData.catatan || '',
         waktu: new Date().toLocaleString('id-ID'),
       };
       setShowBuktiDaftar(newParticipant);
       setParticipants(prev => {
-        const updated = mergeAndDedupParticipants([newParticipant, ...prev]);
+        const updated = sanitizeAndDedup([newParticipant, ...prev]);
         if (typeof window !== 'undefined') {
           localStorage.setItem('hutri-participants-mawar', JSON.stringify(updated));
         }
@@ -642,7 +659,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="mb-3 bg-green-50 border border-green-200 rounded-lg p-2.5 text-xs text-green-800">
-                ✅ <strong>Sinkronisasi Supabase Aktif:</strong> Pendaftar otomatis tersimpan ke tabel Supabase dan langsung tampil realtime di bawah ini tanpa duplikasi.
+                ✅ <strong>Sinkronisasi Aktif:</strong> Pendaftar dari form bawah langsung tampil di tabel & tersimpan ke database tanpa duplikasi.
               </div>
               <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
                 {participants.length === 0 ? (
@@ -906,7 +923,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="mt-4">
-                <button onClick={() => setShowBuktiDonasi(null)} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">Selesai} </button>
+                <button onClick={() => setShowBuktiDonasi(null)} className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">Selesai</button>
               </div>
             </div>
           </Modal>
