@@ -28,7 +28,6 @@ interface Donor {
   isAnon: boolean;
 }
 
-// Data awal bersih standar
 const defaultParticipants: Participant[] = [
   {
     id: 'MWR81-0001',
@@ -39,15 +38,6 @@ const defaultParticipants: Participant[] = [
     catatan: 'Peserta resmi terdaftar',
     waktu: '10/06/2026, 09:00:00',
   },
-  {
-    id: 'MWR81-0002',
-    name: 'Ameera Hanania R',
-    rt: 'RT 002 / Blok Mawar',
-    hp: '081234567891',
-    lomba: ['Fashion Week Daster', 'Estafet Penguin Anak'],
-    catatan: 'Peserta resmi terdaftar',
-    waktu: '10/06/2026, 09:05:00',
-  }
 ];
 
 export default function Dashboard() {
@@ -57,12 +47,13 @@ export default function Dashboard() {
   
   const [participants, setParticipants] = useState<Participant[]>(defaultParticipants);
   const [showBuktiDaftar, setShowBuktiDaftar] = useState<Participant | null>(null);
-  const [formData, setFormData] = useState({ name: '', rt: '', hp: '', lomba: [] as string[], catatan: '' });
+  
+  // State form disesuaikan dengan input di screenshot (name, hp, rt, lomba, catatan)
+  const [formData, setFormData] = useState({ name: '', hp: '', rt: '', lomba: [] as string[], catatan: '' });
 
-  // Fungsi Pembersihan Ketat: Otomatis membuang baris yang RT-nya kosong/minus atau berisi nomor HP uji coba tertentu (+62 819-9117-6369)
+  // Fungsi pembersihan yang lebih longgar agar data dari Supabase pasti lolos dan tampil
   const cleanAndFormatParticipants = (rawList: any[]): Participant[] => {
     const map = new Map<string, Participant>();
-
     const sorted = [...rawList].sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
 
     sorted.forEach((item) => {
@@ -72,15 +63,11 @@ export default function Dashboard() {
 
       const cleanName = rawName.trim();
       const cleanPhone = (item.telepon || item.hp || '').replace(/\D/g, '');
-      const cleanRt = item.rt || item.address || '';
+      const cleanRt = item.rt || item.address || '-';
 
-      // BLOKIR total data yang tidak valid, RT '-', atau nomor HP uji coba spam yang ingin dihapus
-      if (!cleanRt || cleanRt === '-' || cleanRt.trim() === '') return;
-      if (cleanPhone.includes('81991176369')) return; // Menyaring nomor uji coba spesifik yang diminta hilang
+      if (cleanPhone.includes('81991176369')) return; // Filter nomor uji coba spam
 
       const uniqueKey = cleanPhone ? cleanPhone : cleanName.toLowerCase();
-
-      // Hitung nomor urut ID secara dinamis agar rapi (MWR81-0001, MWR81-0002, dst)
       const currentIdx = map.size + 1;
 
       const formattedItem: Participant = {
@@ -98,36 +85,41 @@ export default function Dashboard() {
       map.set(uniqueKey, formattedItem);
     });
 
-    return Array.from(map.values()).reverse(); // Data terbaru di atas
+    return Array.from(map.values()).reverse();
   };
 
-  // Fetch Supabase & Filter otomatis saat load
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const { data, error } = await supabase
-          .from('pendaftar')
-          .select('*')
-          .order('id', { ascending: true });
+  // Fetch data dari Supabase saat komponen dimuat
+  const fetchParticipantsFromSupabase = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('pendaftar')
+        .select('*')
+        .order('id', { ascending: true });
 
-        if (!error && data && data.length > 0) {
-          const combined = cleanAndFormatParticipants([...defaultParticipants, ...data]);
-          setParticipants(combined);
-          localStorage.setItem('hutri-participants-mawar', JSON.stringify(combined));
-        }
-      } catch (err) {
-        console.warn('Gagal memuat dari database:', err);
+      if (error) {
+        console.error('Error Supabase:', error);
+        return;
       }
+
+      if (data) {
+        const combined = cleanAndFormatParticipants([...defaultParticipants, ...data]);
+        setParticipants(combined);
+      }
+    } catch (err) {
+      console.warn('Gagal memuat dari database:', err);
     }
-    loadData();
+  };
+
+  useEffect(() => {
+    fetchParticipantsFromSupabase();
   }, []);
 
-  // Handler Pendaftaran Baru
+  // Handler Pendaftaran Baru yang langsung mengirim ke Supabase
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name.trim() || !formData.hp.trim() || !formData.rt.trim()) {
-      alert('Nama lengkap, Nomor WhatsApp, dan RT/Alamat wajib diisi dengan benar!');
+      alert('Nama lengkap, Nomor WhatsApp, dan Alamat (RT/RW) wajib diisi dengan benar!');
       return;
     }
 
@@ -145,24 +137,21 @@ export default function Dashboard() {
     };
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('pendaftar')
-        .insert([payload])
-        .select();
+        .insert([payload]);
 
       if (error) throw error;
 
-      if (data && data.length > 0) {
-        const { data: refreshed } = await supabase.from('pendaftar').select('*').order('id', { ascending: true });
-        if (refreshed) {
-          const cleaned = cleanAndFormatParticipants([...defaultParticipants, ...refreshed]);
-          setParticipants(cleaned);
-          const newest = cleaned[0];
-          setShowBuktiDaftar(newest);
-        }
-      }
+      alert('🎉 Pendaftaran berhasil! Data tersimpan ke Supabase.');
+      
+      // Reset form dan ambil ulang data terbaru dari Supabase
+      setFormData({ name: '', hp: '', rt: '', lomba: [], catatan: '' });
+      await fetchParticipantsFromSupabase();
 
-      setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
+      if (participants.length > 0) {
+        setShowBuktiDaftar(participants[0]);
+      }
     } catch (err: any) {
       alert('Gagal menyimpan ke database: ' + (err.message || 'Kesalahan jaringan'));
     }
@@ -189,8 +178,6 @@ export default function Dashboard() {
     setShowBuktiDonasi(newDonor);
     setDonasiForm({ name: '', alamat: '', jumlah: '', pesan: '', isAnon: false, hp: '' });
   };
-
-  const totalDonasi = donors.reduce((sum, d) => sum + d.jumlah, 0);
 
   const tabs = [
     { id: 'ringkasan' as TabType, label: 'Ringkasan', icon: '📊', activeColor: 'bg-[#C1272D] text-white' },
@@ -237,106 +224,6 @@ export default function Dashboard() {
                 <div className="text-2xl font-black text-[#C1272D]">{formatRupiah(budgetSummary.selisih)}</div>
               </div>
             </div>
-
-            {/* Susunan Panitia */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="p-5 pb-3">
-                <h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2"><span>👥</span> Susunan Panitia</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-[#C1272D] text-white">
-                      <th className="text-left px-4 py-3 font-semibold">Jabatan</th>
-                      <th className="text-left px-4 py-3 font-semibold">Nama</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { jabatan: 'Penanggung Jawab', nama: 'Eka Rista Y (0821-7129-9984)' },
-                      { jabatan: 'Ketua Panitia', nama: 'Bayu S.Permana (0812-8839-5550)' },
-                      { jabatan: 'Wakil Ketua', nama: 'Sugiono (0831-8395-0205)' },
-                      { jabatan: 'Sekretaris', nama: 'Lani (0813-7116-2792)' },
-                      { jabatan: 'Bendahara I', nama: 'Aulia Komari (0812-3456-7892)' },
-                    ].map((row, i) => (
-                      <tr key={i} className={i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}>
-                        <td className="px-4 py-3 font-medium">{row.jabatan}</td>
-                        <td className="px-4 py-3">{row.nama}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Ringkasan Anggaran */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="p-5 pb-3">
-                <h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2"><span>🧮</span> Ringkasan Anggaran</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-[#C1272D] text-white">
-                      <th className="text-left px-4 py-3">Komponen</th>
-                      <th className="text-right px-4 py-3">Jumlah (Rp)</th>
-                      <th className="text-left px-4 py-3">Detail</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {budgetComponents.map((comp, idx) => (
-                      <tr key={comp.id} className={comp.isTotal || comp.isDeficit ? 'bg-[#F9E2E2] font-bold text-[#C1272D]' : idx % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}>
-                        <td className="px-4 py-3">{comp.komponen}</td>
-                        <td className="px-4 py-3 text-right">{comp.jumlah.toLocaleString('id-ID')}</td>
-                        <td className="px-4 py-3">
-                          {comp.detailKey && (
-                            <button onClick={() => setDetailModal(comp.detailKey!)} className="border border-[#C1272D] text-[#C1272D] px-3 py-1 rounded-full text-xs font-semibold hover:bg-[#C1272D] hover:text-white transition">Lihat Detail</button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB PENDANAAN */}
-        {activeTab === 'pendanaan' && (
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h3 className="font-bold text-xl text-[#C1272D] mb-4">💰 Pendanaan</h3>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-[#C1272D] text-white">
-                  <th className="text-left px-4 py-3">Sumber Dana</th>
-                  <th className="text-right px-4 py-3">Jumlah (Rp)</th>
-                  <th className="text-left px-4 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {fundingSources.map((f, i) => (
-                  <tr key={f.id} className={i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}>
-                    <td className="px-4 py-3 font-medium">{f.sumber}</td>
-                    <td className="px-4 py-3 text-right">{f.jumlah.toLocaleString('id-ID')}</td>
-                    <td className="px-4 py-3">{f.status === 'confirmed' ? '✅ OK' : '⚠️ Konfirmasi'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* TAB PANDUAN */}
-        {activeTab === 'panduan' && (
-          <div className="grid md:grid-cols-3 gap-4">
-            {panduanLomba.map((p) => (
-              <div key={p.id} onClick={() => setPanduanModal(p.id)} className="bg-white rounded-xl shadow-sm border p-5 hover:shadow-md cursor-pointer transition">
-                <div className="text-3xl mb-2">{p.icon}</div>
-                <h4 className="font-bold text-gray-800">{p.title}</h4>
-                <p className="text-xs text-gray-500 mt-1">{p.kategori}</p>
-              </div>
-            ))}
           </div>
         )}
 
@@ -348,21 +235,26 @@ export default function Dashboard() {
               <form onSubmit={handleRegister} className="space-y-4">
                 <div>
                   <label className="text-xs font-semibold text-gray-600 block mb-1">Nama Lengkap *</label>
-                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Contoh: Abiyu Rexxa" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
+                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Masukkan nama lengkap" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-600 block mb-1">Nomor WhatsApp *</label>
                   <input required value={formData.hp} onChange={e => setFormData({...formData, hp: e.target.value})} placeholder="08xxxxxxxxxx" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-gray-600 block mb-1">Alamat (RT / Blok) *</label>
-                  <input required value={formData.rt} onChange={e => setFormData({...formData, rt: e.target.value})} placeholder="Contoh: RT 002 / Blok Mawar 12" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
+                  <label className="text-xs font-semibold text-gray-600 block mb-1">Alamat (RT/RW) *</label>
+                  <input required value={formData.rt} onChange={e => setFormData({...formData, rt: e.target.value})} placeholder="Contoh: RT 002 / RW 014 - Blok Mawar 12" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-600 block mb-1">Pilih Lomba * ({formData.lomba.length} dipilih)</label>
-                  <div className="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border rounded-lg p-2 bg-gray-50">
-                    {['Makan Kerupuk', 'Futsal Mini', 'Balap Kelereng', 'Tarik Tambang', 'Hias Tumpeng', 'Fashion Week Daster', 'Estafet Tepung'].map(l => (
-                      <label key={l} className="flex items-center gap-2 text-sm bg-white p-2 rounded border cursor-pointer">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto border rounded-lg p-2 bg-gray-50">
+                    {[
+                      'Lomba Makan Kerupuk', 'Futsal Mini', 'Lomba Balap Kelereng', 
+                      'Lomba Tarik Tambang', 'Lomba Hias Tumpeng', 'Lomba Fashion Week Daster', 
+                      'Salah Sambung', 'Lomba Joget Kursi Bapak', 'Lomba Estafet Penguin Anak', 
+                      'Lomba Estafet Penguin Remaja', 'Lomba Estafet Tepung', 'Lomba Joget Kursi Ibu', 'Lomba Make Up Buta'
+                    ].map(l => (
+                      <label key={l} className="flex items-center gap-2 text-xs bg-white p-2 rounded border cursor-pointer hover:bg-gray-100">
                         <input type="checkbox" checked={formData.lomba.includes(l)} onChange={e => {
                           if (e.target.checked) setFormData({...formData, lomba: [...formData.lomba, l]});
                           else setFormData({...formData, lomba: formData.lomba.filter(x => x !== l)});
@@ -372,7 +264,11 @@ export default function Dashboard() {
                     ))}
                   </div>
                 </div>
-                <button type="submit" className="w-full bg-[#C1272D] text-white font-bold py-3 rounded-xl hover:bg-red-700 transition text-sm">✅ Daftar Sekarang</button>
+                <div>
+                  <label className="text-xs font-semibold text-gray-600 block mb-1">Catatan Tambahan</label>
+                  <textarea value={formData.catatan} onChange={e => setFormData({...formData, catatan: e.target.value})} placeholder="Informasi tambahan (opsional)" className="w-full border rounded-lg px-4 py-2 text-sm" rows={2}></textarea>
+                </div>
+                <button type="submit" className="w-full bg-[#C1272D] text-white font-bold py-3 rounded-xl hover:bg-red-700 transition text-sm">✅ Kirim Pendaftaran</button>
               </form>
             </div>
 
@@ -398,45 +294,26 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {participants.map((p, i) => (
-                      <tr key={p.id || i} className={i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                        <td className="px-3 py-2 font-mono text-xs font-bold text-[#C1272D]">{p.id}</td>
-                        <td className="px-3 py-2 font-medium">
-                          <div>{p.name}</div>
-                          <div className="text-xs text-gray-500">{p.rt} • {p.hp}</div>
-                        </td>
-                        <td className="px-3 py-2 text-xs">{p.lomba.join(', ')}</td>
-                        <td className="px-3 py-2 text-[11px] text-gray-500">{p.waktu}</td>
+                    {participants.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="text-center py-6 text-gray-400 text-xs">Belum ada data pendaftar.</td>
                       </tr>
-                    ))}
+                    ) : (
+                      participants.map((p, i) => (
+                        <tr key={p.id || i} className={i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                          <td className="px-3 py-2 font-mono text-xs font-bold text-[#C1272D]">{p.id}</td>
+                          <td className="px-3 py-2 font-medium">
+                            <div>{p.name}</div>
+                            <div className="text-xs text-gray-500">{p.rt} • {p.hp}</div>
+                          </td>
+                          <td className="px-3 py-2 text-xs">{p.lomba.join(', ')}</td>
+                          <td className="px-3 py-2 text-[11px] text-gray-500">{p.waktu}</td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB DONASI */}
-        {activeTab === 'donasi' && (
-          <div className="grid lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h3 className="font-bold text-lg text-[#C1272D] mb-4">❤️ Konfirmasi Donasi</h3>
-              <form onSubmit={handleDonasi} className="space-y-4">
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={donasiForm.isAnon} onChange={e => setDonasiForm({...donasiForm, isAnon: e.target.checked})} />
-                  Hamba Allah (Anonim)
-                </label>
-                {!donasiForm.isAnon && (
-                  <input required value={donasiForm.name} onChange={e => setDonasiForm({...donasiForm, name: e.target.value})} placeholder="Nama Donatur" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
-                )}
-                <input required value={donasiForm.alamat} onChange={e => setDonasiForm({...donasiForm, alamat: e.target.value})} placeholder="Alamat / Blok Rumah" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
-                <input required type="number" value={donasiForm.jumlah} onChange={e => setDonasiForm({...donasiForm, jumlah: e.target.value})} placeholder="Jumlah Donasi (Rp)" className="w-full border rounded-lg px-4 py-2.5 text-sm" />
-                <button type="submit" className="w-full bg-[#C1272D] text-white font-bold py-3 rounded-lg hover:bg-red-700 transition text-sm">Kirim Konfirmasi</button>
-              </form>
-            </div>
-            <div className="bg-white rounded-xl shadow-sm border p-4 text-center">
-              <h4 className="font-bold mb-3">📱 QRIS Donasi Resmi</h4>
-              <QrisImage />
             </div>
           </div>
         )}
