@@ -151,7 +151,7 @@ export const budgetRows: BudgetRow[] = [
   { komponen: 'Total Anggaran — Pesta Rakyat (17 Agt)', jumlah: 10000000, detailKey: 'pestaRakyat' },
   { komponen: 'Total Anggaran — Malam Puncak (22 Agt Malam)', jumlah: 7000000, detailKey: 'malamPuncak' },
   { komponen: 'TOTAL KEBUTUHAN ANGGARAN', jumlah: 17000000, isTotal: true },
-  { komponen: 'Total Dana Masuk (Pendanaan)', jumlah: 17 000000, detailKey: 'danaMasuk' },
+  { komponen: 'Total Dana Masuk (Pendanaan)', jumlah: 17000000, detailKey: 'danaMasuk' },
   { komponen: 'SELISIH (Dana Masuk - Kebutuhan)', jumlah: 0, isSurplus: true },
 ];
 
