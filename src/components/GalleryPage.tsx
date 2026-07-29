@@ -15,7 +15,7 @@ const items: GalleryItem[] = [
   {
   id: 3, type: 'photo',
     thumb: 'https://images.pexels.com/photos/33807987/pexels-photo-33807987.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
-    full: 'https://drive.google.com/file/d/1lYxoHy6vq8lfXEJU5xHJ_qstHFHkR5ST/view?usp=sharing',
+    full: 'https://github.com/bayurexxa17/mawar002hutri81/blob/main/public/images/20260726_091521.jpg',
     title: 'Panjat Pinang — Semangat Kemerdekaan',
     credit: 'Rakhmat Suwandi / Pexels',
   },
