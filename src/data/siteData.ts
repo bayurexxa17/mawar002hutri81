@@ -194,13 +194,13 @@ export const rundownPagi: RundownItem[] = [
   { waktu: '06:00', kegiatan: 'Persiapan Lokasi & Registrasi Peserta', icon: '📋', keterangan: 'Panitia & Peserta' },
   { waktu: '07:00', kegiatan: 'Upacara Bendera & Pembukaan Resmi', icon: '🇮🇩', keterangan: 'Seluruh Warga' },
   { waktu: '07:00', kegiatan: 'Sambutan Ketua RT & Ketua Panitia', icon: '🎤', keterangan: 'Undangan' },
-  { waktu: '08:09', kegiatan: 'Lomba Anak-anak (Makan Kerupuk, Balap Kelereng, Estafet Penguin)', icon: '👶', keterangan: 'Usia 5-15 tahun' },
+  { waktu: '08:00', kegiatan: 'Lomba Anak-anak (Makan Kerupuk, Balap Kelereng, Estafet Penguin)', icon: '👶', keterangan: 'Usia 5-15 tahun' },
   { waktu: '10:00', kegiatan: 'Lomba Remaja (Futsal Mini, Salah Sambung, Estafet Penguin)', icon: '🧑', keterangan: 'Usia 13-17 tahun' },
   { waktu: '11:00', kegiatan: 'Lomba Bapak-bapak (Tarik Tambang, Joget Kursi, Estafet Tepung)', icon: '👨', keterangan: 'Bapak-bapak' },
   { waktu: '12:00', kegiatan: 'Istirahat, Sholat & Makan Siang', icon: '🍛', keterangan: 'Seluruh Warga' },
   { waktu: '13:00', kegiatan: 'Lomba Ibu-ibu (Hias Tumpeng, Fashion Daster, Joget Kursi)', icon: '👩', keterangan: 'Ibu-ibu' },
-  { waktu: '15:00', kegiatan: 'Lomba Keluarga (Make Up Buta)', icon: '👨‍👩‍👧', keterangan: 'Pasangan' },
-  { waktu: '16:00', kegiatan: 'Penutupan Seluruh Perlombaan & Persiapan Pengumuman Pemenang', icon: '✅' },
+  { waktu: '16:00', kegiatan: 'Lomba Keluarga (Make Up Buta)', icon: '👨‍👩‍👧', keterangan: 'Pasangan' },
+  { waktu: '17:00', kegiatan: 'Penutupan Seluruh Perlombaan & Persiapan Pengumuman Pemenang', icon: '✅' },
 ];
 
 export const rundownMalam: RundownItem[] = [
