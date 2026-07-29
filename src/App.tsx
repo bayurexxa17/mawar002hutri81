@@ -130,25 +130,57 @@ function MainPage({ shared, onAdminClick, onGalleryClick }: { shared: SharedData
     if (!formData.name.trim() || !formData.hp.trim() || !formData.rt.trim()) { alert('Nama, WhatsApp, dan Alamat wajib diisi!'); return; }
     if (formData.lomba.length === 0) { alert('Pilih minimal 1 lomba!'); return; }
 
-    // 1. OPTIMISTIC: Update UI instantly (no waiting)
-    const newP: Participant = {
-      id: `MWR81-${String(participants.length + 1).padStart(4, '0')}`,
-      name: formData.name.trim(), rt: formData.rt.trim(), hp: formData.hp.trim(),
-      lomba: [...formData.lomba], catatan: formData.catatan.trim() || 'Terdaftar via Web',
-      waktu: new Date().toLocaleString('id-ID'),
-    };
-    shared.setParticipants(prev => [newP, ...prev]);
-    shared.setNewRowIds(prev => { const s = new Set(prev); s.add(newP.name); return s; });
-    setTimeout(() => shared.setNewRowIds(prev => { const s = new Set(prev); s.delete(newP.name); return s; }), 5000);
-    setShowBuktiDaftar(newP);
-    setShowRegisterModal(false);
-    setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
+    const hp = formData.hp.trim().replace(/\D/g, '');
+    // Cek apakah peserta sudah terdaftar (berdasarkan nomor HP)
+    const existing = participants.find(p => p.hp.replace(/\D/g, '') === hp);
 
-    // 2. BACKGROUND: Save to Supabase (fire-and-forget, non-blocking)
-    const payload = { nama: newP.name, telepon: newP.hp, rt: newP.rt, lomba: newP.lomba.join(', '), catatan: newP.catatan };
-    Promise.resolve(supabase.from('pendaftar').insert([payload])).then(({ error }) => {
-      if (!error) fetchParticipants();
-    }).catch(() => {});
+    if (existing) {
+      // SUDAH TERDAFTAR → gabungkan lomba baru ke lomba lama
+      const oldLomba = existing.lomba;
+      const newLomba = [...new Set([...oldLomba, ...formData.lomba])]; // gabung tanpa duplikat
+      const tambahBaru = newLomba.filter(l => !oldLomba.includes(l));
+
+      if (tambahBaru.length === 0) {
+        alert(`${existing.name} sudah terdaftar untuk semua lomba yang dipilih!`);
+        return;
+      }
+
+      // Update peserta yang sudah ada
+      const updated: Participant = { ...existing, lomba: newLomba, catatan: `Update: +${tambahBaru.join(', ')}` };
+      shared.setParticipants(prev => prev.map(p => p.id === existing.id ? updated : p));
+      shared.setNewRowIds(prev => { const s = new Set(prev); s.add(updated.name); return s; });
+      setTimeout(() => shared.setNewRowIds(prev => { const s = new Set(prev); s.delete(updated.name); return s; }), 5000);
+      setShowBuktiDaftar(updated);
+      setShowRegisterModal(false);
+      setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
+
+      // Supabase: update row yang sudah ada
+      if (existing.dbId && existing.dbId > 0) {
+        supabase.from('pendaftar').update({ lomba: newLomba.join(', '), catatan: `Update: +${tambahBaru.join(', ')}` }).eq('id', existing.dbId).then(() => fetchParticipants());
+      }
+
+      alert(`✅ ${existing.name} berhasil ditambahkan lomba baru:\n${tambahBaru.join(', ')}\n\nTotal lomba sekarang:\n${newLomba.join(', ')}`);
+    } else {
+      // BELUM TERDAFTAR → daftar baru seperti biasa
+      const newP: Participant = {
+        id: `MWR81-${String(participants.length + 1).padStart(4, '0')}`,
+        name: formData.name.trim(), rt: formData.rt.trim(), hp: formData.hp.trim(),
+        lomba: [...formData.lomba], catatan: formData.catatan.trim() || 'Terdaftar via Web',
+        waktu: new Date().toLocaleString('id-ID'),
+      };
+      shared.setParticipants(prev => [newP, ...prev]);
+      shared.setNewRowIds(prev => { const s = new Set(prev); s.add(newP.name); return s; });
+      setTimeout(() => shared.setNewRowIds(prev => { const s = new Set(prev); s.delete(newP.name); return s; }), 5000);
+      setShowBuktiDaftar(newP);
+      setShowRegisterModal(false);
+      setFormData({ name: '', rt: '', hp: '', lomba: [], catatan: '' });
+
+      // Supabase: insert baru
+      const payload = { nama: newP.name, telepon: newP.hp, rt: newP.rt, lomba: newP.lomba.join(', '), catatan: newP.catatan };
+      Promise.resolve(supabase.from('pendaftar').insert([payload])).then(({ error }) => {
+        if (!error) fetchParticipants();
+      }).catch(() => {});
+    }
   };
 
   const handleDonasi = (e: React.FormEvent) => {
@@ -332,7 +364,7 @@ function MainPage({ shared, onAdminClick, onGalleryClick }: { shared: SharedData
       </section>
 
       {/* RUNDOWN */}
-      <section id="rundown" className="py-16 px-4 bg-white"><div className="max-w-4xl mx-auto"><div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900">📋 RUNDOWN HARI PELAKSANAAN</h2><p className="text-gray-500 mt-1">Jadwal Kegiatan — Minggu, 17 Agustus 2026</p></div><div className="flex flex-wrap gap-2 justify-center mb-8"><button onClick={() => { const b = new Blob([rundownText()], { type: 'text/plain' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'rundown-hutri81-mawar.txt'; a.click(); URL.revokeObjectURL(u); }} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition">📄 Download (TXT)</button><button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2.5 bg-gray-700 text-white text-xs font-bold rounded-xl hover:bg-gray-800 transition">🖨️ Cetak / Save PDF</button></div><div className="bg-[#F9F5EB] rounded-2xl border p-6"><h4 className="font-bold text-[#C1272D] mb-4 text-sm">☀️ PAGI & PERLOMBAAN</h4><div className="space-y-3 mb-8">{rundownPagi.map((r, i) => (<div key={i} className="flex items-start gap-4 bg-white rounded-xl p-3 border"><div className="min-w-[60px] text-center"><span className="font-black text-[#C1272D] text-lg">{r.waktu}</span></div><div className="flex-1"><span className="text-lg mr-2">{r.icon}</span><span className="font-semibold text-sm text-gray-800">{r.kegiatan}</span>{r.keterangan && <span className="text-xs text-gray-400 ml-2">({r.keterangan})</span>}</div></div>))}</div><h4 className="font-bold text-[#C1272D] mb-4 text-sm">🌙 MALAM PUNCAK (22 AGUSTUS 2026)</h4><div className="space-y-3">{rundownMalam.map((r, i) => (<div key={i} className="flex items-start gap-4 bg-white rounded-xl p-3 border"><div className="min-w-[60px] text-center"><span className="font-black text-[#C1272D] text-lg">{r.waktu}</span></div><div className="flex-1"><span className="text-lg mr-2">{r.icon}</span><span className="font-semibold text-sm text-gray-800">{r.kegiatan}</span>{r.keterangan && <span className="text-xs text-gray-400 ml-2">({r.keterangan})</span>}</div></div>))}</div></div></div></section>
+      <section id="rundown" className="py-16 px-4 bg-white"><div className="max-w-4xl mx-auto"><div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900">📋 RUNDOWN ACARA</h2><p className="text-gray-500 mt-1">Jadwal Kegiatan — Minggu, 17 Agustus 2026</p></div><div className="flex flex-wrap gap-2 justify-center mb-8"><button onClick={() => { const b = new Blob([rundownText()], { type: 'text/plain' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'rundown-hutri81-mawar.txt'; a.click(); URL.revokeObjectURL(u); }} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition">📄 Download (TXT)</button><button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2.5 bg-gray-700 text-white text-xs font-bold rounded-xl hover:bg-gray-800 transition">🖨️ Cetak / Save PDF</button></div><div className="bg-[#F9F5EB] rounded-2xl border p-6"><h4 className="font-bold text-[#C1272D] mb-4 text-sm">☀️ PAGI & SIANG</h4><div className="space-y-3 mb-8">{rundownPagi.map((r, i) => (<div key={i} className="flex items-start gap-4 bg-white rounded-xl p-3 border"><div className="min-w-[60px] text-center"><span className="font-black text-[#C1272D] text-lg">{r.waktu}</span></div><div className="flex-1"><span className="text-lg mr-2">{r.icon}</span><span className="font-semibold text-sm text-gray-800">{r.kegiatan}</span>{r.keterangan && <span className="text-xs text-gray-400 ml-2">({r.keterangan})</span>}</div></div>))}</div><h4 className="font-bold text-[#C1272D] mb-4 text-sm">🌙 MALAM PUNCAK</h4><div className="space-y-3">{rundownMalam.map((r, i) => (<div key={i} className="flex items-start gap-4 bg-white rounded-xl p-3 border"><div className="min-w-[60px] text-center"><span className="font-black text-[#C1272D] text-lg">{r.waktu}</span></div><div className="flex-1"><span className="text-lg mr-2">{r.icon}</span><span className="font-semibold text-sm text-gray-800">{r.kegiatan}</span>{r.keterangan && <span className="text-xs text-gray-400 ml-2">({r.keterangan})</span>}</div></div>))}</div></div></div></section>
 
       {/* PANITIA */}
       <section id="panitia" className="py-16 px-4 bg-[#F5F5F0]"><div className="max-w-6xl mx-auto"><div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900">PANITIA PELAKSANA</h2><p className="text-gray-500 mt-1">Struktur Panitia</p></div><div className="grid sm:grid-cols-3 gap-4 mb-6">{panitiaList.filter(p => ['Penanggung Jawab','Ketua Panitia','Wakil Ketua'].includes(p.jabatan)).map((p, i) => (<a key={i} href={p.hp ? `https://wa.me/62${p.hp.replace(/\D/g, '').replace(/^0/, '')}` : '#'} target="_blank" rel="noopener noreferrer" className="bg-white rounded-2xl shadow-sm border p-5 text-center hover:shadow-lg transition group block"><div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl group-hover:bg-[#C1272D] group-hover:text-white transition">👤</div><div className="text-[10px] text-yellow-600 font-bold">⭐ {p.jabatan}</div><div className="font-bold text-gray-900 mt-1">{p.nama}</div><div className="text-xs text-gray-500 mt-0.5">📱 {p.hp}</div></a>))}</div><h4 className="font-bold text-gray-700 mb-4">Anggota Panitia Lainnya</h4><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">{panitiaList.filter(p => !['Penanggung Jawab','Ketua Panitia','Wakil Ketua','Ketua Pembina','Ketua Penasehat'].includes(p.jabatan)).map((p, i) => (<div key={i} className="bg-white rounded-xl border p-3 text-center hover:shadow-md transition"><div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2 text-lg">👤</div><div className="font-bold text-sm text-gray-800 truncate">{p.nama}</div><div className="text-[10px] text-gray-500">{p.jabatan}</div>{p.hp && <div className="text-[10px] text-gray-400 mt-0.5">📞 {p.hp}</div>}{p.hp && !p.hp.includes('xxx') && <a href={`https://wa.me/62${p.hp.replace(/\D/g, '').replace(/^0/, '')}`} target="_blank" rel="noopener noreferrer" className="inline-block mt-1 text-green-500 hover:text-green-600 text-lg">💬</a>}</div>))}</div></div></section>
