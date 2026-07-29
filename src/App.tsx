@@ -45,16 +45,16 @@ export default function App() {
       const { data } = await supabase.from('pendaftar').select('*').order('id', { ascending: true }).abortSignal(c.signal);
       if (data && data.length > 0) {
         const all = [...defaultParticipants, ...data];
-        const map = new Map<string, Participant>();
+        const rawList: Participant[] = [];
         all.sort((a: any, b: any) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()).forEach((item: any) => {
           const n = (item.nama || item.name || '').trim(); if (!n) return;
           const ph = (item.telepon || item.hp || '').replace(/\D/g, '');
           const rt = item.rt || item.address || ''; if (!rt || rt === '-') return;
           if (ph.includes('81991176369')) return;
-          const idx = map.size + 1;
-          map.set(ph || n.toLowerCase(), { id: `MWR81-${String(idx).padStart(4, '0')}`, name: n, rt, hp: item.telepon || item.hp || '-', dbId: item.id, lomba: typeof item.lomba === 'string' ? item.lomba.split(',').map((x: string) => x.trim()).filter(Boolean) : (item.lomba || []), catatan: item.catatan || '', waktu: item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : new Date().toLocaleString('id-ID') });
+          const idx = rawList.length + 1;
+          rawList.push({ id: `MWR81-${String(idx).padStart(4, '0')}`, name: n, rt, hp: item.telepon || item.hp || '-', dbId: item.id, lomba: typeof item.lomba === 'string' ? item.lomba.split(',').map((x: string) => x.trim()).filter(Boolean) : (item.lomba || []), catatan: item.catatan || '', waktu: item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : new Date().toLocaleString('id-ID') });
         });
-        setParticipants(Array.from(map.values()).reverse());
+        setParticipants(rawList.reverse());
       }
     } catch { /* no Supabase — keep defaults */ }
     setLastRefresh(new Date());
