@@ -13,12 +13,11 @@ interface GalleryItem {
 
 const items: GalleryItem[] = [
   {
-  id: 1, 
-  type: 'photo',
-  thumb: 'public/images/20260726_091521.jpg',
-  full: 'https://drive.google.com/file/d/1lYxoHy6vq8lfXEJU5xHJ_qstHFHkR5ST/view?usp=sharing',
-  title: 'Panjat Pinang — Lomba Tradisional 17 Agustus',
-  credit: 'Dokumentasi Warga Blok Mawar',
+  id: 3, type: 'photo',
+    thumb: 'https://images.pexels.com/photos/33807987/pexels-photo-33807987.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
+    full: 'https://drive.google.com/file/d/1lYxoHy6vq8lfXEJU5xHJ_qstHFHkR5ST/view?usp=sharing',
+    title: 'Panjat Pinang — Semangat Kemerdekaan',
+    credit: 'Rakhmat Suwandi / Pexels',
   },
   {
     id: 2, type: 'photo',
