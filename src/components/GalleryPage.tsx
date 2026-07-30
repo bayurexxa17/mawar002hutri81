@@ -45,7 +45,7 @@ const items: GalleryItem[] = [
     id: 5, type: 'photo',
     thumb: '/images/20260729_145854.jpg',
     full: '/images/20260729_145854.jpg',
-    title: 'Acara GORO Blok Mawar',
+    title: 'Silaturahim di Klenteng Dewi Samudera',
     credit: 'Dokumentasi Bayu',
   },
   {
