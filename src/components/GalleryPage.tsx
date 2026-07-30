@@ -50,7 +50,7 @@ const items: GalleryItem[] = [
   },
   {
     id: 6, type: 'photo',
-    thumb: 'VID-20260726-WA0007.mp4',
+    thumb: '/videos/VID-20260726-WA0007.mp4',
     full: 'VID-20260726-WA0007.mp4',
     title: 'Bocah Panjat Pinang — Tradisi 17 Agustus',
     credit: 'Dokumentasi Eka',
