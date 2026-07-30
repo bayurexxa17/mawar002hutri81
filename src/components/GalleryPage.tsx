@@ -38,22 +38,22 @@ const items: GalleryItem[] = [
     id: 4, type: 'photo',
     thumb: '/images/20260726_091556.jpg',
     full: '/images/20260726_091556.jpg',
-    title: 'Acara GORO Blok Mawar',20260729_145854
+    title: 'Acara GORO Blok Mawar',
     credit: 'Dokumentasi Bayu',
   },
   {
     id: 5, type: 'photo',
     thumb: '/images/20260729_145854.jpg',
     full: '/images/20260729_145854.jpg',
-    title: 'Perayaan HUT RI — Panjat Pinang Berhadiah',
-    credit: 'Rakhmat Suwandi / Pexels',
+    title: 'Acara GORO Blok Mawar',
+    credit: 'Dokumentasi Bayu',
   },
   {
     id: 6, type: 'photo',
     thumb: 'VID-20260726-WA0007.mp4',
     full: 'VID-20260726-WA0007.mp4',
     title: 'Bocah Panjat Pinang — Tradisi 17 Agustus',
-    credit: 'Ayyeee Ayyeee / Pexels',
+    credit: 'Dokumentasi Eka',
   },
   {
     id: 101, type: 'video',
