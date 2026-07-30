@@ -38,13 +38,13 @@ const items: GalleryItem[] = [
     id: 4, type: 'photo',
     thumb: '/images/20260726_091556.jpg',
     full: '/images/20260726_091556.jpg',
-    title: 'Acara GORO Blok Mawar',
+    title: 'Acara GORO Blok Mawar',20260729_145854
     credit: 'Dokumentasi Bayu',
   },
   {
     id: 5, type: 'photo',
-    thumb: 'https://images.pexels.com/photos/33807990/pexels-photo-33807990.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
-    full: 'https://images.pexels.com/photos/33807990/pexels-photo-33807990.jpeg?auto=compress&cs=tinysrgb&w=1920',
+    thumb: '/images/20260729_145854.jpg',
+    full: '/images/20260729_145854.jpg',
     title: 'Perayaan HUT RI — Panjat Pinang Berhadiah',
     credit: 'Rakhmat Suwandi / Pexels',
   },
