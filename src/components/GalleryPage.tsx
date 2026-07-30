@@ -49,8 +49,8 @@ const items: GalleryItem[] = [
     credit: 'Dokumentasi Bayu',
   },
   {
-    id: 6, type: 'photo',
-    thumb: '/videos/VID-20260726-WA0007.mp4',
+    id: 6, type: 'video',
+    thumb: '/images/VID-20260726-WA0007.jpg',
     full: '/videos/VID-20260726-WA0007.mp4',
     title: 'Pemandangan Komplek Blok Mawar Ciptaland dari atas menggunakan Drone',
     credit: 'Dokumentasi Eka',
@@ -58,7 +58,7 @@ const items: GalleryItem[] = [
   {
     id: 101, type: 'video',
     thumb: 'https://images.pexels.com/videos/34373272/karrnafal-17-agustus-desa-beruk-jatiyoso-34373272.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
-    full: 'https://videos.pexels.com/video-files/34373272/14563035_1920_1080_30fps.mp4',
+    full: '/videos/VID-20260726-WA0007.mp4',
     title: 'Karnaval 17 Agustus — Parade Desa',
     credit: 'just a hobby / Pexels',
   },
