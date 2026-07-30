@@ -36,10 +36,10 @@ const items: GalleryItem[] = [
   },
   {
     id: 4, type: 'photo',
-    thumb: 'https://images.pexels.com/photos/13389844/pexels-photo-13389844.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
-    full: 'https://images.pexels.com/photos/13389844/pexels-photo-13389844.jpeg?auto=compress&cs=tinysrgb&w=1920',
-    title: 'Anak-anak Membawa Bendera Merah Putih',
-    credit: 'Irgi Nur Fadil / Pexels',
+    thumb: '/images/20260726_091556.jpg',
+    full: '/images/20260726_091556.jpg',
+    title: 'Acara GORO Blok Mawar',
+    credit: 'Dokumentasi Bayu',
   },
   {
     id: 5, type: 'photo',
