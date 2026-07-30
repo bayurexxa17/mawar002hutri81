@@ -51,8 +51,8 @@ const items: GalleryItem[] = [
   {
     id: 6, type: 'photo',
     thumb: '/videos/VID-20260726-WA0007.mp4',
-    full: 'VID-20260726-WA0007.mp4',
-    title: 'Bocah Panjat Pinang — Tradisi 17 Agustus',
+    full: '/videos/VID-20260726-WA0007.mp4',
+    title: 'Pemandangan Komplek Blok Mawar Ciptaland dari atas menggunakan Drone',
     credit: 'Dokumentasi Eka',
   },
   {
