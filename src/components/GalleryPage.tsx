@@ -50,7 +50,7 @@ const items: GalleryItem[] = [
   },
   {
     id: 6, type: 'photo',
-    thumb: 'https://images.pexels.com/photos/16130194/pexels-photo-16130194.png?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
+    thumb: '/images/20260729_145854.jpg',
     full: 'https://images.pexels.com/photos/16130194/pexels-photo-16130194.png?auto=compress&cs=tinysrgb&w=1920',
     title: 'Bocah Panjat Pinang — Tradisi 17 Agustus',
     credit: 'Ayyeee Ayyeee / Pexels',
