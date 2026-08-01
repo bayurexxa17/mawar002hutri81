@@ -42,6 +42,7 @@ export interface SponsorItem {
   website?: string;
   icon: string;
   warna: string;
+  logo?: string;
 }
 
 const initialInventoryList: InventoryItem[] = [
@@ -249,6 +250,8 @@ export interface SharedData {
   fetchKeuangan: () => Promise<void>;
   fetchInventory: () => Promise<void>;
   fetchTalenta: () => Promise<void>;
+  fetchSponsors: () => Promise<void>;
+  setSponsorList: React.Dispatch<React.SetStateAction<SponsorItem[]>>;
   setNewRowIds: React.Dispatch<React.SetStateAction<Set<string>>>;
   setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>;
   setKeuanganList: React.Dispatch<React.SetStateAction<KeuanganEntry[]>>;
@@ -331,6 +334,7 @@ export default function App() {
       ['donasi', 'donasi', 3000000],
       ['donasi cash', 'cash', 4000000],
       ['donasi online', 'donasi', 5000000],
+      ['pengeluaran', 'pengeluaran', 6000000],
     ];
     await Promise.all(sources.map(async ([tbl, dj, off]) => {
       try {
@@ -362,8 +366,28 @@ export default function App() {
     } catch { /* offline → pakai default */ }
   }, []);
 
+  // Ambil sponsor mitra (dengan logo) dari tabel `sponsor`
+  const fetchSponsors = useCallback(async () => {
+    try {
+      const c = new AbortController(); setTimeout(() => c.abort(), 4000);
+      const { data } = await supabase.from('sponsor').select('*').order('id', { ascending: true }).abortSignal(c.signal);
+      if (data && data.length > 0) {
+        const warnaPool = ['text-pink-500', 'text-purple-600', 'text-blue-600', 'text-amber-600', 'text-fuchsia-600', 'text-emerald-600'];
+        setSponsorList(data.map((r: any, i: number) => ({
+          id: `sp-${r.id ?? i}`,
+          nama: r.nama || r.name || '',
+          deskripsi: r.deskripsi || r.keterangan || 'Sponsor mitra acara',
+          website: r.website || '',
+          icon: r.icon || '🏪',
+          warna: r.warna || warnaPool[i % warnaPool.length],
+          logo: r.logo || r.logo_url || '',
+        })));
+      }
+    } catch { /* offline → pakai default */ }
+  }, []);
+
   // Fetch ONCE on mount
-  useEffect(() => { fetchParticipants(); fetchKeuangan(); fetchInventory(); fetchTalenta(); }, []);
+  useEffect(() => { fetchParticipants(); fetchKeuangan(); fetchInventory(); fetchTalenta(); fetchSponsors(); }, []);
 
   // Recalculate totalDana = pemasukan - pengeluaran
   useEffect(() => {
@@ -375,7 +399,7 @@ export default function App() {
   // Realtime: langganan SEMUA tabel keuangan + pendaftar + talenta
   useEffect(() => {
     if (!isLive) return;
-    const channels = ['keuangan', 'sponsor', 'iuran warga', 'donasi', 'donasi cash', 'donasi online'].map(tbl =>
+    const channels = ['keuangan', 'sponsor', 'iuran warga', 'donasi', 'donasi cash', 'donasi online', 'pengeluaran'].map(tbl =>
       supabase.channel(`rt-${tbl.replace(/\s/g, '-')}`).on('postgres_changes', { event: '*', schema: 'public', table: tbl }, () => { fetchKeuangan(); }).subscribe()
     );
     const chP = supabase.channel('rt-pendaftar').on('postgres_changes', { event: '*', schema: 'public', table: 'pendaftar' }, (payload) => {
@@ -388,9 +412,10 @@ export default function App() {
       });
     }).subscribe();
     const chT = supabase.channel('rt-talenta').on('postgres_changes', { event: '*', schema: 'public', table: 'talenta' }, () => { fetchTalenta(); }).subscribe();
+    const chS = supabase.channel('rt-sponsor-list').on('postgres_changes', { event: '*', schema: 'public', table: 'sponsor' }, () => { fetchSponsors(); }).subscribe();
     const iv = setInterval(() => { fetchKeuangan(); fetchParticipants(); }, 30000);
-    return () => { channels.forEach(ch => supabase.removeChannel(ch)); supabase.removeChannel(chP); supabase.removeChannel(chT); clearInterval(iv); };
-  }, [isLive, fetchKeuangan, fetchParticipants, fetchTalenta]);
+    return () => { channels.forEach(ch => supabase.removeChannel(ch)); supabase.removeChannel(chP); supabase.removeChannel(chT); supabase.removeChannel(chS); clearInterval(iv); };
+  }, [isLive, fetchKeuangan, fetchParticipants, fetchTalenta, fetchSponsors]);
 
   // Hash routing
   useEffect(() => {
@@ -411,9 +436,8 @@ export default function App() {
   // ===== SHARED PROPS =====
   const sharedData: SharedData = {
     participants, keuanganList, inventoryList, talentaList, sponsorList, totalDana, isLive, lastRefresh, newRowIds, setIsLive,
-    fetchParticipants, fetchKeuangan, fetchInventory, fetchTalenta, setNewRowIds, setParticipants, setKeuanganList, setInventoryList, setTalentaList, setTotalDana, setLastRefresh
+    fetchParticipants, fetchKeuangan, fetchInventory, fetchTalenta, fetchSponsors, setNewRowIds, setParticipants, setKeuanganList, setInventoryList, setTalentaList, setSponsorList, setTotalDana, setLastRefresh
   };
-  void setSponsorList;
 
   if (page === 'admin') return <AdminPage key="admin-page" onBack={goMain} shared={sharedData} />;
   if (page === 'gallery') return <GalleryPage key="gallery-page" onBack={goMain} />;
@@ -508,7 +532,7 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
   const totalPemasukan = shared.keuanganList.filter(k => categorizeKeuangan(k) !== 'pengeluaran').reduce((s, k) => s + (k.jumlah || 0), 0);
 
   // Slideshow sponsor mitra (gabungan: tabel sponsor Supabase + data lokal)
-  const sponsorSlides = [...shared.sponsorList, ...sponsorTxList.filter(k => !shared.sponsorList.some(s => s.nama.toLowerCase() === k.nama.toLowerCase())).map(k => ({ id: `tx-${k.id}`, nama: k.nama, deskripsi: k.keterangan || 'Sponsor mitra acara', icon: '🏪', warna: 'text-purple-600' }))];
+  const sponsorSlides = [...shared.sponsorList, ...sponsorTxList.filter(k => !shared.sponsorList.some(s => s.nama.toLowerCase() === k.nama.toLowerCase())).map(k => ({ id: `tx-${k.id}`, nama: k.nama, deskripsi: k.keterangan || 'Sponsor mitra acara', icon: '🏪', warna: 'text-purple-600', logo: '', website: '' }))];
   const [sponsorIdx, setSponsorIdx] = useState(0);
   useEffect(() => {
     if (sponsorSlides.length <= 1) return;
@@ -685,15 +709,20 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
               </div>
               {sponsorSlides.length === 0 ? (
                 <div className="text-xs text-gray-400 italic mt-2">Belum ada sponsor</div>
-              ) : (
+              ) : (() => { const slide = sponsorSlides[sponsorIdx % sponsorSlides.length]; return (
                 <div key={sponsorIdx % sponsorSlides.length} className="flex items-center gap-3 animate-in">
-                  <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg flex-shrink-0">{sponsorSlides[sponsorIdx % sponsorSlides.length].icon}</div>
+                  {slide.logo ? (
+                    <img src={slide.logo} alt={slide.nama} className="w-11 h-11 rounded-lg object-contain bg-white border border-gray-200 p-1 flex-shrink-0 shadow-sm" />
+                  ) : (
+                    <div className="w-11 h-11 rounded-lg bg-gray-100 flex items-center justify-center text-xl flex-shrink-0">{slide.icon}</div>
+                  )}
                   <div className="min-w-0">
-                    <div className={`font-black text-sm truncate ${sponsorSlides[sponsorIdx % sponsorSlides.length].warna}`}>{sponsorSlides[sponsorIdx % sponsorSlides.length].nama}</div>
-                    <div className="text-[10px] text-gray-500 truncate">{sponsorSlides[sponsorIdx % sponsorSlides.length].deskripsi}</div>
+                    <div className={`font-black text-sm truncate ${slide.warna}`}>{slide.nama}</div>
+                    <div className="text-[10px] text-gray-500 truncate">{slide.deskripsi}</div>
+                    {slide.website && <div className="text-[9px] text-gray-400 underline truncate">{slide.website}</div>}
                   </div>
                 </div>
-              )}
+              ); })()}
               {sponsorSlides.length > 1 && (
                 <div className="flex gap-1 mt-3">
                   {sponsorSlides.map((_, i) => (
