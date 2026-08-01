@@ -11,13 +11,61 @@ import {
   formatRupiah,
   rundownPagi,
   rundownMalam,
-  type InventoryItem,
-  type TalentaItem,
-  type SponsorItem,
-  initialInventoryList,
-  initialTalentaList,
-  initialSponsorList,
 } from './data/siteData';
+
+// ===== Tipe & data default didefinisikan LANGSUNG di sini agar build tidak
+// bergantung pada versi siteData.ts di repository (mencegah gagal deploy) =====
+export interface InventoryItem {
+  id: string;
+  nama: string;
+  jumlah: number;
+  satuan: string;
+  kategori: string;
+  keterangan: string;
+}
+
+export interface TalentaItem {
+  id?: number;
+  no: number;
+  jenis: string;
+  nama: string;
+  jumlah: string;
+  durasi: string;
+  pj: string;
+  status: string;
+}
+
+export interface SponsorItem {
+  id: string;
+  nama: string;
+  deskripsi: string;
+  website?: string;
+  icon: string;
+  warna: string;
+}
+
+const initialInventoryList: InventoryItem[] = [
+  { id: 'INV-01', nama: 'Tali Tambang Lomba', jumlah: 2, satuan: 'Pcs', kategori: 'Alat Lomba', keterangan: 'Kondisi baik, disimpan di gudang RT' },
+  { id: 'INV-02', nama: 'Sound System Portable', jumlah: 1, satuan: 'Set', kategori: 'Elektronik', keterangan: 'Milik warga RT 002' },
+  { id: 'INV-03', nama: 'Spanduk Backdrop', jumlah: 1, satuan: 'Pcs', kategori: 'Dekorasi', keterangan: 'Ukuran 4x2 meter' },
+  { id: 'INV-04', nama: 'Sendok Balap Kelereng', jumlah: 30, satuan: 'Pcs', kategori: 'Alat Lomba', keterangan: 'Disimpan dalam boks panitia' },
+];
+
+const initialTalentaList: TalentaItem[] = [
+  { no: 1, jenis: 'Tari Zapin', nama: 'Whesni, Zahra, Lexa, Lexi, Syifa, dkk', jumlah: '', durasi: '', pj: '', status: '' },
+  { no: 2, jenis: 'Tari Gugur Gunung', nama: 'Boru, Amora, Attaya, Namira, Raya', jumlah: '5', durasi: '', pj: '', status: '' },
+  { no: 3, jenis: 'Piano (Instrumental)', nama: 'Ameera', jumlah: '1', durasi: '', pj: '', status: '' },
+  { no: 4, jenis: 'Tarian Wajib – Persembahan', nama: 'Alifa, Hani, Lara, Acen, Sari', jumlah: '5', durasi: '', pj: '', status: '' },
+  { no: 5, jenis: 'Tarian Wajib – Tor Tor', nama: 'Raisa, Shira, Razka, Almera, Shakila, Nabila, Adiibah, Arumi, Mikachan, Hana, Khalisa, Nouren, Inaya, Tisha', jumlah: '14', durasi: '', pj: '', status: '' },
+];
+
+const initialSponsorList: SponsorItem[] = [
+  { id: 'SP-01', nama: 'Apotek Sehat Sentosa', deskripsi: 'P3K & obat-obatan acara', website: 'sehat-sentosa.com', icon: '💊', warna: 'text-pink-500' },
+  { id: 'SP-02', nama: 'Bengkel Sukses Motor', deskripsi: 'Sponsor doorprize — servis motor 1 tahun', icon: '🏍️', warna: 'text-purple-600' },
+  { id: 'SP-03', nama: 'Toko Berkah Mawar', deskripsi: 'Sponsor konsumsi & snack warga', icon: '🏪', warna: 'text-blue-600' },
+  { id: 'SP-04', nama: 'Warung Bu RT', deskripsi: 'Sponsor tumpeng & jamuan', icon: '🍛', warna: 'text-amber-600' },
+  { id: 'SP-05', nama: 'Ameera Collections', deskripsi: 'Sponsor hadiah lomba ibu-ibu', icon: '👗', warna: 'text-fuchsia-600' },
+];
 import { supabase } from './utils/supabaseClient';
 import qrisImage from './assets/qris-aulia.png';
 
