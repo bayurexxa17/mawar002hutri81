@@ -280,9 +280,17 @@ export default function App() {
   // ===== SHARED STATE (single source of truth) =====
   const [participants, setParticipants] = useState<Participant[]>(defaultParticipants);
   const [keuanganList, setKeuanganList] = useState<KeuanganEntry[]>([]);
-  const [inventoryList, setInventoryList] = useState<InventoryItem[]>(initialInventoryList);
+  // Inventory & Sponsor: baca dari localStorage dulu (cache data user) agar tidak
+  // pernah kembali ke data awal saat refresh — data Supabase tetap jadi prioritas utama.
+  const [inventoryList, setInventoryList] = useState<InventoryItem[]>(() => {
+    try { const s = localStorage.getItem('hutri81-inventory'); if (s) { const p = JSON.parse(s); if (Array.isArray(p) && p.length > 0) return p; } } catch {}
+    return initialInventoryList;
+  });
   const [talentaList, setTalentaList] = useState<TalentaItem[]>(initialTalentaList);
-  const [sponsorList, setSponsorList] = useState<SponsorItem[]>(initialSponsorList);
+  const [sponsorList, setSponsorList] = useState<SponsorItem[]>(() => {
+    try { const s = localStorage.getItem('hutri81-sponsor'); if (s) { const p = JSON.parse(s); if (Array.isArray(p)) return p; } } catch {}
+    return initialSponsorList;
+  });
   const [totalDana, setTotalDana] = useState(0);
   const [isLive, setIsLive] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
@@ -353,8 +361,12 @@ export default function App() {
   const fetchInventory = useCallback(async () => {
     try {
       const c = new AbortController(); setTimeout(() => c.abort(), 4000);
-      const { data } = await supabase.from('inventory').select('*').order('id', { ascending: true }).abortSignal(c.signal);
-      if (data && data.length > 0) setInventoryList(data);
+      const { data, error } = await supabase.from('inventory').select('*').order('id', { ascending: true }).abortSignal(c.signal);
+      if (!error && Array.isArray(data)) {
+        // Tabel ada → data Supabase otoritatif (termasuk saat kosong)
+        setInventoryList(data.length > 0 ? data.map((r: any) => ({ id: String(r.id ?? r.kode ?? `INV-${r.id}`), nama: r.nama || '', jumlah: Number(r.jumlah) || 0, satuan: r.satuan || 'Pcs', kategori: r.kategori || 'Umum', keterangan: r.keterangan || '' })) : []);
+      }
+      // error (tabel belum ada / offline) → pertahankan cache localStorage
     } catch { /* offline */ }
   }, []);
 
@@ -370,8 +382,9 @@ export default function App() {
   const fetchSponsors = useCallback(async () => {
     try {
       const c = new AbortController(); setTimeout(() => c.abort(), 4000);
-      const { data } = await supabase.from('sponsor').select('*').order('id', { ascending: true }).abortSignal(c.signal);
-      if (data && data.length > 0) {
+      const { data, error } = await supabase.from('sponsor').select('*').order('id', { ascending: true }).abortSignal(c.signal);
+      if (!error && Array.isArray(data)) {
+        // Tabel ada → data Supabase otoritatif (termasuk saat kosong)
         const warnaPool = ['text-pink-500', 'text-purple-600', 'text-blue-600', 'text-amber-600', 'text-fuchsia-600', 'text-emerald-600'];
         setSponsorList(data.map((r: any, i: number) => ({
           id: `sp-${r.id ?? i}`,
@@ -383,11 +396,17 @@ export default function App() {
           logo: r.logo || r.logo_url || '',
         })));
       }
-    } catch { /* offline → pakai default */ }
+      // error (tabel belum ada / offline) → pertahankan cache localStorage
+    } catch { /* offline → pakai cache/default */ }
   }, []);
 
   // Fetch ONCE on mount
   useEffect(() => { fetchParticipants(); fetchKeuangan(); fetchInventory(); fetchTalenta(); fetchSponsors(); }, []);
+
+  // Auto-simpan Inventory & Sponsor ke localStorage setiap berubah —
+  // jaminan data user tidak hilang walau Supabase offline / tabel belum ada.
+  useEffect(() => { try { localStorage.setItem('hutri81-inventory', JSON.stringify(inventoryList)); } catch {} }, [inventoryList]);
+  useEffect(() => { try { localStorage.setItem('hutri81-sponsor', JSON.stringify(sponsorList)); } catch {} }, [sponsorList]);
 
   // Recalculate totalDana = pemasukan - pengeluaran
   useEffect(() => {
@@ -413,9 +432,10 @@ export default function App() {
     }).subscribe();
     const chT = supabase.channel('rt-talenta').on('postgres_changes', { event: '*', schema: 'public', table: 'talenta' }, () => { fetchTalenta(); }).subscribe();
     const chS = supabase.channel('rt-sponsor-list').on('postgres_changes', { event: '*', schema: 'public', table: 'sponsor' }, () => { fetchSponsors(); }).subscribe();
+    const chI = supabase.channel('rt-inventory').on('postgres_changes', { event: '*', schema: 'public', table: 'inventory' }, () => { fetchInventory(); }).subscribe();
     const iv = setInterval(() => { fetchKeuangan(); fetchParticipants(); }, 30000);
-    return () => { channels.forEach(ch => supabase.removeChannel(ch)); supabase.removeChannel(chP); supabase.removeChannel(chT); supabase.removeChannel(chS); clearInterval(iv); };
-  }, [isLive, fetchKeuangan, fetchParticipants, fetchTalenta, fetchSponsors]);
+    return () => { channels.forEach(ch => supabase.removeChannel(ch)); supabase.removeChannel(chP); supabase.removeChannel(chT); supabase.removeChannel(chS); supabase.removeChannel(chI); clearInterval(iv); };
+  }, [isLive, fetchKeuangan, fetchParticipants, fetchTalenta, fetchSponsors, fetchInventory]);
 
   // Hash routing
   useEffect(() => {
