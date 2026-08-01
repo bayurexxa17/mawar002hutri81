@@ -11,62 +11,13 @@ import {
   formatRupiah,
   rundownPagi,
   rundownMalam,
+  type InventoryItem,
+  type TalentaItem,
+  type SponsorItem,
+  initialInventoryList,
+  initialTalentaList,
+  initialSponsorList,
 } from './data/siteData';
-
-// ===== Tipe & data default didefinisikan LANGSUNG di sini agar build tidak
-// bergantung pada versi siteData.ts di repository (mencegah gagal deploy) =====
-export interface InventoryItem {
-  id: string;
-  nama: string;
-  jumlah: number;
-  satuan: string;
-  kategori: string;
-  keterangan: string;
-}
-
-export interface TalentaItem {
-  id?: number;
-  no: number;
-  jenis: string;
-  nama: string;
-  jumlah: string;
-  durasi: string;
-  pj: string;
-  status: string;
-}
-
-export interface SponsorItem {
-  id: string;
-  nama: string;
-  deskripsi: string;
-  website?: string;
-  icon: string;
-  warna: string;
-  logo?: string;
-}
-
-const initialInventoryList: InventoryItem[] = [
-  { id: 'INV-01', nama: 'Tali Tambang Lomba', jumlah: 2, satuan: 'Pcs', kategori: 'Alat Lomba', keterangan: 'Kondisi baik, disimpan di gudang RT' },
-  { id: 'INV-02', nama: 'Sound System Portable', jumlah: 1, satuan: 'Set', kategori: 'Elektronik', keterangan: 'Milik warga RT 002' },
-  { id: 'INV-03', nama: 'Spanduk Backdrop', jumlah: 1, satuan: 'Pcs', kategori: 'Dekorasi', keterangan: 'Ukuran 4x2 meter' },
-  { id: 'INV-04', nama: 'Sendok Balap Kelereng', jumlah: 30, satuan: 'Pcs', kategori: 'Alat Lomba', keterangan: 'Disimpan dalam boks panitia' },
-];
-
-const initialTalentaList: TalentaItem[] = [
-  { no: 1, jenis: 'Tari Zapin', nama: 'Whesni, Zahra, Lexa, Lexi, Syifa, dkk', jumlah: '', durasi: '', pj: '', status: '' },
-  { no: 2, jenis: 'Tari Gugur Gunung', nama: 'Boru, Amora, Attaya, Namira, Raya', jumlah: '5', durasi: '', pj: '', status: '' },
-  { no: 3, jenis: 'Piano (Instrumental)', nama: 'Ameera', jumlah: '1', durasi: '', pj: '', status: '' },
-  { no: 4, jenis: 'Tarian Wajib – Persembahan', nama: 'Alifa, Hani, Lara, Acen, Sari', jumlah: '5', durasi: '', pj: '', status: '' },
-  { no: 5, jenis: 'Tarian Wajib – Tor Tor', nama: 'Raisa, Shira, Razka, Almera, Shakila, Nabila, Adiibah, Arumi, Mikachan, Hana, Khalisa, Nouren, Inaya, Tisha', jumlah: '14', durasi: '', pj: '', status: '' },
-];
-
-const initialSponsorList: SponsorItem[] = [
-  { id: 'SP-01', nama: 'Apotek Sehat Sentosa', deskripsi: 'P3K & obat-obatan acara', website: 'sehat-sentosa.com', icon: '💊', warna: 'text-pink-500' },
-  { id: 'SP-02', nama: 'Bengkel Sukses Motor', deskripsi: 'Sponsor doorprize — servis motor 1 tahun', icon: '🏍️', warna: 'text-purple-600' },
-  { id: 'SP-03', nama: 'Toko Berkah Mawar', deskripsi: 'Sponsor konsumsi & snack warga', icon: '🏪', warna: 'text-blue-600' },
-  { id: 'SP-04', nama: 'Warung Bu RT', deskripsi: 'Sponsor tumpeng & jamuan', icon: '🍛', warna: 'text-amber-600' },
-  { id: 'SP-05', nama: 'Ameera Collections', deskripsi: 'Sponsor hadiah lomba ibu-ibu', icon: '👗', warna: 'text-fuchsia-600' },
-];
 import { supabase } from './utils/supabaseClient';
 import qrisImage from './assets/qris-aulia.png';
 
@@ -250,8 +201,6 @@ export interface SharedData {
   fetchKeuangan: () => Promise<void>;
   fetchInventory: () => Promise<void>;
   fetchTalenta: () => Promise<void>;
-  fetchSponsors: () => Promise<void>;
-  setSponsorList: React.Dispatch<React.SetStateAction<SponsorItem[]>>;
   setNewRowIds: React.Dispatch<React.SetStateAction<Set<string>>>;
   setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>;
   setKeuanganList: React.Dispatch<React.SetStateAction<KeuanganEntry[]>>;
@@ -334,7 +283,6 @@ export default function App() {
       ['donasi', 'donasi', 3000000],
       ['donasi cash', 'cash', 4000000],
       ['donasi online', 'donasi', 5000000],
-      ['pengeluaran', 'pengeluaran', 6000000],
     ];
     await Promise.all(sources.map(async ([tbl, dj, off]) => {
       try {
@@ -366,28 +314,8 @@ export default function App() {
     } catch { /* offline → pakai default */ }
   }, []);
 
-  // Ambil sponsor mitra (dengan logo) dari tabel `sponsor`
-  const fetchSponsors = useCallback(async () => {
-    try {
-      const c = new AbortController(); setTimeout(() => c.abort(), 4000);
-      const { data } = await supabase.from('sponsor').select('*').order('id', { ascending: true }).abortSignal(c.signal);
-      if (data && data.length > 0) {
-        const warnaPool = ['text-pink-500', 'text-purple-600', 'text-blue-600', 'text-amber-600', 'text-fuchsia-600', 'text-emerald-600'];
-        setSponsorList(data.map((r: any, i: number) => ({
-          id: `sp-${r.id ?? i}`,
-          nama: r.nama || r.name || '',
-          deskripsi: r.deskripsi || r.keterangan || 'Sponsor mitra acara',
-          website: r.website || '',
-          icon: r.icon || '🏪',
-          warna: r.warna || warnaPool[i % warnaPool.length],
-          logo: r.logo || r.logo_url || '',
-        })));
-      }
-    } catch { /* offline → pakai default */ }
-  }, []);
-
   // Fetch ONCE on mount
-  useEffect(() => { fetchParticipants(); fetchKeuangan(); fetchInventory(); fetchTalenta(); fetchSponsors(); }, []);
+  useEffect(() => { fetchParticipants(); fetchKeuangan(); fetchInventory(); fetchTalenta(); }, []);
 
   // Recalculate totalDana = pemasukan - pengeluaran
   useEffect(() => {
@@ -399,7 +327,7 @@ export default function App() {
   // Realtime: langganan SEMUA tabel keuangan + pendaftar + talenta
   useEffect(() => {
     if (!isLive) return;
-    const channels = ['keuangan', 'sponsor', 'iuran warga', 'donasi', 'donasi cash', 'donasi online', 'pengeluaran'].map(tbl =>
+    const channels = ['keuangan', 'sponsor', 'iuran warga', 'donasi', 'donasi cash', 'donasi online'].map(tbl =>
       supabase.channel(`rt-${tbl.replace(/\s/g, '-')}`).on('postgres_changes', { event: '*', schema: 'public', table: tbl }, () => { fetchKeuangan(); }).subscribe()
     );
     const chP = supabase.channel('rt-pendaftar').on('postgres_changes', { event: '*', schema: 'public', table: 'pendaftar' }, (payload) => {
@@ -412,10 +340,9 @@ export default function App() {
       });
     }).subscribe();
     const chT = supabase.channel('rt-talenta').on('postgres_changes', { event: '*', schema: 'public', table: 'talenta' }, () => { fetchTalenta(); }).subscribe();
-    const chS = supabase.channel('rt-sponsor-list').on('postgres_changes', { event: '*', schema: 'public', table: 'sponsor' }, () => { fetchSponsors(); }).subscribe();
     const iv = setInterval(() => { fetchKeuangan(); fetchParticipants(); }, 30000);
-    return () => { channels.forEach(ch => supabase.removeChannel(ch)); supabase.removeChannel(chP); supabase.removeChannel(chT); supabase.removeChannel(chS); clearInterval(iv); };
-  }, [isLive, fetchKeuangan, fetchParticipants, fetchTalenta, fetchSponsors]);
+    return () => { channels.forEach(ch => supabase.removeChannel(ch)); supabase.removeChannel(chP); supabase.removeChannel(chT); clearInterval(iv); };
+  }, [isLive, fetchKeuangan, fetchParticipants, fetchTalenta]);
 
   // Hash routing
   useEffect(() => {
@@ -436,8 +363,9 @@ export default function App() {
   // ===== SHARED PROPS =====
   const sharedData: SharedData = {
     participants, keuanganList, inventoryList, talentaList, sponsorList, totalDana, isLive, lastRefresh, newRowIds, setIsLive,
-    fetchParticipants, fetchKeuangan, fetchInventory, fetchTalenta, fetchSponsors, setNewRowIds, setParticipants, setKeuanganList, setInventoryList, setTalentaList, setSponsorList, setTotalDana, setLastRefresh
+    fetchParticipants, fetchKeuangan, fetchInventory, fetchTalenta, setNewRowIds, setParticipants, setKeuanganList, setInventoryList, setTalentaList, setTotalDana, setLastRefresh
   };
+  void setSponsorList;
 
   if (page === 'admin') return <AdminPage key="admin-page" onBack={goMain} shared={sharedData} />;
   if (page === 'gallery') return <GalleryPage key="gallery-page" onBack={goMain} />;
@@ -532,7 +460,7 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
   const totalPemasukan = shared.keuanganList.filter(k => categorizeKeuangan(k) !== 'pengeluaran').reduce((s, k) => s + (k.jumlah || 0), 0);
 
   // Slideshow sponsor mitra (gabungan: tabel sponsor Supabase + data lokal)
-  const sponsorSlides = [...shared.sponsorList, ...sponsorTxList.filter(k => !shared.sponsorList.some(s => s.nama.toLowerCase() === k.nama.toLowerCase())).map(k => ({ id: `tx-${k.id}`, nama: k.nama, deskripsi: k.keterangan || 'Sponsor mitra acara', icon: '🏪', warna: 'text-purple-600', logo: '', website: '' }))];
+  const sponsorSlides = [...shared.sponsorList, ...sponsorTxList.filter(k => !shared.sponsorList.some(s => s.nama.toLowerCase() === k.nama.toLowerCase())).map(k => ({ id: `tx-${k.id}`, nama: k.nama, deskripsi: k.keterangan || 'Sponsor mitra acara', icon: '🏪', warna: 'text-purple-600' }))];
   const [sponsorIdx, setSponsorIdx] = useState(0);
   useEffect(() => {
     if (sponsorSlides.length <= 1) return;
@@ -709,20 +637,15 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
               </div>
               {sponsorSlides.length === 0 ? (
                 <div className="text-xs text-gray-400 italic mt-2">Belum ada sponsor</div>
-              ) : (() => { const slide = sponsorSlides[sponsorIdx % sponsorSlides.length]; return (
+              ) : (
                 <div key={sponsorIdx % sponsorSlides.length} className="flex items-center gap-3 animate-in">
-                  {slide.logo ? (
-                    <img src={slide.logo} alt={slide.nama} className="w-11 h-11 rounded-lg object-contain bg-white border border-gray-200 p-1 flex-shrink-0 shadow-sm" />
-                  ) : (
-                    <div className="w-11 h-11 rounded-lg bg-gray-100 flex items-center justify-center text-xl flex-shrink-0">{slide.icon}</div>
-                  )}
+                  <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg flex-shrink-0">{sponsorSlides[sponsorIdx % sponsorSlides.length].icon}</div>
                   <div className="min-w-0">
-                    <div className={`font-black text-sm truncate ${slide.warna}`}>{slide.nama}</div>
-                    <div className="text-[10px] text-gray-500 truncate">{slide.deskripsi}</div>
-                    {slide.website && <div className="text-[9px] text-gray-400 underline truncate">{slide.website}</div>}
+                    <div className={`font-black text-sm truncate ${sponsorSlides[sponsorIdx % sponsorSlides.length].warna}`}>{sponsorSlides[sponsorIdx % sponsorSlides.length].nama}</div>
+                    <div className="text-[10px] text-gray-500 truncate">{sponsorSlides[sponsorIdx % sponsorSlides.length].deskripsi}</div>
                   </div>
                 </div>
-              ); })()}
+              )}
               {sponsorSlides.length > 1 && (
                 <div className="flex gap-1 mt-3">
                   {sponsorSlides.map((_, i) => (
