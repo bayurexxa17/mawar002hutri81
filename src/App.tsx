@@ -262,13 +262,14 @@ export interface SharedData {
 }
 
 // Kategorikan satu entri keuangan ke kolom tampilan
-export function categorizeKeuangan(k: KeuanganEntry): 'cash' | 'donatur' | 'sponsor' | 'donasi' | 'pengeluaran' | 'transfer' {
+export function categorizeKeuangan(k: KeuanganEntry): 'cash' | 'kas' | 'donatur' | 'sponsor' | 'donasi' | 'pengeluaran' | 'transfer' {
   const j = (k.jenis || '').toLowerCase();
   const ket = (k.keterangan || '').toLowerCase();
   if (j.includes('pengeluaran') || (k.jumlah || 0) < 0) return 'pengeluaran';
   if (ket.includes('transfer')) return 'transfer';
   if (j.includes('sponsor')) return 'sponsor';
   if (j.includes('donatur')) return 'donatur';
+  if (j.includes('kas')) return 'kas';
   if (j.includes('iuran') || j.includes('cash')) return 'cash';
   return 'donasi';
 }
@@ -400,8 +401,13 @@ export default function App() {
     } catch { /* offline → pakai cache/default */ }
   }, []);
 
-  // Fetch ONCE on mount
-  useEffect(() => { fetchParticipants(); fetchKeuangan(); fetchInventory(); fetchTalenta(); fetchSponsors(); }, []);
+  // Fetch on mount + retry otomatis (koneksi Supabase dingin sering lambat)
+  useEffect(() => {
+    fetchParticipants(); fetchKeuangan(); fetchInventory(); fetchTalenta(); fetchSponsors();
+    const t1 = setTimeout(() => { fetchParticipants(); fetchKeuangan(); }, 2500);
+    const t2 = setTimeout(() => { fetchParticipants(); fetchKeuangan(); }, 6000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
 
   // Auto-simpan Inventory & Sponsor ke localStorage setiap berubah —
   // jaminan data user tidak hilang walau Supabase offline / tabel belum ada.
@@ -433,9 +439,10 @@ export default function App() {
     const chT = supabase.channel('rt-talenta').on('postgres_changes', { event: '*', schema: 'public', table: 'talenta' }, () => { fetchTalenta(); }).subscribe();
     const chS = supabase.channel('rt-sponsor-list').on('postgres_changes', { event: '*', schema: 'public', table: 'sponsor' }, () => { fetchSponsors(); }).subscribe();
     const chI = supabase.channel('rt-inventory').on('postgres_changes', { event: '*', schema: 'public', table: 'inventory' }, () => { fetchInventory(); }).subscribe();
-    const iv = setInterval(() => { fetchKeuangan(); fetchParticipants(); }, 30000);
+    const iv = setInterval(() => { fetchKeuangan(); fetchParticipants(); fetchSponsors(); fetchInventory(); }, 10000);
     return () => { channels.forEach(ch => supabase.removeChannel(ch)); supabase.removeChannel(chP); supabase.removeChannel(chT); supabase.removeChannel(chS); supabase.removeChannel(chI); clearInterval(iv); };
   }, [isLive, fetchKeuangan, fetchParticipants, fetchTalenta, fetchSponsors, fetchInventory]);
+  // polling 10 detik memastikan semua blok (dana, peserta, sponsor, inventory) selalu segar
 
   // Hash routing
   useEffect(() => {
@@ -540,6 +547,7 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
 
   // ===== Kategori transaksi keuangan (sinkron Supabase) =====
   const cashList = shared.keuanganList.filter(k => categorizeKeuangan(k) === 'cash');
+  const kasList = shared.keuanganList.filter(k => categorizeKeuangan(k) === 'kas');
   const donaturList = shared.keuanganList.filter(k => categorizeKeuangan(k) === 'donatur');
   const sponsorTxList = shared.keuanganList.filter(k => categorizeKeuangan(k) === 'sponsor');
   const donasiList = shared.keuanganList.filter(k => categorizeKeuangan(k) === 'donasi');
@@ -547,6 +555,7 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
   const transferList = shared.keuanganList.filter(k => categorizeKeuangan(k) === 'transfer');
 
   const totalCash = cashList.reduce((s, k) => s + (k.jumlah || 0), 0);
+  const totalKas = kasList.reduce((s, k) => s + (k.jumlah || 0), 0);
   const totalDonasi = donasiList.reduce((s, k) => s + (k.jumlah || 0), 0);
   const totalPengeluaran = pengeluaranList.reduce((s, k) => s + Math.abs(k.jumlah || 0), 0);
   const totalPemasukan = shared.keuanganList.filter(k => categorizeKeuangan(k) !== 'pengeluaran').reduce((s, k) => s + (k.jumlah || 0), 0);
@@ -709,12 +718,18 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
             Iuran / Donatur / Sponsor / Donasi / Pengeluaran — Setiap transaksi langsung terkoneksi & sinkron ke Total Dana, Ringkasan Anggaran, dan Panel Panitia.
           </p>
 
-          {/* 5 WHITE STATS CARDS */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+          {/* WHITE STATS CARDS */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
             <div className="bg-white text-gray-900 rounded-xl p-4 border border-gray-200">
               <div className="text-[11px] text-gray-500 font-semibold mb-1">Cash</div>
               <div className="text-xl sm:text-2xl font-black text-blue-600">{formatRupiah(totalCash)}</div>
               <div className="text-[10px] text-gray-400 mt-1">{cashList.length} transaksi cash</div>
+            </div>
+            <div className="bg-white text-gray-900 rounded-xl p-4 border border-gray-200 relative overflow-hidden">
+              <div className="absolute inset-x-0 top-0 h-0.5 bg-teal-500" />
+              <div className="text-[11px] text-gray-500 font-semibold mb-1">Kas RT</div>
+              <div className="text-xl sm:text-2xl font-black text-teal-600">{formatRupiah(totalKas)}</div>
+              <div className="text-[10px] text-gray-400 mt-1">{kasList.length} setoran kas</div>
             </div>
             <div className="bg-white text-gray-900 rounded-xl p-4 border border-gray-200">
               <div className="text-[11px] text-gray-500 font-semibold mb-1">Donatur</div>
@@ -763,10 +778,11 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
             </div>
           </div>
 
-          {/* 6 COLUMNS: CASH, DONATUR, SPONSOR, DONASI, PENGELUARAN, TRANSFER */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-gray-800 border border-gray-800 rounded-xl overflow-hidden">
+          {/* 7 COLUMNS: CASH, KAS RT, DONATUR, SPONSOR, DONASI, PENGELUARAN, TRANSFER */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-px bg-gray-800 border border-gray-800 rounded-xl overflow-hidden">
             {[
               { title: 'CASH', color: 'text-blue-400', list: cashList, empty: 'Belum ada', fmt: (k: KeuanganEntry) => `+${formatRupiah(k.jumlah)}`, amt: 'text-blue-400' },
+              { title: 'KAS RT', color: 'text-teal-400', list: kasList, empty: 'Belum ada', fmt: (k: KeuanganEntry) => `+${formatRupiah(k.jumlah)}`, amt: 'text-teal-400' },
               { title: 'DONATUR', color: 'text-red-400', list: donaturList, empty: 'Belum ada', fmt: (k: KeuanganEntry) => `+${formatRupiah(k.jumlah)}`, amt: 'text-red-400' },
               { title: 'SPONSOR', color: 'text-purple-400', list: sponsorTxList, empty: 'Belum ada', fmt: (k: KeuanganEntry) => (k.jumlah ? `+${formatRupiah(k.jumlah)}` : 'Mitra'), amt: 'text-purple-400' },
               { title: 'DONASI', color: 'text-green-400', list: donasiList, empty: 'Belum ada', fmt: (k: KeuanganEntry) => `+${formatRupiah(k.jumlah)}`, amt: 'text-green-400' },
