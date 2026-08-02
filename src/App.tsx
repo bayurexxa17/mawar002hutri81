@@ -300,7 +300,7 @@ export default function App() {
   // ===== FETCH PESERTA — langsung dari Supabase =====
   const fetchParticipants = useCallback(async () => {
     try {
-      const c = new AbortController(); setTimeout(() => c.abort(), 4000);
+      const c = new AbortController(); setTimeout(() => c.abort(), 15000);
       const { data } = await supabase.from('pendaftar').select('*').order('id', { ascending: true }).abortSignal(c.signal);
       if (data && data.length > 0) {
         const map = new Map<string, Participant>();
@@ -347,7 +347,7 @@ export default function App() {
     ];
     await Promise.all(sources.map(async ([tbl, dj, off]) => {
       try {
-        const c = new AbortController(); setTimeout(() => c.abort(), 4000);
+        const c = new AbortController(); setTimeout(() => c.abort(), 15000);
         const { data } = await supabase.from(tbl).select('*').abortSignal(c.signal);
         if (data) push(data, dj, off);
       } catch { /* tabel tidak ada / offline — lewati */ }
@@ -361,7 +361,7 @@ export default function App() {
 
   const fetchInventory = useCallback(async () => {
     try {
-      const c = new AbortController(); setTimeout(() => c.abort(), 4000);
+      const c = new AbortController(); setTimeout(() => c.abort(), 15000);
       const { data, error } = await supabase.from('inventory').select('*').order('id', { ascending: true }).abortSignal(c.signal);
       if (!error && Array.isArray(data)) {
         // Tabel ada → data Supabase otoritatif (termasuk saat kosong)
@@ -373,7 +373,7 @@ export default function App() {
 
   const fetchTalenta = useCallback(async () => {
     try {
-      const c = new AbortController(); setTimeout(() => c.abort(), 4000);
+      const c = new AbortController(); setTimeout(() => c.abort(), 15000);
       const { data } = await supabase.from('talenta').select('*').order('no', { ascending: true }).abortSignal(c.signal);
       if (data && data.length > 0) setTalentaList(data);
     } catch { /* offline → pakai default */ }
@@ -382,7 +382,7 @@ export default function App() {
   // Ambil sponsor mitra (dengan logo) dari tabel `sponsor`
   const fetchSponsors = useCallback(async () => {
     try {
-      const c = new AbortController(); setTimeout(() => c.abort(), 4000);
+      const c = new AbortController(); setTimeout(() => c.abort(), 15000);
       const { data, error } = await supabase.from('sponsor').select('*').order('id', { ascending: true }).abortSignal(c.signal);
       if (!error && Array.isArray(data)) {
         // Tabel ada → data Supabase otoritatif (termasuk saat kosong)
@@ -712,6 +712,9 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
               <span className="bg-gray-800/80 text-gray-300 text-xs font-bold px-3 py-1.5 rounded-full">
                 Pemasukan: {formatRupiah(totalPemasukan)} | Pengeluaran: {formatRupiah(totalPengeluaran)}
               </span>
+              <span className={`text-xs font-black px-3 py-1.5 rounded-full border ${totalPemasukan - totalPengeluaran >= 0 ? 'bg-emerald-900/40 text-emerald-300 border-emerald-700/40' : 'bg-red-900/40 text-red-300 border-red-700/40'}`}>
+                Total Bersih: {formatRupiah(totalPemasukan - totalPengeluaran)}
+              </span>
             </div>
           </div>
           <p className="text-xs text-gray-400 mb-6 leading-relaxed">
@@ -822,7 +825,13 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
       <section id="panitia" className="py-16 px-4 bg-[#F5F5F0] order-4"><div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border overflow-hidden"><div className="p-5"><h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2">👥 Susunan Panitia</h3></div><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="bg-[#C1272D] text-white"><th className="text-left px-4 py-3 font-semibold">Jabatan</th><th className="text-left px-4 py-3 font-semibold">Nama</th></tr></thead><tbody>{panitiaList.filter(p => p.isCore).map((p, i) => (<tr key={i} className={i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}><td className="px-4 py-3 font-medium">{p.jabatan}</td><td className="px-4 py-3">{p.nama}{p.hp ? ` (${p.hp})` : ''}</td></tr>))}</tbody></table></div></div></section>
 
       {/* ANGGARAN */}
-      <section id="anggaran" className="py-16 px-4 bg-white order-5"><div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border overflow-hidden"><div className="p-5"><h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2">🧮 Ringkasan Anggaran</h3></div><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="bg-[#C1272D] text-white"><th className="text-left px-4 py-3">Komponen</th><th className="text-right px-4 py-3">Jumlah (Rp)</th><th className="text-left px-4 py-3">Detail</th></tr></thead><tbody>{budgetRows.map((r, i) => (<tr key={i} className={r.isTotal ? 'bg-[#F9E2E2] font-bold text-[#C1272D]' : r.isSurplus ? 'bg-green-50 font-bold text-green-700' : i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}><td className="px-4 py-3">{r.komponen}</td><td className="px-4 py-3 text-right">{r.jumlah.toLocaleString('id-ID')}</td><td className="px-4 py-3">{r.detailKey && <button onClick={() => setShowBudgetDetail(r.detailKey!)} className="border border-[#C1272D] text-[#C1272D] px-3 py-1 rounded-full text-xs font-semibold hover:bg-[#C1272D] hover:text-white transition">Lihat Detail</button>}</td></tr>))}</tbody></table></div></div></section>
+      <section id="anggaran" className="py-16 px-4 bg-white order-5"><div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border overflow-hidden"><div className="p-5 flex items-center justify-between"><h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2">🧮 Ringkasan Anggaran</h3><span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live dari Supabase</span></div><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="bg-[#C1272D] text-white"><th className="text-left px-4 py-3">Komponen</th><th className="text-right px-4 py-3">Jumlah (Rp)</th><th className="text-left px-4 py-3">Detail</th></tr></thead><tbody>
+        {budgetRows.map((r, i) => (<tr key={i} className={r.isTotal ? 'bg-[#F9E2E2] font-bold text-[#C1272D]' : i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}><td className="px-4 py-3">{r.komponen}</td><td className="px-4 py-3 text-right">{r.jumlah.toLocaleString('id-ID')}</td><td className="px-4 py-3">{r.detailKey && <button onClick={() => setShowBudgetDetail(r.detailKey!)} className="border border-[#C1272D] text-[#C1272D] px-3 py-1 rounded-full text-xs font-semibold hover:bg-[#C1272D] hover:text-white transition">Lihat Detail</button>}</td></tr>))}
+        {/* Baris live: pemasukan, pengeluaran, total bersih */}
+        <tr className="bg-blue-50 font-bold text-blue-700 border-t-2 border-blue-200"><td className="px-4 py-3">💰 Total Pemasukan (Live)</td><td className="px-4 py-3 text-right">{totalPemasukan.toLocaleString('id-ID')}</td><td className="px-4 py-3 text-[10px] text-blue-500 font-normal">Iuran + Donasi + Sponsor + Donatur + Kas</td></tr>
+        <tr className="bg-orange-50 font-bold text-orange-700"><td className="px-4 py-3">💸 Total Pengeluaran (Live)</td><td className="px-4 py-3 text-right">- {totalPengeluaran.toLocaleString('id-ID')}</td><td className="px-4 py-3 text-[10px] text-orange-500 font-normal">Pembelian & pembayaran barang/jasa</td></tr>
+        <tr className={`${totalPemasukan - totalPengeluaran >= 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} font-black border-t-2 border-gray-300`}><td className="px-4 py-3.5">✅ TOTAL BERSIH (Pemasukan − Pengeluaran)</td><td className="px-4 py-3.5 text-right text-base">{(totalPemasukan - totalPengeluaran).toLocaleString('id-ID')}</td><td className="px-4 py-3 text-[10px] font-normal opacity-70">{totalPemasukan - totalPengeluaran >= 0 ? 'Surplus — dana aman' : 'Defisit — perlu donasi tambahan'}</td></tr>
+      </tbody></table></div></div></section>
 
       {/* REAL-TIME TABLE — DIPINDAH ke bawah Transaksi via order-2 */}
       <section id="peserta" className="relative order-2">
