@@ -252,6 +252,8 @@ export interface SharedData {
   fetchTalenta: () => Promise<void>;
   fetchSponsors: () => Promise<void>;
   setSponsorList: React.Dispatch<React.SetStateAction<SponsorItem[]>>;
+  pesertaSource: 'supabase' | 'lokal';
+  keuanganSource: 'supabase' | 'lokal';
   setNewRowIds: React.Dispatch<React.SetStateAction<Set<string>>>;
   setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>;
   setKeuanganList: React.Dispatch<React.SetStateAction<KeuanganEntry[]>>;
@@ -296,6 +298,9 @@ export default function App() {
   const [isLive, setIsLive] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [newRowIds, setNewRowIds] = useState<Set<string>>(new Set());
+  // Indikator sumber data — tampil di halaman agar sinkronisasi bisa diverifikasi
+  const [pesertaSource, setPesertaSource] = useState<'supabase' | 'lokal'>('lokal');
+  const [keuanganSource, setKeuanganSource] = useState<'supabase' | 'lokal'>('lokal');
 
   // ===== FETCH PESERTA — langsung dari Supabase =====
   const fetchParticipants = useCallback(async () => {
@@ -303,6 +308,7 @@ export default function App() {
       const c = new AbortController(); setTimeout(() => c.abort(), 15000);
       const { data } = await supabase.from('pendaftar').select('*').order('id', { ascending: true }).abortSignal(c.signal);
       if (data && data.length > 0) {
+        setPesertaSource('supabase');
         const map = new Map<string, Participant>();
         [...data].sort((a: any, b: any) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()).forEach((item: any) => {
           const n = (item.nama || item.name || '').trim(); if (!n) return;
@@ -313,8 +319,10 @@ export default function App() {
           map.set(`${item.id}`, { id: `MWR81-${String(idx).padStart(4, '0')}`, name: n, rt, hp: item.telepon || item.hp || '-', dbId: item.id, lomba: typeof item.lomba === 'string' ? item.lomba.split(',').map((x: string) => x.trim()).filter(Boolean) : (item.lomba || []), catatan: item.catatan || '', waktu: item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : new Date().toLocaleString('id-ID') });
         });
         setParticipants(Array.from(map.values()).reverse());
+      } else {
+        setPesertaSource('lokal');
       }
-    } catch { /* Supabase offline → biarkan data lokal */ }
+    } catch { setPesertaSource('lokal'); /* Supabase offline → biarkan data lokal */ }
     setLastRefresh(new Date());
   }, []);
 
@@ -344,6 +352,7 @@ export default function App() {
       ['donasi cash', 'cash', 4000000],
       ['donasi online', 'donasi', 5000000],
       ['pengeluaran', 'pengeluaran', 6000000],
+      ['kas rt', 'kas', 7000000],
     ];
     await Promise.all(sources.map(async ([tbl, dj, off]) => {
       try {
@@ -355,7 +364,12 @@ export default function App() {
     // Dedupe entri identik
     const unique = all.filter((v, i, a) => a.findIndex(t => t.nama === v.nama && t.jumlah === v.jumlah && t.jenis === v.jenis && (t.keterangan || '') === (v.keterangan || '')) === i);
     unique.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
-    setKeuanganList(unique);
+    if (unique.length > 0) {
+      setKeuanganList(unique);
+      setKeuanganSource('supabase');
+    } else {
+      setKeuanganSource('lokal'); // semua tabel gagal/kosong → pertahankan state lokal
+    }
     setLastRefresh(new Date());
   }, []);
 
@@ -463,7 +477,8 @@ export default function App() {
   // ===== SHARED PROPS =====
   const sharedData: SharedData = {
     participants, keuanganList, inventoryList, talentaList, sponsorList, totalDana, isLive, lastRefresh, newRowIds, setIsLive,
-    fetchParticipants, fetchKeuangan, fetchInventory, fetchTalenta, fetchSponsors, setNewRowIds, setParticipants, setKeuanganList, setInventoryList, setTalentaList, setSponsorList, setTotalDana, setLastRefresh
+    fetchParticipants, fetchKeuangan, fetchInventory, fetchTalenta, fetchSponsors, setNewRowIds, setParticipants, setKeuanganList, setInventoryList, setTalentaList, setSponsorList, setTotalDana, setLastRefresh,
+    pesertaSource, keuanganSource
   };
 
   if (page === 'admin') return <AdminPage key="admin-page" onBack={goMain} shared={sharedData} />;
@@ -532,7 +547,7 @@ function InventoryViewPage({ onBack, shared }: { onBack: () => void; shared: Sha
 
 // ================== MAIN PAGE ==================
 function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { shared: SharedData; onAdminClick: () => void; onGalleryClick: () => void; onInventoryClick: () => void }) {
-  const { participants, totalDana, isLive, lastRefresh, newRowIds, setIsLive, fetchParticipants, fetchKeuangan } = shared;
+  const { participants, totalDana, isLive, lastRefresh, newRowIds, setIsLive, fetchParticipants, fetchKeuangan, pesertaSource, keuanganSource } = shared;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterLomba, setFilterLomba] = useState('');
@@ -709,6 +724,9 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
               <span className="bg-green-900/40 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full border border-green-800/30">
                 LIVE • {shared.keuanganList.length} transaksi
               </span>
+              <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${keuanganSource === 'supabase' ? 'bg-emerald-900/40 text-emerald-300 border-emerald-700/40' : 'bg-amber-900/40 text-amber-300 border-amber-700/40'}`} title="Sumber data keuangan">
+                {keuanganSource === 'supabase' ? '⛁ Supabase' : '🟡 Lokal'}
+              </span>
               <span className="bg-gray-800/80 text-gray-300 text-xs font-bold px-3 py-1.5 rounded-full">
                 Pemasukan: {formatRupiah(totalPemasukan)} | Pengeluaran: {formatRupiah(totalPengeluaran)}
               </span>
@@ -835,7 +853,7 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
 
       {/* REAL-TIME TABLE — DIPINDAH ke bawah Transaksi via order-2 */}
       <section id="peserta" className="relative order-2">
-        <div className="bg-gradient-to-br from-[#C1272D] via-[#B71C22] to-[#8B1A1A] px-4 pt-14 pb-28"><div className="max-w-6xl mx-auto"><div className="inline-flex items-center gap-2 bg-green-500 text-white text-xs font-bold px-4 py-1.5 rounded-full mb-5 shadow-lg"><span className="relative flex h-2 w-2"><span className="animate-ping absolute h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>LIVE • REAL-TIME</div><div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6"><div><h2 className="text-3xl sm:text-4xl font-black text-white leading-tight tracking-tight">TABEL REAL-TIME</h2><h3 className="text-2xl sm:text-3xl font-black text-white/80 leading-tight">DAFTAR PESERTA</h3><p className="text-white/50 text-sm mt-3 max-w-xl leading-relaxed">Data peserta terupdate otomatis. Sinkron antara halaman utama dan Admin Panitia via Supabase Realtime.</p></div><div className="flex gap-3 flex-shrink-0"><div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-2xl px-5 py-4 text-center min-w-[120px]"><div className="text-xs text-white/60 font-bold uppercase tracking-wider">Total Peserta</div><div className="text-3xl font-black text-white mt-1">{participants.length}</div><div className="flex items-center justify-center gap-1 mt-1"><span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative rounded-full h-1.5 w-1.5 bg-green-400"></span></span><span className="text-[10px] text-green-300 font-semibold">Sinkron</span></div></div><div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-2xl px-5 py-4 text-center min-w-[140px]"><div className="text-xs text-white/60 font-bold uppercase tracking-wider">Status Terakhir</div><div className="text-lg font-black text-white mt-1">{lastRefresh.toLocaleTimeString('id-ID')} WIB</div><div className="flex items-center justify-center gap-1 mt-1"><span className="w-1.5 h-1.5 rounded-full bg-green-400"></span><span className="text-[10px] text-green-300 font-semibold">Sinkron • {isLive ? 'ON' : 'OFF'}</span></div></div></div></div></div></div>
+        <div className="bg-gradient-to-br from-[#C1272D] via-[#B71C22] to-[#8B1A1A] px-4 pt-14 pb-28"><div className="max-w-6xl mx-auto"><div className="flex flex-wrap items-center gap-2 mb-5"><span className="inline-flex items-center gap-2 bg-green-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg"><span className="relative flex h-2 w-2"><span className="animate-ping absolute h-full w-full rounded-full bg-white opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span></span>LIVE • REAL-TIME</span><span className={`inline-flex items-center gap-1.5 text-xs font-bold px-4 py-1.5 rounded-full border ${pesertaSource === 'supabase' ? 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40' : 'bg-amber-500/20 text-amber-200 border-amber-400/40'}`} title="Sumber data tabel ini">{pesertaSource === 'supabase' ? ' Sumber: Supabase' : '🟡 Sumber: Lokal'}</span></div><div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6"><div><h2 className="text-3xl sm:text-4xl font-black text-white leading-tight tracking-tight">TABEL REAL-TIME</h2><h3 className="text-2xl sm:text-3xl font-black text-white/80 leading-tight">DAFTAR PESERTA</h3><p className="text-white/50 text-sm mt-3 max-w-xl leading-relaxed">Data peserta terupdate otomatis. Sinkron antara halaman utama dan Admin Panitia via Supabase Realtime.</p></div><div className="flex gap-3 flex-shrink-0"><div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-2xl px-5 py-4 text-center min-w-[120px]"><div className="text-xs text-white/60 font-bold uppercase tracking-wider">Total Peserta</div><div className="text-3xl font-black text-white mt-1">{participants.length}</div><div className="flex items-center justify-center gap-1 mt-1"><span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative rounded-full h-1.5 w-1.5 bg-green-400"></span></span><span className="text-[10px] text-green-300 font-semibold">Sinkron</span></div></div><div className="bg-white/15 backdrop-blur-sm border border-white/20 rounded-2xl px-5 py-4 text-center min-w-[140px]"><div className="text-xs text-white/60 font-bold uppercase tracking-wider">Status Terakhir</div><div className="text-lg font-black text-white mt-1">{lastRefresh.toLocaleTimeString('id-ID')} WIB</div><div className="flex items-center justify-center gap-1 mt-1"><span className="w-1.5 h-1.5 rounded-full bg-green-400"></span><span className="text-[10px] text-green-300 font-semibold">Sinkron • {isLive ? 'ON' : 'OFF'}</span></div></div></div></div></div></div>
         <div className="max-w-6xl mx-auto px-4 -mt-20 relative z-10 pb-16"><div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-gray-100"><div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center"><div className="relative flex-1"><svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg><input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Cari Nama, ID, atau RT / Blok..." className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#C1272D]/20 focus:border-[#C1272D]/40 transition" />{searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm">✕</button>}</div><select value={filterLomba} onChange={e => setFilterLomba(e.target.value)} className="border border-gray-200 bg-gray-50 rounded-xl px-3 py-3 text-sm outline-none min-w-[140px]"><option value="">Semua Lomba</option>{uniqueLomba.map(l => <option key={l} value={l}>{l}</option>)}</select><button onClick={() => setIsLive(!isLive)} className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${isLive ? 'bg-green-500 text-white shadow-md shadow-green-200' : 'bg-gray-200 text-gray-600'}`}><span className="relative flex h-2 w-2">{isLive && <span className="animate-ping absolute h-full w-full rounded-full bg-white opacity-75"></span>}<span className={`relative rounded-full h-2 w-2 ${isLive ? 'bg-white' : 'bg-gray-400'}`}></span></span>{isLive ? 'LIVE ON' : 'LIVE OFF'}</button><button onClick={() => { let csv = 'No,ID,Nama,RT,HP,Lomba,Waktu\n'; participants.forEach((p, i) => { csv += `${i+1},${p.id},${p.name},"${p.rt}",${p.hp},"${p.lomba.join('; ')}",${p.waktu}\n`; }); const b = new Blob([csv], { type: 'text/csv' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'pendaftar-mawar.csv'; a.click(); URL.revokeObjectURL(u); }} className="flex items-center gap-1.5 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-bold text-gray-700 transition whitespace-nowrap">📥 Export CSV</button></div></div>
           <div className="px-4 sm:px-5 py-3 border-b border-gray-100 bg-gray-50/50"><div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1"><span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider whitespace-nowrap flex-shrink-0">Filter Cepat</span><button onClick={() => { setSearchQuery(''); setFilterLomba(''); }} className={`text-[11px] font-bold px-3 py-1.5 rounded-full whitespace-nowrap flex-shrink-0 transition-all ${!searchQuery && !filterLomba ? 'bg-[#C1272D] text-white shadow' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}>Semua • {participants.length}</button>{uniqueLomba.map(l => { const cnt = participants.filter(p => p.lomba.includes(l)).length; return (<button key={l} onClick={() => setFilterLomba(filterLomba === l ? '' : l)} className={`text-[11px] font-bold px-3 py-1.5 rounded-full whitespace-nowrap flex-shrink-0 transition-all ${filterLomba === l ? 'bg-[#C1272D] text-white shadow' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}>{l} • {cnt}</button>); })}</div></div>
