@@ -17,8 +17,8 @@ const initialItems: GalleryItem[] = [
     id: 1, type: 'photo',
     thumb: '/images/20260726_091521.jpg',
     full: '/images/20260726_091521.jpg',
-    title: 'Panjat Pinang — Lomba Tradisional 17 Agustus',
-    credit: 'Dokumentasi Warga Blok Mawar',
+    title: 'GoRo Warga Blik Mawar 002',
+    credit: 'Dokumentasi Bayu',
   },
   {
     id: 2, type: 'photo',
