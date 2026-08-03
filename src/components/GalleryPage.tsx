@@ -92,10 +92,10 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 102, type: 'video',
-    thumb: 'https://images.pexels.com/videos/34373278/karrnafal-17-agustus-desa-beruk-jatiyoso-34373278.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
+    thumb: '/images/vd1.png',
     full: '/videos/vd1.mp4',
-    title: 'Karnaval 17 Agustus — Aerial View',
-    credit: 'just a hobby / Pexels',
+    title: 'Turnamen Volly GreenBay Cup Agustus 2026 — Drone View',
+    credit: 'Take by Eka',
   },
   {
     id: 103, type: 'video',
