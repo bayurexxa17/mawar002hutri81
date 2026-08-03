@@ -263,7 +263,7 @@ export const rundownMalam: RundownItem[] = [
   { waktu: '19:00-19:05', kegiatan: 'Pembukaan Malam Puncak', icon: '🎊', keterangan: 'Pembukaan oleh MC' },
   { waktu: '19:05-19:10', kegiatan: 'Menyanyikan Lagu Indonesia Raya', icon: '🎶', keterangan: 'Piano by Ameera' },
   { waktu: '19:10-19:15', kegiatan: 'Pembacaan Doa', icon: '🤲', keterangan: 'Tokoh Agama' },
-  { waktu: '19:15-19:25', kegiatan: 'Sambutan Ketua Panitia', icon: '🎙️', keterangan: 'Bayu S. Permana' },
+  { waktu: '19:15-19:25', kegiatan: 'Sambutan Ketua Panitia', icon: '🎙️', 'Bayu S. Permana' },
   { waktu: '19:25-19:35', kegiatan: 'Sambutan Ketua RT', icon: '🏘️', keterangan: 'Bpk Eka Rista Yudhistira' },
   { waktu: '19:35-19:50', kegiatan: 'Tari Persembahan', icon: '💃', keterangan: 'Talenta Anak' },
   { waktu: '19:50-20:05', kegiatan: 'Tari Zapin', icon: '🌾💃', keterangan: 'Talenta Anak' },
