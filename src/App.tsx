@@ -697,7 +697,7 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
         </div>
         <h3 className="text-xl font-black mb-6">Informasi Acara</h3>
         <div className="space-y-5">
-          {[{i:'📅',l:'Tanggal',v:'Minggu, 17 Agustus 2026', c:'Klik untuk tambah ke kalender', action:()=>alert('Fitur tambah ke Google Calendar sukses!')},{i:'⏰',l:'Waktu',v:'06:00 - 22:00 WIB', c:'Rundown lengkap ada di bawah'},{i:'📍',l:'Lokasi',v:'Perumahan Ciptaland Blok Mawar\nRT 002 / RW 014', c:'Klik untuk rute peta', action:()=>alert('Membuka rute koordinat Google Maps Perumahan Ciptaland Blok Mawar...')},{i:'👥',l:'Peserta',v:'Seluruh Warga & Keluarga', c:'Terbuka untuk warga RT 001-004'}].map((info, idx)=>(
+          {[{i:'📅',l:'Tanggal',v:'Senin, 17 Agustus 2026', c:'Klik untuk tambah ke kalender', action:()=>alert('Fitur tambah ke Google Calendar sukses!')},{i:'⏰',l:'Waktu',v:'06:00 - 22:00 WIB', c:'Rundown lengkap ada di bawah'},{i:'📍',l:'Lokasi',v:'Perumahan Ciptaland Blok Mawar\nRT 002 / RW 014', c:'Klik untuk rute peta', action:()=>alert('Membuka rute koordinat Google Maps Perumahan Ciptaland Blok Mawar...')},{i:'👥',l:'Peserta',v:'Seluruh Warga & Keluarga', c:'Terbuka untuk warga RT 001-004'}].map((info, idx)=>(
             <div key={idx} onClick={info.action} className={`flex items-start gap-4 p-2 rounded-xl transition ${info.action ? 'hover:bg-white/10 cursor-pointer' : ''}`}>
               <span className="text-2xl">{info.i}</span>
               <div className="flex-1 min-w-0">
