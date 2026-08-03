@@ -11,7 +11,14 @@ import {
   formatRupiah,
   rundownPagi,
   rundownMalam,
+  defaultSusunanPanitia,
+  defaultInfoAcara,
 } from './data/siteData';
+
+// Tipe untuk blok yang dikelola via Supabase
+export interface InfoAcaraData { tanggal: string; waktu: string; lokasi: string; peserta: string; }
+export interface RundownRow { id?: number; hari: 'perlombaan' | 'malam'; waktu: string; icon: string; kegiatan: string; keterangan: string; urutan: number; }
+export interface PelaksanaRow { id?: number; nama: string; jabatan: string; hp: string; is_core: boolean; urutan: number; }
 
 // ===== Tipe & data default didefinisikan LANGSUNG di sini agar build tidak
 // bergantung pada versi siteData.ts di repository (mencegah gagal deploy) =====
@@ -260,6 +267,18 @@ export interface SharedData {
   pesertaSource: 'supabase' | 'lokal';
   keuanganSource: 'supabase' | 'lokal';
   pesertaError: string;
+  panitiaCore: { id?: number; jabatan: string; nama: string; hp: string }[];
+  setPanitiaCore: React.Dispatch<React.SetStateAction<{ id?: number; jabatan: string; nama: string; hp: string }[]>>;
+  fetchPanitia: () => Promise<void>;
+  infoAcara: InfoAcaraData;
+  setInfoAcara: React.Dispatch<React.SetStateAction<InfoAcaraData>>;
+  fetchInfoAcara: () => Promise<void>;
+  rundownRows: RundownRow[];
+  setRundownRows: React.Dispatch<React.SetStateAction<RundownRow[]>>;
+  fetchRundown: () => Promise<void>;
+  pelaksanaRows: PelaksanaRow[];
+  setPelaksanaRows: React.Dispatch<React.SetStateAction<PelaksanaRow[]>>;
+  fetchPelaksana: () => Promise<void>;
   setNewRowIds: React.Dispatch<React.SetStateAction<Set<string>>>;
   setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>;
   setKeuanganList: React.Dispatch<React.SetStateAction<KeuanganEntry[]>>;
@@ -406,6 +425,50 @@ export default function App() {
   }, []);
 
   // Ambil sponsor mitra (dengan logo) dari tabel `sponsor`
+  // ===== FETCH PANITIA INTI (tabel Susunan Panitia) dari Supabase =====
+  const [panitiaCore, setPanitiaCore] = useState(() => defaultSusunanPanitia.map(p => ({ ...p })));
+
+  // ===== INFORMASI ACARA, RUNDOWN, PANITIA PELAKSANA (kelola via Admin + Supabase) =====
+  const [infoAcara, setInfoAcara] = useState<InfoAcaraData>({ ...defaultInfoAcara });
+  const [rundownRows, setRundownRows] = useState<RundownRow[]>([]);
+  const [pelaksanaRows, setPelaksanaRows] = useState<PelaksanaRow[]>([]);
+
+  const fetchInfoAcara = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('info_acara').select('*').limit(1);
+      if (!error && data && data.length > 0) {
+        const r = data[0] as any;
+        setInfoAcara({ tanggal: r.tanggal || defaultInfoAcara.tanggal, waktu: r.waktu || defaultInfoAcara.waktu, lokasi: r.lokasi || defaultInfoAcara.lokasi, peserta: r.peserta || defaultInfoAcara.peserta });
+      }
+    } catch {}
+  }, []);
+
+  const fetchRundown = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('rundown').select('*').order('urutan', { ascending: true });
+      if (!error && data && data.length > 0) {
+        setRundownRows(data.map((r: any) => ({ id: r.id, hari: r.hari === 'malam' ? 'malam' : 'perlombaan', waktu: r.waktu || '', icon: r.icon || '📌', kegiatan: r.kegiatan || '', keterangan: r.keterangan || '', urutan: r.urutan || 0 })));
+      }
+    } catch {}
+  }, []);
+
+  const fetchPelaksana = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('panitia_pelaksana').select('*').order('urutan', { ascending: true });
+      if (!error && data && data.length > 0) {
+        setPelaksanaRows(data.map((r: any) => ({ id: r.id, nama: r.nama || '', jabatan: r.jabatan || '', hp: r.hp || '', is_core: !!r.is_core, urutan: r.urutan || 0 })));
+      }
+    } catch {}
+  }, []);
+  const fetchPanitia = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('panitia').select('*').order('urutan', { ascending: true });
+      if (!error && data && data.length > 0) {
+        setPanitiaCore(data.map((r: any) => ({ id: r.id, jabatan: r.jabatan || '', nama: r.nama || '', hp: r.hp || '' })));
+      }
+    } catch { /* tabel belum ada → pakai default siteData */ }
+  }, []);
+
   const fetchSponsors = useCallback(async () => {
     try {
       const { data, error } = await supabase.from('sponsor').select('*').order('id', { ascending: true });
@@ -428,7 +491,8 @@ export default function App() {
 
   // Fetch on mount + retry otomatis (koneksi Supabase dingin sering lambat)
   useEffect(() => {
-    fetchParticipants(); fetchKeuangan(); fetchInventory(); fetchTalenta(); fetchSponsors();
+    fetchParticipants(); fetchKeuangan(); fetchInventory(); fetchTalenta(); fetchSponsors(); fetchPanitia();
+    fetchInfoAcara(); fetchRundown(); fetchPelaksana();
     const t1 = setTimeout(() => { fetchParticipants(); fetchKeuangan(); }, 2500);
     const t2 = setTimeout(() => { fetchParticipants(); fetchKeuangan(); }, 6000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
@@ -464,9 +528,13 @@ export default function App() {
     const chT = supabase.channel('rt-talenta').on('postgres_changes', { event: '*', schema: 'public', table: 'talenta' }, () => { fetchTalenta(); }).subscribe();
     const chS = supabase.channel('rt-sponsor-list').on('postgres_changes', { event: '*', schema: 'public', table: 'sponsor' }, () => { fetchSponsors(); }).subscribe();
     const chI = supabase.channel('rt-inventory').on('postgres_changes', { event: '*', schema: 'public', table: 'inventory' }, () => { fetchInventory(); }).subscribe();
+    const chInfo = supabase.channel('rt-info-acara').on('postgres_changes', { event: '*', schema: 'public', table: 'info_acara' }, () => { fetchInfoAcara(); }).subscribe();
+    const chRd = supabase.channel('rt-rundown').on('postgres_changes', { event: '*', schema: 'public', table: 'rundown' }, () => { fetchRundown(); }).subscribe();
+    const chPl = supabase.channel('rt-panitia-pelaksana').on('postgres_changes', { event: '*', schema: 'public', table: 'panitia_pelaksana' }, () => { fetchPelaksana(); }).subscribe();
+    const chPn = supabase.channel('rt-panitia').on('postgres_changes', { event: '*', schema: 'public', table: 'panitia' }, () => { fetchPanitia(); }).subscribe();
     const iv = setInterval(() => { fetchKeuangan(); fetchParticipants(); fetchSponsors(); fetchInventory(); }, 10000);
-    return () => { channels.forEach(ch => supabase.removeChannel(ch)); supabase.removeChannel(chP); supabase.removeChannel(chT); supabase.removeChannel(chS); supabase.removeChannel(chI); clearInterval(iv); };
-  }, [isLive, fetchKeuangan, fetchParticipants, fetchTalenta, fetchSponsors, fetchInventory]);
+    return () => { channels.forEach(ch => supabase.removeChannel(ch)); [chP, chT, chS, chI, chInfo, chRd, chPl, chPn].forEach(ch => supabase.removeChannel(ch)); clearInterval(iv); };
+  }, [isLive, fetchKeuangan, fetchParticipants, fetchTalenta, fetchSponsors, fetchInventory, fetchInfoAcara, fetchRundown, fetchPelaksana, fetchPanitia]);
   // polling 10 detik memastikan semua blok (dana, peserta, sponsor, inventory) selalu segar
 
   // Hash routing
@@ -489,7 +557,11 @@ export default function App() {
   const sharedData: SharedData = {
     participants, keuanganList, inventoryList, talentaList, sponsorList, totalDana, isLive, lastRefresh, newRowIds, setIsLive,
     fetchParticipants, fetchKeuangan, fetchInventory, fetchTalenta, fetchSponsors, setNewRowIds, setParticipants, setKeuanganList, setInventoryList, setTalentaList, setSponsorList, setTotalDana, setLastRefresh,
-    pesertaSource, keuanganSource, pesertaError
+    pesertaSource, keuanganSource, pesertaError,
+    panitiaCore, setPanitiaCore, fetchPanitia,
+    infoAcara, setInfoAcara, fetchInfoAcara,
+    rundownRows, setRundownRows, fetchRundown,
+    pelaksanaRows, setPelaksanaRows, fetchPelaksana
   };
 
   if (page === 'admin') return <AdminPage key="admin-page" onBack={goMain} shared={sharedData} />;
@@ -558,7 +630,12 @@ function InventoryViewPage({ onBack, shared }: { onBack: () => void; shared: Sha
 
 // ================== MAIN PAGE ==================
 function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { shared: SharedData; onAdminClick: () => void; onGalleryClick: () => void; onInventoryClick: () => void }) {
-  const { participants, totalDana, isLive, lastRefresh, newRowIds, setIsLive, fetchParticipants, fetchKeuangan, pesertaSource, keuanganSource, pesertaError } = shared;
+  const { participants, totalDana, isLive, lastRefresh, newRowIds, setIsLive, fetchParticipants, fetchKeuangan, pesertaSource, keuanganSource, pesertaError, panitiaCore, infoAcara, rundownRows, pelaksanaRows } = shared;
+  // Rundown & pelaksana: pakai data Supabase bila ada, sonst fallback default
+  const rdPerlombaan = rundownRows.length > 0 ? rundownRows.filter(r => r.hari === 'perlombaan') : rundownPagi.map((r, i) => ({ ...r, hari: 'perlombaan' as const, urutan: i }));
+  const rdMalam = rundownRows.length > 0 ? rundownRows.filter(r => r.hari === 'malam') : rundownMalam.map((r, i) => ({ ...r, hari: 'malam' as const, urutan: i }));
+  const pelaksanaCore = pelaksanaRows.length > 0 ? pelaksanaRows.filter(p => p.is_core) : panitiaList.filter(p => p.isCore).map(p => ({ nama: p.nama, jabatan: p.jabatan, hp: p.hp }));
+  const pelaksanaOthers = pelaksanaRows.length > 0 ? pelaksanaRows.filter(p => !p.is_core) : panitiaList.filter(p => !p.isCore).map(p => ({ nama: p.nama, jabatan: p.jabatan, hp: p.hp }));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterLomba, setFilterLomba] = useState('');
@@ -699,7 +776,7 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
         </div>
         <h3 className="text-xl font-black mb-6">Informasi Acara</h3>
         <div className="space-y-5">
-          {[{i:'📅',l:'Tanggal',v:'Senin, 17 Agustus 2026', c:'Klik untuk tambah ke kalender', action:()=>alert('Fitur tambah ke Google Calendar sukses!')},{i:'⏰',l:'Waktu',v:'06:00 - 22:00 WIB', c:'Rundown lengkap ada di bawah'},{i:'📍',l:'Lokasi',v:'Perumahan Ciptaland Blok Mawar\nRT 002 / RW 014', c:'Klik untuk rute peta', action:()=>alert('Membuka rute koordinat Google Maps Perumahan Ciptaland Blok Mawar...')},{i:'👥',l:'Peserta',v:'Seluruh Warga & Keluarga', c:'Terbuka untuk warga RT 001-004'}].map((info, idx)=>(
+          {[{i:'📅',l:'Tanggal',v:infoAcara.tanggal, c:'Klik untuk tambah ke kalender', action:()=>alert('Fitur tambah ke Google Calendar sukses!')},{i:'⏰',l:'Waktu',v:infoAcara.waktu, c:'Rundown lengkap ada di bawah'},{i:'📍',l:'Lokasi',v:infoAcara.lokasi, c:'Klik untuk rute peta', action:()=>alert('Membuka rute koordinat Google Maps Perumahan Ciptaland Blok Mawar...')},{i:'👥',l:'Peserta',v:infoAcara.peserta, c:'Terbuka untuk seluruh warga'}].map((info, idx)=>(
             <div key={idx} onClick={info.action} className={`flex items-start gap-4 p-2 rounded-xl transition ${info.action ? 'hover:bg-white/10 cursor-pointer' : ''}`}>
               <span className="text-2xl">{info.i}</span>
               <div className="flex-1 min-w-0">
@@ -852,11 +929,14 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
       </section>
 
       {/* PANITIA TABLE */}
-      <section id="panitia" className="py-16 px-4 bg-[#F5F5F0] order-4"><div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border overflow-hidden"><div className="p-5"><h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2">👥 Susunan Panitia</h3></div><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="bg-[#C1272D] text-white"><th className="text-left px-4 py-3 font-semibold">Jabatan</th><th className="text-left px-4 py-3 font-semibold">Nama</th></tr></thead><tbody>{panitiaList.filter(p => p.isCore).map((p, i) => (<tr key={i} className={i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}><td className="px-4 py-3 font-medium">{p.jabatan}</td><td className="px-4 py-3">{p.nama}{p.hp ? ` (${p.hp})` : ''}</td></tr>))}</tbody></table></div></div></section>
+      <section id="panitia" className="py-16 px-4 bg-[#F5F5F0] order-4"><div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border overflow-hidden"><div className="p-5 flex items-center justify-between"><h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2">👥 Susunan Panitia</h3><span className="text-[10px] font-semibold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">Dikelola via Panel Panitia</span></div><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="bg-[#C1272D] text-white"><th className="text-left px-4 py-3 font-semibold">Jabatan</th><th className="text-left px-4 py-3 font-semibold">Nama</th></tr></thead><tbody>{panitiaCore.map((p, i) => (<tr key={(p as any).id ?? i} className={`${i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'} hover:bg-red-50/60 transition-colors`}><td className="px-4 py-3 font-medium">{p.jabatan}</td><td className="px-4 py-3">{p.nama}{p.hp ? ` (${p.hp})` : ''}</td></tr>))}</tbody></table></div></div></section>
 
       {/* ANGGARAN */}
       <section id="anggaran" className="py-16 px-4 bg-white order-5"><div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border overflow-hidden"><div className="p-5 flex items-center justify-between"><h3 className="font-bold text-lg text-[#C1272D] flex items-center gap-2">🧮 Ringkasan Anggaran</h3><span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live dari Supabase</span></div><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="bg-[#C1272D] text-white"><th className="text-left px-4 py-3">Komponen</th><th className="text-right px-4 py-3">Jumlah (Rp)</th><th className="text-left px-4 py-3">Detail</th></tr></thead><tbody>
-        {budgetRows.map((r, i) => (<tr key={i} className={r.isTotal ? 'bg-[#F9E2E2] font-bold text-[#C1272D]' : i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}><td className="px-4 py-3">{r.komponen}</td><td className="px-4 py-3 text-right">{r.jumlah.toLocaleString('id-ID')}</td><td className="px-4 py-3">{r.detailKey && <button onClick={() => setShowBudgetDetail(r.detailKey!)} className="border border-[#C1272D] text-[#C1272D] px-3 py-1 rounded-full text-xs font-semibold hover:bg-[#C1272D] hover:text-white transition">Lihat Detail</button>}</td></tr>))}
+        {budgetRows.filter(r => !r.komponen.startsWith('Total Dana Masuk') && !r.komponen.startsWith('SELISIH')).map((r, i) => (<tr key={i} className={r.isTotal ? 'bg-[#F9E2E2] font-bold text-[#C1272D]' : i % 2 === 0 ? 'bg-[#F9F5EB]' : 'bg-white'}><td className="px-4 py-3">{r.komponen}</td><td className="px-4 py-3 text-right">{r.jumlah.toLocaleString('id-ID')}</td><td className="px-4 py-3">{r.detailKey && <button onClick={() => setShowBudgetDetail(r.detailKey!)} className="border border-[#C1272D] text-[#C1272D] px-3 py-1 rounded-full text-xs font-semibold hover:bg-[#C1272D] hover:text-white transition">Lihat Detail</button>}</td></tr>))}
+        {/* Baris live: Dana Masuk & Selisih — sinkron Supabase */}
+        <tr className="bg-white font-semibold text-gray-800 border-t border-gray-200"><td className="px-4 py-3">Total Dana Masuk (Pendanaan)</td><td className="px-4 py-3 text-right">{totalPemasukan.toLocaleString('id-ID')}</td><td className="px-4 py-3"><button onClick={() => setShowBudgetDetail('danaMasuk')} className="border border-[#C1272D] text-[#C1272D] px-3 py-1 rounded-full text-xs font-semibold hover:bg-[#C1272D] hover:text-white transition">Lihat Detail</button></td></tr>
+        <tr className={`${totalPemasukan - 17000000 >= 0 ? 'bg-green-50 font-bold text-green-700' : 'bg-red-50 font-bold text-red-700'}`}><td className="px-4 py-3">SELISIH (Dana Masuk − Kebutuhan)</td><td className="px-4 py-3 text-right">{(totalPemasukan - 17000000).toLocaleString('id-ID')}</td><td className="px-4 py-3 text-[10px] font-normal opacity-70">{totalPemasukan - 17000000 >= 0 ? 'Terpenuhi' : 'Kurang donasi'}</td></tr>
         {/* Baris live: pemasukan, pengeluaran, total bersih */}
         <tr className="bg-blue-50 font-bold text-blue-700 border-t-2 border-blue-200"><td className="px-4 py-3">💰 Total Pemasukan (Live)</td><td className="px-4 py-3 text-right">{totalPemasukan.toLocaleString('id-ID')}</td><td className="px-4 py-3 text-[10px] text-blue-500 font-normal">Iuran + Donasi + Sponsor + Donatur + Kas</td></tr>
         <tr className="bg-orange-50 font-bold text-orange-700"><td className="px-4 py-3">💸 Total Pengeluaran (Live)</td><td className="px-4 py-3 text-right">- {totalPengeluaran.toLocaleString('id-ID')}</td><td className="px-4 py-3 text-[10px] text-orange-500 font-normal">Pembelian & pembayaran barang/jasa</td></tr>
@@ -939,10 +1019,13 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
       </div>{/* end flex wrapper */}
 
       {/* RUNDOWN */}
-      <section id="rundown" className="py-16 px-4 bg-white"><div className="max-w-4xl mx-auto"><div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900">📋 RUNDOWN ACARA</h2><p className="text-gray-500 mt-1">Jadwal Kegiatan — Minggu, 17 Agustus 2026</p></div><div className="flex flex-wrap gap-2 justify-center mb-8"><button onClick={() => { const b = new Blob([rundownText()], { type: 'text/plain' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'rundown-hutri81-mawar.txt'; a.click(); URL.revokeObjectURL(u); }} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition">📄 Download (TXT)</button><button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2.5 bg-gray-700 text-white text-xs font-bold rounded-xl hover:bg-gray-800 transition">🖨️ Cetak / Save PDF</button></div><div className="bg-[#F9F5EB] rounded-2xl border p-6"><h4 className="font-bold text-[#C1272D] mb-4 text-sm">☀️ PAGI & SIANG</h4><div className="space-y-3 mb-8">{rundownPagi.map((r, i) => (<div key={i} className="flex items-start gap-4 bg-white rounded-xl p-3 border"><div className="min-w-[60px] text-center"><span className="font-black text-[#C1272D] text-lg">{r.waktu}</span></div><div className="flex-1"><span className="text-lg mr-2">{r.icon}</span><span className="font-semibold text-sm text-gray-800">{r.kegiatan}</span>{r.keterangan && <span className="text-xs text-gray-400 ml-2">({r.keterangan})</span>}</div></div>))}</div><h4 className="font-bold text-[#C1272D] mb-4 text-sm">🌙 MALAM PUNCAK</h4><div className="space-y-3">{rundownMalam.map((r, i) => (<div key={i} className="flex items-start gap-4 bg-white rounded-xl p-3 border"><div className="min-w-[60px] text-center"><span className="font-black text-[#C1272D] text-lg">{r.waktu}</span></div><div className="flex-1"><span className="text-lg mr-2">{r.icon}</span><span className="font-semibold text-sm text-gray-800">{r.kegiatan}</span>{r.keterangan && <span className="text-xs text-gray-400 ml-2">({r.keterangan})</span>}</div></div>))}</div></div></div></section>
+      <section id="rundown" className="py-16 px-4 bg-white"><div className="max-w-4xl mx-auto"><div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900">📋 RUNDOWN ACARA</h2><p className="text-gray-500 mt-1">Dikelola via Panel Panitia • tersinkron Supabase</p></div><div className="flex flex-wrap gap-2 justify-center mb-8"><button onClick={() => { const b = new Blob([rundownText()], { type: 'text/plain' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'rundown-hutri81-mawar.txt'; a.click(); URL.revokeObjectURL(u); }} className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition">📄 Download (TXT)</button><button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2.5 bg-gray-700 text-white text-xs font-bold rounded-xl hover:bg-gray-800 transition">🖨️ Cetak / Save PDF</button></div>
+        <div className="bg-[#F9F5EB] rounded-2xl border p-6 mb-6"><h4 className="font-bold text-[#C1272D] mb-1 text-sm">🏆 1. ACARA PERLOMBAAN</h4><p className="text-xs text-gray-500 mb-4">Senin, 17 Agustus 2026</p><div className="space-y-3">{rdPerlombaan.map((r, i) => (<div key={(r as any).id ?? i} className="flex items-start gap-4 bg-white rounded-xl p-3 border hover:border-red-200 hover:shadow-sm transition"><div className="min-w-[86px] text-center"><span className="font-black text-[#C1272D] text-sm">{r.waktu}</span></div><div className="flex-1"><span className="text-lg mr-2">{r.icon}</span><span className="font-semibold text-sm text-gray-800">{r.kegiatan}</span>{r.keterangan && <span className="text-xs text-gray-400 ml-2">({r.keterangan})</span>}</div></div>))}</div></div>
+        <div className="bg-[#1a1a1a] rounded-2xl border border-gray-800 p-6"><h4 className="font-bold text-yellow-400 mb-1 text-sm">🌙 2. ACARA MALAM PUNCAK</h4><p className="text-xs text-gray-400 mb-4">Sabtu, 22 Agustus 2026</p><div className="space-y-2">{rdMalam.map((r, i) => (<div key={(r as any).id ?? i} className="flex items-start gap-4 bg-white/5 rounded-xl p-3 border border-white/10 hover:bg-white/10 transition"><div className="min-w-[96px] text-center"><span className="font-black text-yellow-400 text-xs">{r.waktu}</span></div><div className="flex-1"><span className="text-base mr-2">{r.icon}</span><span className="font-semibold text-sm text-gray-100">{r.kegiatan}</span>{r.keterangan && <span className="text-xs text-gray-500 ml-2">({r.keterangan})</span>}</div></div>))}</div></div>
+      </div></section>
 
       {/* PANITIA */}
-      <section id="panitia" className="py-16 px-4 bg-[#F5F5F0]"><div className="max-w-6xl mx-auto"><div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900">PANITIA PELAKSANA</h2><p className="text-gray-500 mt-1">Struktur Panitia</p></div><div className="grid sm:grid-cols-3 gap-4 mb-6">{panitiaList.filter(p => ['Penanggung Jawab','Ketua Panitia','Wakil Ketua'].includes(p.jabatan)).map((p, i) => (<a key={i} href={p.hp ? `https://wa.me/62${p.hp.replace(/\D/g, '').replace(/^0/, '')}` : '#'} target="_blank" rel="noopener noreferrer" className="bg-white rounded-2xl shadow-sm border p-5 text-center hover:shadow-lg transition group block"><div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl group-hover:bg-[#C1272D] group-hover:text-white transition">👤</div><div className="text-[10px] text-yellow-600 font-bold">⭐ {p.jabatan}</div><div className="font-bold text-gray-900 mt-1">{p.nama}</div><div className="text-xs text-gray-500 mt-0.5">📱 {p.hp}</div></a>))}</div><h4 className="font-bold text-gray-700 mb-4">Anggota Panitia Lainnya</h4><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">{panitiaList.filter(p => !['Penanggung Jawab','Ketua Panitia','Wakil Ketua','Ketua Pembina','Ketua Penasehat'].includes(p.jabatan)).map((p, i) => (<div key={i} className="bg-white rounded-xl border p-3 text-center hover:shadow-md transition"><div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2 text-lg">👤</div><div className="font-bold text-sm text-gray-800 truncate">{p.nama}</div><div className="text-[10px] text-gray-500">{p.jabatan}</div>{p.hp && <div className="text-[10px] text-gray-400 mt-0.5">📞 {p.hp}</div>}{p.hp && !p.hp.includes('xxx') && <a href={`https://wa.me/62${p.hp.replace(/\D/g, '').replace(/^0/, '')}`} target="_blank" rel="noopener noreferrer" className="inline-block mt-1 text-green-500 hover:text-green-600 text-lg">💬</a>}</div>))}</div></div></section>
+      <section id="panitia" className="py-16 px-4 bg-[#F5F5F0]"><div className="max-w-6xl mx-auto"><div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900">PANITIA PELAKSANA</h2><p className="text-gray-500 mt-1">Struktur Panitia</p></div><div className="grid sm:grid-cols-3 gap-4 mb-6">{pelaksanaCore.map((p, i) => (<a key={i} href={p.hp ? `https://wa.me/62${p.hp.replace(/\D/g, '').replace(/^0/, '')}` : '#'} target="_blank" rel="noopener noreferrer" className="bg-white rounded-2xl shadow-sm border p-5 text-center hover:shadow-lg transition group block"><div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl group-hover:bg-[#C1272D] group-hover:text-white transition">👤</div><div className="text-[10px] text-yellow-600 font-bold">⭐ {p.jabatan}</div><div className="font-bold text-gray-900 mt-1">{p.nama}</div><div className="text-xs text-gray-500 mt-0.5">📱 {p.hp}</div></a>))}</div><h4 className="font-bold text-gray-700 mb-4">Anggota Panitia Lainnya</h4><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">{pelaksanaOthers.map((p, i) => (<div key={i} className="bg-white rounded-xl border p-3 text-center hover:shadow-md transition"><div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2 text-lg">👤</div><div className="font-bold text-sm text-gray-800 truncate">{p.nama}</div><div className="text-[10px] text-gray-500">{p.jabatan}</div>{p.hp && <div className="text-[10px] text-gray-400 mt-0.5">📞 {p.hp}</div>}{p.hp && !p.hp.includes('xxx') && <a href={`https://wa.me/62${p.hp.replace(/\D/g, '').replace(/^0/, '')}`} target="_blank" rel="noopener noreferrer" className="inline-block mt-1 text-green-500 hover:text-green-600 text-lg">💬</a>}</div>))}</div></div></section>
 
       {/* FOOTER */}
       <footer className="bg-[#1a1a1a] text-white py-12 px-4"><div className="max-w-6xl mx-auto text-center"><div className="flex items-center justify-center gap-3 mb-4"><div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center font-black text-[#C1272D] text-lg shadow">81</div><div className="text-left"><div className="font-bold text-lg">HUT RI Ke-81</div><div className="text-xs text-gray-400">Perumahan Ciptaland Blok Mawar</div></div></div><p className="text-gray-400 text-sm mb-2">RT 002 / RW 014</p><p className="text-gray-500 text-xs mb-4">📧 panitiahutri81.mawar002@gmail.com</p><div className="flex items-center justify-center gap-4 mb-6"><button onClick={onGalleryClick} className="text-xs text-gray-400 hover:text-white transition">📸 Galeri</button><span className="text-gray-700">•</span><button onClick={onAdminClick} className="text-xs text-gray-600 hover:text-gray-400 transition">🔒 Panel Panitia</button></div><div className="border-t border-gray-800 pt-4"><p className="text-gray-600 text-xs">© 2026 Panitia HUT RI ke-81 — Perumahan Ciptaland Blok Mawar 🇮🇩</p><p className="text-gray-700 text-[10px] mt-1.5 font-mono tracking-wide">Build <span className="text-gray-500">{APP_BUILD}</span> — jika tag ini tidak muncul di situs live, berarti deploy belum terbaru</p></div></div></footer>
