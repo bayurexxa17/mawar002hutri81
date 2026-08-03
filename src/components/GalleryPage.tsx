@@ -29,8 +29,8 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 3, type: 'photo',
-    thumb: '/images/20260726_091534.jpg',
-    full: '/images/20260726_091534.jpg',
+    thumb: '/images/20260726_091550.jpg',
+    full: '/images/20260726_091550.jpg',
     title: 'Panjat Pinang — Semangat Kemerdekaan',
     credit: 'Rakhmat Suwandi / Pexels',
   },
