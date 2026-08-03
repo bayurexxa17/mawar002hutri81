@@ -245,7 +245,7 @@ export interface RundownItem {
   keterangan?: string;
 }
 
-export const rundownPagi: RundownItem[] = [
+export const rundownAcaraPerlombaan: RundownItem[] = [
   { waktu: '06:00', kegiatan: 'Persiapan Lokasi & Registrasi Peserta', icon: '📋', keterangan: 'Panitia & Peserta' },
   { waktu: '07:00', kegiatan: 'Upacara Bendera & Pembukaan Resmi', icon: '🇮🇩', keterangan: 'Seluruh Warga' },
   { waktu: '07:00', kegiatan: 'Sambutan Ketua RT & Ketua Panitia', icon: '🎤', keterangan: 'Undangan' },
@@ -258,7 +258,7 @@ export const rundownPagi: RundownItem[] = [
   { waktu: '17:00', kegiatan: 'Penutupan Seluruh Perlombaan & Persiapan Pengumuman Pemenang', icon: '✅' },
 ];
 
-export const rundownMalam: RundownItem[] = [
+export const rundownMalamPuncak: RundownItem[] = [
   { waktu: '18:30-19:00', kegiatan: 'Persiapan Panitia & Registrasi Kehadiran Warga', icon: '🎊', keterangan: 'Persiapan teknis, sound, panggung, kursi, dll' },
   { waktu: '19:00-19:05', kegiatan: 'Pembukaan Malam Puncak', icon: '🎊', keterangan: 'Pembukaan oleh MC' },
   { waktu: '19:05-19:10', kegiatan: 'Menyanyikan Lagu Indonesia Raya', icon: '🎶', keterangan: 'Piano by Ameera' },
