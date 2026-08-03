@@ -99,10 +99,10 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 103, type: 'video',
-    thumb: 'https://images.pexels.com/videos/29936584/pexels-photo-29936584.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
+    thumb: '/images/Video%20Kegiatan%20Pemasangan%20Gapura%20%26%20Umbul-umbul%20bersama%20Panitia%20Remaja%20Blk%20Mawar.png',
     full: '/videos/Video%20Kegiatan%20Pemasangan%20Gapura%20%26%20Umbul-umbul%20bersama%20Panitia%20Remaja%20Blk%20Mawar.mp4',
-    title: 'Pawai Budaya Kemerdekaan',
-    credit: 'Sergei Starostin / Pexels',
+    title: 'Kegiatan Pemasangan Gapura & Umbul-umbul bersama Panitia Remaja Blk Mawar',
+    credit: 'Video by Eka',
   },
 ];
 
