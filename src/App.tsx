@@ -11,9 +11,29 @@ import {
   formatRupiah,
   rundownPagi,
   rundownMalam,
-  defaultSusunanPanitia,
-  defaultInfoAcara,
 } from './data/siteData';
+
+// Default SUSUNAN PANITIA & INFO ACARA didefinisikan LANGSUNG di sini agar
+// build TIDAK bergantung pada versi siteData.ts di repository (mencegah gagal deploy).
+const defaultSusunanPanitia: { jabatan: string; nama: string; hp: string }[] = [
+  { jabatan: 'Ketua Pembina', nama: 'IPTU Saharudin', hp: '' },
+  { jabatan: 'Ketua Penasehat', nama: 'Syamsul Piliano', hp: '' },
+  { jabatan: 'Penanggung Jawab', nama: 'Eka Rista Y', hp: '0821-7129-9984' },
+  { jabatan: 'Ketua Panitia', nama: 'Bayu S.Permana', hp: '0812-8839-5550' },
+  { jabatan: 'Wakil Ketua', nama: 'Sugiono', hp: '0831-8395-0205' },
+  { jabatan: 'Sekretaris', nama: 'Lani', hp: '0813-7116-2792' },
+  { jabatan: 'Bendahara 1', nama: 'Aulia Komari', hp: '0812-3456-7892' },
+  { jabatan: 'Bendahara 2', nama: 'Puput', hp: '0831-8330-3884' },
+  { jabatan: 'Runner', nama: 'Aryo', hp: '0856-0134-31284' },
+  { jabatan: 'Runner', nama: 'Kiki', hp: '0856-9524-7307' },
+];
+
+const defaultInfoAcara = {
+  tanggal: 'Minggu, 17 Agustus 2026',
+  waktu: '06:00 - 22:00 WIB',
+  lokasi: 'Perumahan Ciptaland Blok Mawar\nRT 002 / RW 014',
+  peserta: 'Seluruh Warga & Keluarga',
+};
 
 // Tipe untuk blok yang dikelola via Supabase
 export interface InfoAcaraData { tanggal: string; waktu: string; lokasi: string; peserta: string; }
