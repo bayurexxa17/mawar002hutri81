@@ -94,16 +94,6 @@ export const lombaList: LombaItem[] = [
     ],
   },
   {
-    id: 'joget-kursi-bapak', nama: 'Lomba Joget Kursi Bapak', icon: '💃', kategori: 'bapak', kategoriLabel: 'bapak',
-    waktu: '11:00 WIB', hadiah: 'Menarik', peserta: 'Individu',
-    deskripsi: 'Lomba joget kursi dengan keseruan untuk bapak-bapak',
-    peraturan: ['Peserta wajib mendaftar ulang 30 menit sebelum lomba dimulai','Peserta wajib warga Ciptaland Blok Mawar RT 002/RW 014 (dibuktikan KK)','Keputusan juri tidak dapat diganggu gugat','Peserta yang curang akan didiskualifikasi','Hadiah diserahkan pada Malam Puncak 22 Agustus 2026'],
-    detailSections: [
-      { heading: 'Peserta', items: ['Bapak-bapak.'] },
-      { heading: 'Cara Bermain', items: ['Musik diputar.', 'Peserta berjalan mengelilingi kursi.', 'Saat musik berhenti peserta segera duduk.', 'Peserta yang tidak mendapatkan kursi gugur.', 'Kursi dikurangi setiap ronde.'] },
-    ],
-  },
-  {
     id: 'estafet-penguin-anak', nama: 'Lomba Estafet Penguin Anak', icon: '🐧', kategori: 'anak', kategoriLabel: 'anak',
     waktu: '08:30 WIB', hadiah: 'Menarik', peserta: 'Tim 3 anak SD',
     deskripsi: 'Lomba Model Baru dengan Keseruan dan Kekompakan',
@@ -164,7 +154,6 @@ export const lombaCategories = [
   { id: 'bapak', label: '👨 Bapak-bapak', icon: '👨' },
   { id: 'remaja', label: '🧑 Remaja', icon: '🧑' },
   { id: 'keluarga', label: '👨‍👩‍👧 Keluarga', icon: '👨‍👩‍👧' },
-  { id: 'umum', label: '👥 Umum', icon: '👥' },
 ];
 
 // ============================================
