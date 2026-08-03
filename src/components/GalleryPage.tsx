@@ -43,8 +43,8 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 5, type: 'photo',
-    thumb: 'https://images.pexels.com/photos/33807990/pexels-photo-33807990.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
-    full: 'https://images.pexels.com/photos/33807990/pexels-photo-33807990.jpeg?auto=compress&cs=tinysrgb&w=1920',
+    thumb: '/images/20260729_145854.jpg',
+    full: '/images/20260729_145854.jpg',
     title: 'Kegiatan GoRo Agustus 2026 Warga Blok Mawar RT002/RW 014 Ciptaland',
     credit: 'Dokumentasi BayuRexxa17',
   },
