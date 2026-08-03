@@ -85,10 +85,10 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 101, type: 'video',
-    thumb: 'https://images.pexels.com/videos/34373272/karrnafal-17-agustus-desa-beruk-jatiyoso-34373272.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
-    full: 'https://videos.pexels.com/video-files/34373272/14563035_1920_1080_30fps.mp4',
-    title: 'Turnamen Volly @Greenbay Cup Agustus 2026a',
-    credit: 'Foto drone by Eka',
+    thumb: 'images/VID-20260726-WA0007.mp4',
+    full: 'images/VID-20260726-WA0007.mp4',
+    title: 'Turnamen Volly @Greenbay Cup Agustus 2026',
+    credit: 'Dokumentasi Warga Mawar',
   },
   {
     id: 102, type: 'video',
