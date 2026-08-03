@@ -273,9 +273,9 @@ export const rundownMalam: RundownItem[] = [
   { waktu: '21:00-21:20', kegiatan: 'Pengumuman & Penyerahan Hadiah Lomba Anak', icon: '🏅🎁', keterangan: 'Ketua Panitia & Sponsor' },
   { waktu: '21:20-21:40', kegiatan: 'Pengumuman & Penyerahan Hadiah Lomba Dewasa', icon: '🏆🎁', keterangan: 'Ketua RT & Panitia' },
   { waktu: '21:40-22:00', kegiatan: 'Doorprize Warga', icon: '🎉🎁', keterangan: 'MC' },
-  { waktu: '22:00:22:15', kegiatan: 'Hiburan & Foto Bersama Seluruh Warga', icon: '📸🎶', keterangan: 'Dokumentasi' },
+  { waktu: '22:00-22:15', kegiatan: 'Hiburan & Foto Bersama Seluruh Warga', icon: '📸🎶', keterangan: 'Dokumentasi' },
   { waktu: '22:15-22:20', kegiatan: 'Penutupan & Ucapan Terima Kasih', icon: '🙏🎤', keterangan: 'MC' },
-  { waktu: '22:20', kegiatan: 'Ramah Tamah & Makan Bersama (Tumpeng,dll)', icon: '🏁🍽️', keterangan: 'Seluruh Warga' },
+  { waktu: '22:20', kegiatan: 'Ramah Tamah & Makan Bersama (Tumpeng, dll)', icon: '🏁🍽️', keterangan: 'Seluruh Warga' },
 ];
 
 // ============================================
