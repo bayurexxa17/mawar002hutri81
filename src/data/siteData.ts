@@ -187,6 +187,7 @@ export const panitiaList: PanitiaItem[] = [
   { nama: 'Aulia Komari', jabatan: 'Bendahara 1', hp: '0812-3456-7892', isCore: true },
   { nama: 'Puput', jabatan: 'Bendahara 2', hp: '0831-8330-3884', isCore: true },
   { nama: 'Aryo', jabatan: 'Runner', hp: '0856-0134-31284', isCore: true },
+  { nama: 'Kiki', jabatan: 'Koordinator Lomba', hp: '0856-9524-7307' },
   { nama: 'M.Dzaki', jabatan: 'MC', hp: '0858-3660-5110' },
   { nama: 'Lukman', jabatan: 'MC', hp: '0853-xxx-xxx' },
   { nama: 'Agha', jabatan: 'Koordinator Lomba', hp: '0851-9433-4760' },
@@ -195,7 +196,6 @@ export const panitiaList: PanitiaItem[] = [
   { nama: 'Satria', jabatan: 'Koordinator Lomba', hp: '0819-9201-0197' },
   { nama: 'Ridho Ananda', jabatan: 'Koordinator Lomba', hp: '0823-8718-8929' },
   { nama: 'Andre', jabatan: 'Koordinator Lomba', hp: '08xx-xxx-xxx' },
-  { nama: 'Dio', jabatan: 'Koordinator Lomba', hp: '0813-7112-100' },
   { nama: 'Reza', jabatan: 'Koordinator Lomba', hp: '08xx-xxx-xxx' },
 ];
 
