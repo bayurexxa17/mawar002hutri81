@@ -252,7 +252,7 @@ export const rundownPagi: RundownItem[] = [
   { waktu: '07:00', kegiatan: 'Sambutan Ketua RT & Ketua Panitia', icon: '🎤', keterangan: 'Undangan' },
   { waktu: '08:00', kegiatan: 'Lomba Anak-anak (Makan Kerupuk, Balap Kelereng, Estafet Penguin)', icon: '👶', keterangan: 'Usia 5-15 tahun' },
   { waktu: '10:00', kegiatan: 'Lomba Remaja (Futsal Mini, Salah Sambung, Estafet Penguin)', icon: '🧑', keterangan: 'Usia 13-17 tahun' },
-  { waktu: '11:00', kegiatan: 'Lomba Bapak-bapak (Tarik Tambang, Joget Kursi, Estafet Tepung)', icon: '🪢', keterangan: 'Bapak-bapak' },
+  { waktu: '11:00', kegiatan: 'Lomba Bapak-bapak (Tarik Tambang)', icon: '🪢', keterangan: 'Bapak-bapak' },
   { waktu: '12:00', kegiatan: 'Istirahat, Sholat & Makan Siang', icon: '🍛', keterangan: 'Seluruh Warga' },
   { waktu: '13:00', kegiatan: 'Lomba Ibu-ibu (Hias Tumpeng, Fashion Daster, Joget Kursi)', icon: '👗', keterangan: 'Ibu-ibu' },
   { waktu: '16:00', kegiatan: 'Lomba Keluarga (Make Up Buta)', icon: '👨‍%9C_👩‍%9C_👧', keterangan: 'Pasangan' },
@@ -260,13 +260,23 @@ export const rundownPagi: RundownItem[] = [
 ];
 
 export const rundownMalam: RundownItem[] = [
-  { waktu: '19:00', kegiatan: 'Pembukaan Malam Puncak', icon: '🎊', keterangan: 'MC & Panitia' },
-  { waktu: '19:30', kegiatan: 'Hiburan Rakyat & Pentas Seni', icon: '🎶', keterangan: 'Warga' },
-  { waktu: '20:00', kegiatan: 'Pengumuman Pemenang & Penyerahan Hadiah', icon: '🏆', keterangan: 'Seluruh Warga' },
-  { waktu: '20:30', kegiatan: 'Penilaian Hias Tumpeng', icon: '🍱', keterangan: 'Peserta Ibu-ibu' },
-  { waktu: '21:00', kegiatan: 'Doorprize', icon: '🎁', keterangan: 'Seluruh Warga' },
-  { waktu: '21:30', kegiatan: 'Sambutan Penutup & Doa Bersama', icon: '🙏', keterangan: 'Ketua RT & Panitia' },
-  { waktu: '22:00', kegiatan: 'Penutupan Acara & Ramah Tamah', icon: '🏁', keterangan: 'Seluruh Warga' },
+  { waktu: '18:30-19:00', kegiatan: 'Persiapan Panitia & Registrasi Kehadiran Warga', icon: '🎊', keterangan: 'Persiapan teknis, sound, panggung, kursi, dll' },
+  { waktu: '19:00-19:05', kegiatan: 'Pembukaan Malam Puncak', icon: '🎤', keterangan: 'Pembukaan oleh MC' },
+  { waktu: '19:05-19:10', kegiatan: 'Menyanyikan Lagu Indonesia Raya', icon: '🎶', keterangan: 'Piano by Ameera' },
+  { waktu: '19:10-19:15', kegiatan: 'Pembacaan Doa', icon: '🤲', keterangan: 'Tokoh Agama' },
+  { waktu: '19:15-19:25', kegiatan: 'Sambutan Ketua Panitia', icon: '🎙️', keterangan: 'Bayu S. Permana' },
+  { waktu: '19:25-19:35', kegiatan: 'Sambutan Ketua RT', icon: '🏘️', keterangan: 'Bpk Eka Rista Yudhistira' },
+  { waktu: '19:35-19:50', kegiatan: 'Tari Persembahan', icon: '💃', keterangan: 'Talenta Anak' },
+  { waktu: '19:50-20:05', kegiatan: 'Tari Zapin', icon: '🌾💃', keterangan: 'Talenta Anak' },
+  { waktu: '20:05-20:20', kegiatan: 'Tari Gugur Gunung', icon: '🌾💃', keterangan: 'Talenta Anak' },
+  { waktu: '20:20-20:35', kegiatan: 'Tari Tor-Tor', icon: '🌾💃', keterangan: 'Talenta Anak' },
+  { waktu: '20:35-21:00', kegiatan: 'Penilaian Hias Tumpeng', icon: '🍚🏆', keterangan: 'Dewan Juri & Warga' },
+  { waktu: '21:00-21:20', kegiatan: 'Pengumuman & Penyerahan Hadiah Lomba Anak', icon: '🏅🎁', keterangan: 'Ketua Panitia & Sponsor' },
+  { waktu: '21:20-21:40', kegiatan: 'Pengumuman & Penyerahan Hadiah Lomba Dewasa', icon: '🏆🎁', keterangan: 'Ketua RT & Panitia' },
+  { waktu: '21:40-22:00', kegiatan: 'Doorprize Warga', icon: '🎉🎁', keterangan: 'MC' },
+  { waktu: '22:00:22:15', kegiatan: 'Hiburan & Foto Bersama Seluruh Warga', icon: '📸🎶', keterangan: 'Dokumentasi' },
+  { waktu: '22:15-22:20', kegiatan: 'Penutupan & Ucapan Terima Kasih', icon: '🙏🎤', keterangan: 'MC' },
+  { waktu: '22:20', kegiatan: 'Ramah Tamah & Makan Bersama (Tumpeng,dll)', icon: '🏁🍽️', keterangan: 'Seluruh Warga' },
 ];
 
 // ============================================
