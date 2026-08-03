@@ -85,7 +85,7 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 101, type: 'video',
-    thumb: '/images/VID-20260726-WA0007.mp4',
+    thumb: '/images/VID-20260726-WA0007.png',
     full: '/videos/VID-20260726-WA0007.mp4',
     title: 'Turnamen Volly @Greenbay Cup Agustus 2026',
     credit: 'Dokumentasi Warga Mawar',
