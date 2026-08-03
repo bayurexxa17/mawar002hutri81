@@ -71,8 +71,8 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 9, type: 'photo',
-    thumb: '/images/1.jpeg',
-    full: '/images/1.jpeg',
+    thumb: '/images/Team%20Putri%20Mawar1.jpeg',
+    full: '/images/Team%20Putri%20Mawar1.jpeg',
     title: 'Turnamen Volly @Greenbay Cup Agustus 2026',
     credit: 'Foto drone by Eka',
   },
