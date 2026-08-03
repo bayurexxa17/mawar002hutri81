@@ -50,17 +50,17 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 6, type: 'photo',
-    thumb: 'https://images.pexels.com/photos/16130194/pexels-photo-16130194.png?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
-    full: 'https://images.pexels.com/photos/16130194/pexels-photo-16130194.png?auto=compress&cs=tinysrgb&w=1920',
-    title: 'Bocah Panjat Pinang — Tradisi 17 Agustus',
-    credit: 'Ayyeee Ayyeee / Pexels',
+    thumb: '/images/1.jpeg',
+    full: '/images/1.jpeg',
+    title: 'Turnamen Volly @Greenbay Cup Agustus 2026',
+    credit: 'Foto drone by Eka',
   },
   {
     id: 101, type: 'video',
     thumb: 'https://images.pexels.com/videos/34373272/karrnafal-17-agustus-desa-beruk-jatiyoso-34373272.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
     full: 'https://videos.pexels.com/video-files/34373272/14563035_1920_1080_30fps.mp4',
-    title: 'Karnaval 17 Agustus — Parade Desa',
-    credit: 'just a hobby / Pexels',
+    title: 'Turnamen Volly @Greenbay Cup Agustus 2026a',
+    credit: 'Foto drone by Eka',
   },
   {
     id: 102, type: 'video',
