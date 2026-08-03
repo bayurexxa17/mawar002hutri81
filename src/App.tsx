@@ -655,7 +655,7 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
   const allLombaNames = lombaList.map(l => l.nama);
   void formRef;
   const scrollTo = (id: string) => { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }); setMobileMenuOpen(false); };
-  const rundownText = () => { let t = '=== RUNDOWN ACARA HUT RI KE-81 ===\nPerumahan Ciptaland Blok Mawar RT 002/RW 014\nMinggu, 17 Agustus 2026 & Sabtu, 22 Agustus 2026\n\n--- Acara Perlombaan | 17 Agustus 2026---\n'; rundownPagi.forEach(r => { t += `${r.waktu} - ${r.kegiatan}${r.keterangan ? ` (${r.keterangan})` : ''}\n`; }); t += '\n--- MALAM PUNCAK | 22 Agustus 2026 ---\n'; rundownMalam.forEach(r => { t += `${r.waktu} - ${r.kegiatan}${r.keterangan ? ` (${r.keterangan})` : ''}\n`; }); return t; };
+  const rundownText = () => { let t = '=== RUNDOWN ACARA HUT RI KE-81 ===\nPerumahan Ciptaland Blok Mawar RT 002/RW 014\nMinggu, 17 Agustus 2026 & Sabtu, 22 Agustus 2026\n\n--- Acara Perlombaan | 17 Agustus 2026---\n'; rundownAcaraPerlombaan.forEach(r => { t += `${r.waktu} - ${r.kegiatan}${r.keterangan ? ` (${r.keterangan})` : ''}\n`; }); t += '\n--- MALAM PUNCAK | 22 Agustus 2026 ---\n'; rundownMalamPuncak.forEach(r => { t += `${r.waktu} - ${r.kegiatan}${r.keterangan ? ` (${r.keterangan})` : ''}\n`; }); return t; };
   
   const navLinks = [
     { id: 'beranda', label: 'Beranda' },
