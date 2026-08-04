@@ -387,17 +387,20 @@ export default function App() {
   // Membaca: keuangan, sponsor, iuran warga, donasi, donasi cash, donasi online
   const fetchKeuangan = useCallback(async () => {
     const all: KeuanganEntry[] = [];
+    // Ambil nilai pertama yang tersedia dari beberapa kemungkinan nama kolom —
+    // membuat sinkronisasi tahan terhadap perbedaan penamaan kolom di Supabase.
+    const pick = (r: any, keys: string[]) => { for (const k of keys) { if (r && r[k] != null && r[k] !== '') return r[k]; } return ''; };
     const push = (rows: any[], defaultJenis: string, idOffset: number) => {
       (rows || []).forEach((r: any, i: number) => {
-        const nama = r.nama || r.name || r.sumber || '';
+        const nama = String(pick(r, ['nama', 'name', 'nama_warga', 'nama_donatur', 'donatur', 'sumber', 'pembayar', 'penyumbang']));
         if (!nama) return;
         all.push({
           id: idOffset + (Number(r.id) || i),
           nama,
-          jenis: String(r.jenis || defaultJenis || 'donasi').toLowerCase(),
-          jumlah: Number(r.jumlah) || 0,
-          keterangan: r.keterangan || r.deskripsi || r.catatan || '',
-          created_at: r.created_at,
+          jenis: String(pick(r, ['jenis', 'kategori', 'tipe', 'type']) || defaultJenis || 'donasi').toLowerCase(),
+          jumlah: Number(pick(r, ['jumlah', 'nominal', 'total', 'amount', 'nilai', 'besar'])) || 0,
+          keterangan: String(pick(r, ['keterangan', 'ket', 'catatan', 'deskripsi', 'note', 'alamat', 'pesan'])),
+          created_at: r.created_at || r.waktu || r.tanggal,
         });
       });
     };
@@ -411,6 +414,7 @@ export default function App() {
       ['pengeluaran', 'pengeluaran', 6000000],
       ['kas_rt', 'kas', 7000000],
       ['kas rt', 'kas', 8000000],
+      ['donatur', 'donatur', 9000000],
     ];
     await Promise.all(sources.map(async ([tbl, dj, off]) => {
       try {
@@ -434,8 +438,15 @@ export default function App() {
     try {
       const { data, error } = await supabase.from('inventory').select('*').order('id', { ascending: true });
       if (!error && Array.isArray(data)) {
-        // Tabel ada → data Supabase otoritatif (termasuk saat kosong)
-        setInventoryList(data.length > 0 ? data.map((r: any) => ({ id: String(r.id ?? r.kode ?? `INV-${r.id}`), nama: r.nama || '', jumlah: Number(r.jumlah) || 0, satuan: r.satuan || 'Pcs', kategori: r.kategori || 'Umum', keterangan: r.keterangan || '' })) : []);
+        // Tabel ada → data Supabase otoritatif; baca aneka kemungkinan nama kolom
+        setInventoryList(data.length > 0 ? data.map((r: any) => ({
+          id: String(r.id ?? r.kode ?? `INV-${r.id}`),
+          nama: String(r.nama || r.nama_barang || r.barang || r.item || ''),
+          jumlah: Number(r.jumlah ?? r.qty ?? r.stok) || 0,
+          satuan: String(r.satuan || 'Pcs'),
+          kategori: String(r.kategori || 'Umum'),
+          keterangan: String(r.keterangan || r.ket || ''),
+        })) : []);
       }
       // error (tabel belum ada / offline) → pertahankan cache localStorage
     } catch { /* offline */ }
@@ -444,7 +455,18 @@ export default function App() {
   const fetchTalenta = useCallback(async () => {
     try {
       const { data } = await supabase.from('talenta').select('*').order('no', { ascending: true });
-      if (data && data.length > 0) setTalentaList(data);
+      if (data && data.length > 0) {
+        setTalentaList(data.map((r: any) => ({
+          id: r.id,
+          no: Number(r.no || r.urutan) || 0,
+          jenis: String(r.jenis || r.jenis_penampilan || r.penampilan || ''),
+          nama: String(r.nama || r.nama_peserta || r.peserta || ''),
+          jumlah: String(r.jumlah ?? r.jumlah_peserta ?? ''),
+          durasi: String(r.durasi || ''),
+          pj: String(r.pj || r.penanggung_jawab || r.penanggungjawab || ''),
+          status: String(r.status || ''),
+        })));
+      }
     } catch { /* offline → pakai default */ }
   }, []);
 
@@ -537,7 +559,7 @@ export default function App() {
   // Realtime: langganan SEMUA tabel keuangan + pendaftar + talenta
   useEffect(() => {
     if (!isLive) return;
-    const channels = ['keuangan', 'sponsor', 'iuran warga', 'donasi', 'donasi cash', 'donasi online', 'pengeluaran', 'kas_rt', 'kas rt'].map(tbl =>
+    const channels = ['keuangan', 'sponsor', 'iuran warga', 'donasi', 'donasi cash', 'donasi online', 'pengeluaran', 'kas_rt', 'kas rt', 'donatur'].map(tbl =>
       supabase.channel(`rt-${tbl.replace(/\s/g, '-')}`).on('postgres_changes', { event: '*', schema: 'public', table: tbl }, () => { fetchKeuangan(); }).subscribe()
     );
     const chP = supabase.channel('rt-pendaftar').on('postgres_changes', { event: '*', schema: 'public', table: 'pendaftar' }, (payload) => {
