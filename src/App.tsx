@@ -484,35 +484,50 @@ export default function App() {
       const { data, error } = await supabase.from('info_acara').select('*').limit(1);
       if (!error && data && data.length > 0) {
         const r = data[0] as any;
-        setInfoAcara({ tanggal: r.tanggal || defaultInfoAcara.tanggal, waktu: r.waktu || defaultInfoAcara.waktu, lokasi: r.lokasi || defaultInfoAcara.lokasi, peserta: r.peserta || defaultInfoAcara.peserta });
+        setInfoAcara({
+          tanggal: r.tanggal || defaultInfoAcara.tanggal,
+          waktu: r.waktu || defaultInfoAcara.waktu,
+          lokasi: r.lokasi || defaultInfoAcara.lokasi,
+          peserta: r.peserta || defaultInfoAcara.peserta,
+        });
+        console.info('[Supabase] info_acara: tersinkron');
+      } else if (error) {
+        console.warn('[Supabase] info_acara gagal dibaca:', error.message);
       }
-    } catch {}
+    } catch (e: any) { console.warn('[Supabase] info_acara error:', e?.message); }
   }, []);
 
   const fetchRundown = useCallback(async () => {
     try {
-      const { data, error } = await supabase.from('rundown').select('*').order('urutan', { ascending: true });
+      const { data, error } = await supabase.from('rundown').select('*');
       if (!error && data && data.length > 0) {
-        setRundownRows(data.map((r: any) => ({ id: r.id, hari: r.hari === 'malam' ? 'malam' : 'perlombaan', waktu: r.waktu || '', icon: r.icon || '📌', kegiatan: r.kegiatan || '', keterangan: r.keterangan || '', urutan: r.urutan || 0 })));
-      }
-    } catch {}
+        const rows = [...data].sort((a: any, b: any) => (Number(a.urutan) || Number(a.id) || 0) - (Number(b.urutan) || Number(b.id) || 0));
+        setRundownRows(rows.map((r: any) => ({ id: r.id, hari: String(r.hari) === 'malam' ? 'malam' : 'perlombaan', waktu: r.waktu || '', icon: r.icon || '📌', kegiatan: r.kegiatan || '', keterangan: r.keterangan || '', urutan: Number(r.urutan) || 0 })));
+        console.info('[Supabase] rundown:', rows.length, 'baris');
+      } else if (error) { console.warn('[Supabase] rundown gagal:', error.message); }
+    } catch (e: any) { console.warn('[Supabase] rundown error:', e?.message); }
   }, []);
 
   const fetchPelaksana = useCallback(async () => {
     try {
-      const { data, error } = await supabase.from('panitia_pelaksana').select('*').order('urutan', { ascending: true });
+      const { data, error } = await supabase.from('panitia_pelaksana').select('*');
       if (!error && data && data.length > 0) {
-        setPelaksanaRows(data.map((r: any) => ({ id: r.id, nama: r.nama || '', jabatan: r.jabatan || '', hp: r.hp || '', is_core: !!r.is_core, urutan: r.urutan || 0 })));
-      }
-    } catch {}
+        const rows = [...data].sort((a: any, b: any) => (Number(a.urutan) || Number(a.id) || 0) - (Number(b.urutan) || Number(b.id) || 0));
+        setPelaksanaRows(rows.map((r: any) => ({ id: r.id, nama: r.nama || '', jabatan: r.jabatan || '', hp: r.hp || '', is_core: !!(r.is_core ?? r.core), urutan: Number(r.urutan) || 0 })));
+        console.info('[Supabase] panitia_pelaksana:', rows.length, 'baris');
+      } else if (error) { console.warn('[Supabase] panitia_pelaksana gagal:', error.message); }
+    } catch (e: any) { console.warn('[Supabase] panitia_pelaksana error:', e?.message); }
   }, []);
   const fetchPanitia = useCallback(async () => {
     try {
-      const { data, error } = await supabase.from('panitia').select('*').order('urutan', { ascending: true });
+      // Tanpa .order() agar tidak gagal bila kolom 'urutan' belum ada — urutkan di sisi aplikasi
+      const { data, error } = await supabase.from('panitia').select('*');
       if (!error && data && data.length > 0) {
-        setPanitiaCore(data.map((r: any) => ({ id: r.id, jabatan: r.jabatan || '', nama: r.nama || '', hp: r.hp || '' })));
-      }
-    } catch { /* tabel belum ada → pakai default siteData */ }
+        const rows = [...data].sort((a: any, b: any) => (Number(a.urutan) || Number(a.id) || 0) - (Number(b.urutan) || Number(b.id) || 0));
+        setPanitiaCore(rows.map((r: any) => ({ id: r.id, jabatan: r.jabatan || '', nama: r.nama || '', hp: r.hp || '' })));
+        console.info('[Supabase] panitia:', rows.length, 'baris');
+      } else if (error) { console.warn('[Supabase] panitia gagal:', error.message); }
+    } catch (e: any) { console.warn('[Supabase] panitia error:', e?.message); }
   }, []);
 
   const fetchSponsors = useCallback(async () => {
