@@ -360,6 +360,12 @@ const BUILTIN_TRACKS: Track[] = [
 ];
 const LS_MUSIC = 'hutri81-music-tracks';
 const loadCustomTracks = (): Track[] => { try { const s = localStorage.getItem(LS_MUSIC); if (s) return (JSON.parse(s) as Track[]).filter(t => t.url); } catch {} return []; };
+// Konversi link share Google Drive menjadi tautan unduh langsung agar bisa diputar
+const normUrl = (u: string) => {
+  const m = (u || '').match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]{10,})/);
+  if (m) return `https://drive.google.com/uc?export=download&id=${m[1]}`;
+  return u;
+};
 
 function MusicPlayer({ custom }: { custom: Track[] }) {
   const tracks = [...BUILTIN_TRACKS, ...custom];
@@ -423,19 +429,28 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
     tick();
     timerRef.current = window.setInterval(tick, 400);
   };
+  const [audioErr, setAudioErr] = useState('');
   const ensureAudio = () => {
-    if (!audioRef.current) { const a = new Audio(); a.loop = true; a.addEventListener('ended', () => goNext()); audioRef.current = a; }
+    if (!audioRef.current) {
+      const a = new Audio();
+      a.loop = true;
+      a.addEventListener('ended', () => goNext());
+      a.addEventListener('error', () => { setAudioErr('Audio gagal dimuat — pastikan tautan MP3 bisa diakses publik (link Google Drive sudah dikonversi otomatis).'); setPlaying(false); stopSynth(); });
+      audioRef.current = a;
+    }
     return audioRef.current!;
   };
   const playTrack = async (i: number) => {
     const t = tracks[i];
     stopSynth();
     audioRef.current?.pause();
+    setAudioErr('');
     if (t.kind === 'audio' && t.url) {
+      const url = normUrl(t.url);
       const a = ensureAudio();
-      if (a.src !== t.url) a.src = t.url;
+      if (a.src !== url) a.src = url;
       a.volume = gain();
-      try { await a.play(); } catch {}
+      try { await a.play(); } catch { setAudioErr('Browser memblokir pemutaran — klik lagi untuk memutar.'); }
     } else {
       await startSynth(t.melody ?? 0);
     }
@@ -467,6 +482,9 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
               {[0, 1, 2, 3].map(i => (<span key={i} className={`w-1 rounded-full bg-yellow-300 ${playing && !muted ? 'eq-bar' : 'h-1 opacity-30'}`} style={{ animationDelay: `${i * 0.13}s` }} />))}
             </div>
           </div>
+          {audioErr && (
+            <div className="px-4 py-2 bg-red-50 border-b border-red-100 text-[10px] font-semibold text-red-600 leading-relaxed">⚠️ {audioErr}</div>
+          )}
           <div className="px-4 py-3 flex items-center justify-center gap-4 border-b border-gray-100">
             <button onClick={goPrev} className="text-gray-500 hover:text-[#C1272D] transition" title="Sebelumnya"><SkipBack size={18} /></button>
             <button onClick={toggle} className="w-11 h-11 rounded-full bg-[#C1272D] hover:bg-red-700 text-white flex items-center justify-center shadow-md transition active:scale-95">{playing ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}</button>
