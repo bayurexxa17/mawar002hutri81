@@ -3,7 +3,7 @@ import HeroSection from './components/HeroSection';
 import LombaSection from './components/LombaSection';
 import AdminPage from './components/AdminPage';
 import GalleryPage from './components/GalleryPage';
-import { Music, Pause, Play, Volume2, VolumeX, SkipBack, SkipForward, Plus, Trash2, ListMusic } from 'lucide-react';
+import { Music, Pause, Play, Volume2, VolumeX, SkipBack, SkipForward, ListMusic } from 'lucide-react';
 import {
   lombaList,
   panitiaList,
@@ -300,6 +300,9 @@ export interface SharedData {
   pelaksanaRows: PelaksanaRow[];
   setPelaksanaRows: React.Dispatch<React.SetStateAction<PelaksanaRow[]>>;
   fetchPelaksana: () => Promise<void>;
+  musicTracks: Track[];
+  setMusicTracks: React.Dispatch<React.SetStateAction<Track[]>>;
+  fetchMusic: () => Promise<void>;
   setNewRowIds: React.Dispatch<React.SetStateAction<Set<string>>>;
   setParticipants: React.Dispatch<React.SetStateAction<Participant[]>>;
   setKeuanganList: React.Dispatch<React.SetStateAction<KeuanganEntry[]>>;
@@ -350,7 +353,7 @@ const BAS: Note[] = [
 const MELS = [MEL1, MEL2];
 const BEAT = 0.27;
 const CYCLE = 32 * BEAT;
-interface Track { id: string; title: string; sub: string; kind: 'synth' | 'audio'; melody?: number; url?: string; custom?: boolean; }
+interface Track { id: string; title: string; sub: string; kind: 'synth' | 'audio'; melody?: number; url?: string; custom?: boolean; dbId?: number; }
 const BUILTIN_TRACKS: Track[] = [
   { id: 'synth-1', title: 'Mars Merdeka Ceria', sub: 'Bawaan • mars tegas & ceria', kind: 'synth', melody: 0 },
   { id: 'synth-2', title: 'Semangat Tujuh Belas', sub: 'Bawaan • mengalun & khidmat', kind: 'synth', melody: 1 },
@@ -358,16 +361,13 @@ const BUILTIN_TRACKS: Track[] = [
 const LS_MUSIC = 'hutri81-music-tracks';
 const loadCustomTracks = (): Track[] => { try { const s = localStorage.getItem(LS_MUSIC); if (s) return (JSON.parse(s) as Track[]).filter(t => t.url); } catch {} return []; };
 
-function MusicPlayer() {
-  const [custom, setCustom] = useState<Track[]>(loadCustomTracks);
+function MusicPlayer({ custom }: { custom: Track[] }) {
   const tracks = [...BUILTIN_TRACKS, ...custom];
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const [vol, setVol] = useState(70);
   const [open, setOpen] = useState(false);
-  const [addTitle, setAddTitle] = useState('');
-  const [addUrl, setAddUrl] = useState('');
   const ctxRef = useRef<AudioContext | null>(null);
   const masterRef = useRef<GainNode | null>(null);
   const timerRef = useRef<number | null>(null);
@@ -451,21 +451,6 @@ function MusicPlayer() {
     if (masterRef.current && ctxRef.current) masterRef.current.gain.setTargetAtTime(g, ctxRef.current.currentTime, 0.05);
     if (audioRef.current) audioRef.current.volume = g;
   }, [vol, muted]);
-  const addTrack = () => {
-    if (!addUrl.trim()) return;
-    const t: Track = { id: `custom-${Date.now()}`, title: addTitle.trim() || 'Lagu Kustom', sub: 'Lagu Anda • MP3', kind: 'audio', url: addUrl.trim(), custom: true };
-    const list = [...custom, t];
-    setCustom(list);
-    try { localStorage.setItem(LS_MUSIC, JSON.stringify(list)); } catch {}
-    setAddTitle(''); setAddUrl('');
-    selectTrack(tracks.length);
-  };
-  const removeTrack = (id: string) => {
-    const list = custom.filter(t => t.id !== id);
-    setCustom(list);
-    try { localStorage.setItem(LS_MUSIC, JSON.stringify(list)); } catch {}
-    if (current.id === id) { pause(); setIdx(0); }
-  };
   useEffect(() => () => { stopSynth(); audioRef.current?.pause(); ctxRef.current?.close(); }, []);
 
   return (
@@ -502,18 +487,12 @@ function MusicPlayer() {
                   <div className={`text-xs font-bold truncate ${i === idx ? 'text-[#C1272D]' : 'text-gray-700'}`}>{t.title}</div>
                   <div className="text-[10px] text-gray-400 truncate">{t.sub}</div>
                 </div>
-                {t.custom && (<button onClick={e => { e.stopPropagation(); removeTrack(t.id); }} className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition" title="Hapus lagu"><Trash2 size={13} /></button>)}
+                {t.custom && <span className="text-[9px] font-bold text-gray-300 uppercase">MP3</span>}
               </div>
             ))}
           </div>
-          <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
-            <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">➕ Tambah Lagu Anda (MP3)</div>
-            <input value={addTitle} onChange={e => setAddTitle(e.target.value)} placeholder="Judul (opsional)" className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs mb-1.5 focus:ring-2 focus:ring-red-200 outline-none" />
-            <div className="flex gap-1.5">
-              <input value={addUrl} onChange={e => setAddUrl(e.target.value)} placeholder="URL file MP3…" className="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-red-200 outline-none" />
-              <button onClick={addTrack} className="px-2.5 rounded-lg bg-[#C1272D] hover:bg-red-700 text-white transition" title="Tambah & putar"><Plus size={14} /></button>
-            </div>
-            <p className="text-[9px] text-gray-400 mt-1.5 leading-relaxed">Tempel tautan MP3 (direct link). Tersimpan di browser ini.</p>
+          <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100">
+            <p className="text-[9px] text-gray-400 leading-relaxed">➕ Tambah / edit / hapus lagu MP3 melalui <strong>Panel Panitia → tab 🎵 Musik</strong>.</p>
           </div>
         </div>
       )}
@@ -679,6 +658,19 @@ export default function App() {
   // ===== FETCH PANITIA INTI (tabel Susunan Panitia) dari Supabase =====
   const [panitiaCore, setPanitiaCore] = useState(() => defaultSusunanPanitia.map(p => ({ ...p })));
 
+  // ===== DAFTAR LAGU KUSTOM (kelola via Panel Panitia → tab Musik) =====
+  const [musicTracks, setMusicTracks] = useState<Track[]>(loadCustomTracks);
+  const fetchMusic = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('musik').select('*').order('urutan', { ascending: true });
+      if (!error && data && data.length > 0) {
+        setMusicTracks(data.map((r: any) => ({ id: `db-${r.id}`, dbId: r.id, title: r.judul || r.title || 'Lagu', sub: r.keterangan || 'MP3 • Supabase', kind: 'audio' as const, url: r.url, custom: true })));
+      }
+    } catch { /* tabel musik belum ada → pakai localStorage */ }
+  }, []);
+  // Simpan lagu kustom ke localStorage agar tetap ada saat offline / tabel belum ada
+  useEffect(() => { try { localStorage.setItem(LS_MUSIC, JSON.stringify(musicTracks.filter(t => t.custom))); } catch {} }, [musicTracks]);
+
   // ===== INFORMASI ACARA, RUNDOWN, PANITIA PELAKSANA (kelola via Admin + Supabase) =====
   const [infoAcara, setInfoAcara] = useState<InfoAcaraData>({ ...defaultInfoAcara });
   const [rundownRows, setRundownRows] = useState<RundownRow[]>([]);
@@ -758,7 +750,7 @@ export default function App() {
   // Fetch on mount + retry otomatis (koneksi Supabase dingin sering lambat)
   useEffect(() => {
     fetchParticipants(); fetchKeuangan(); fetchInventory(); fetchTalenta(); fetchSponsors(); fetchPanitia();
-    fetchInfoAcara(); fetchRundown(); fetchPelaksana();
+    fetchInfoAcara(); fetchRundown(); fetchPelaksana(); fetchMusic();
     const t1 = setTimeout(() => { fetchParticipants(); fetchKeuangan(); }, 2500);
     const t2 = setTimeout(() => { fetchParticipants(); fetchKeuangan(); }, 6000);
     return () => { clearTimeout(t1); clearTimeout(t2); };
@@ -827,12 +819,13 @@ export default function App() {
     panitiaCore, setPanitiaCore, fetchPanitia,
     infoAcara, setInfoAcara, fetchInfoAcara,
     rundownRows, setRundownRows, fetchRundown,
-    pelaksanaRows, setPelaksanaRows, fetchPelaksana
+    pelaksanaRows, setPelaksanaRows, fetchPelaksana,
+    musicTracks, setMusicTracks, fetchMusic
   };
 
-  if (page === 'admin') return <><AdminPage key="admin-page" onBack={goMain} shared={sharedData} /><MusicPlayer /></>;
-  if (page === 'gallery') return <><GalleryPage key="gallery-page" onBack={goMain} /><MusicPlayer /></>;
-  if (page === 'inventory') return <><InventoryViewPage key="inventory-page" onBack={goMain} shared={sharedData} /><MusicPlayer /></>;
+  if (page === 'admin') return <><AdminPage key="admin-page" onBack={goMain} shared={sharedData} /><MusicPlayer custom={musicTracks} /></>;
+  if (page === 'gallery') return <><GalleryPage key="gallery-page" onBack={goMain} /><MusicPlayer custom={musicTracks} /></>;
+  if (page === 'inventory') return <><InventoryViewPage key="inventory-page" onBack={goMain} shared={sharedData} /><MusicPlayer custom={musicTracks} /></>;
   return (
     <>
       <MainPage
@@ -842,7 +835,7 @@ export default function App() {
         onGalleryClick={() => { setPage('gallery'); window.location.hash = '#gallery'; }}
         onInventoryClick={() => { setPage('inventory'); window.location.hash = '#inventory'; }}
       />
-      <MusicPlayer />
+      <MusicPlayer custom={musicTracks} />
     </>
   );
 }
