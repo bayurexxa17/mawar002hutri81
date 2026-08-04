@@ -3,7 +3,7 @@ import HeroSection from './components/HeroSection';
 import LombaSection from './components/LombaSection';
 import AdminPage from './components/AdminPage';
 import GalleryPage from './components/GalleryPage';
-import { Music, Pause, Play, Volume2, VolumeX, SkipBack, SkipForward, ListMusic, ChevronDown, ChevronUp } from 'lucide-react';
+import { Music, Pause, Play, Volume2, VolumeX, SkipBack, SkipForward, ListMusic, ChevronDown } from 'lucide-react';
 import {
   lombaList,
   panitiaList,
@@ -354,10 +354,8 @@ const MELS = [MEL1, MEL2];
 const BEAT = 0.27;
 const CYCLE = 32 * BEAT;
 interface Track { id: string; title: string; sub: string; kind: 'synth' | 'audio'; melody?: number; url?: string; custom?: boolean; dbId?: number; }
-const BUILTIN_TRACKS: Track[] = [
-  { id: 'synth-1', title: 'Mars Merdeka Ceria', sub: 'Bawaan • mars tegas & ceria', kind: 'synth', melody: 0 },
-  { id: 'synth-2', title: 'Semangat Tujuh Belas', sub: 'Bawaan • mengalun & khidmat', kind: 'synth', melody: 1 },
-];
+// Nada bawaan DIHAPUS sesuai permintaan — playlist hanya berisi lagu yang
+// ditambahkan panitia sendiri (via Panel Panitia), tersimpan di Supabase/localStorage.
 const LS_MUSIC = 'hutri81-music-tracks';
 // Muat playlist tersimpan (termasuk lagu synth bawaan) agar penghapusan tetap bertahan
 const loadSavedTracks = (): Track[] => { try { const s = localStorage.getItem(LS_MUSIC); if (s) return (JSON.parse(s) as Track[]).filter(t => t.url || t.kind === 'synth'); } catch {} return []; };
@@ -375,7 +373,6 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
   const [muted, setMuted] = useState(false);
   const [vol, setVol] = useState(70);
   const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false); // minimize panel (penting di mobile)
   const ctxRef = useRef<AudioContext | null>(null);
   const masterRef = useRef<GainNode | null>(null);
   const timerRef = useRef<number | null>(null);
@@ -470,8 +467,11 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
   }, [vol, muted]);
   useEffect(() => () => { stopSynth(); audioRef.current?.pause(); ctxRef.current?.close(); }, []);
 
+  // Jika belum ada lagu sama sekali, jangan render apa pun — tidak menghalangi akses
+  if (tracks.length === 0) return null;
+
   return (
-    <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-3">
+    <div className="fixed bottom-6 left-6 z-40 flex flex-col items-start gap-3">
       {open && (
         <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-72 animate-in overflow-hidden">
           <div className="bg-gradient-to-r from-[#C1272D] to-[#8B1A1A] px-4 py-3 flex items-center gap-3">
@@ -483,11 +483,10 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
             <div className="flex items-end gap-[3px] h-5 flex-shrink-0">
               {[0, 1, 2, 3].map(i => (<span key={i} className={`w-1 rounded-full bg-yellow-300 ${playing && !muted ? 'eq-bar' : 'h-1 opacity-30'}`} style={{ animationDelay: `${i * 0.13}s` }} />))}
             </div>
-            <button onClick={() => setCollapsed(c => !c)} className="text-white/70 hover:text-white transition flex-shrink-0" title={collapsed ? 'Perluas' : 'Kecilkan'}>
-              {collapsed ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white transition flex-shrink-0" title="Tutup (tidak menghalangi)">
+              <ChevronDown size={16} />
             </button>
           </div>
-          {!collapsed && <>
           {audioErr && (
             <div className="px-4 py-2 bg-red-50 border-b border-red-100 text-[10px] font-semibold text-red-600 leading-relaxed">⚠️ {audioErr}</div>
           )}
@@ -518,7 +517,6 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
           <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100">
             <p className="text-[9px] text-gray-400 leading-relaxed">➕ Tambah / edit / hapus lagu MP3 melalui <strong>Panel Panitia → tab 🎵 Musik</strong>.</p>
           </div>
-          </>}
         </div>
       )}
       <button
@@ -684,7 +682,7 @@ export default function App() {
   const [panitiaCore, setPanitiaCore] = useState(() => defaultSusunanPanitia.map(p => ({ ...p })));
 
   // ===== DAFTAR LAGU KUSTOM (kelola via Panel Panitia → tab Musik) =====
-  const [musicTracks, setMusicTracks] = useState<Track[]>(() => { const s = loadSavedTracks(); return s.length > 0 ? s : [...BUILTIN_TRACKS]; });
+  const [musicTracks, setMusicTracks] = useState<Track[]>(() => loadSavedTracks());
   const fetchMusic = useCallback(async () => {
     try {
       const { data, error } = await supabase.from('musik').select('*').order('urutan', { ascending: true });
