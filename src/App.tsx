@@ -3,7 +3,7 @@ import HeroSection from './components/HeroSection';
 import LombaSection from './components/LombaSection';
 import AdminPage from './components/AdminPage';
 import GalleryPage from './components/GalleryPage';
-import MusicPlayer from './components/MusicPlayer';
+import { Music, Pause, Play, Volume2, VolumeX, SkipBack, SkipForward, Plus, Trash2, ListMusic } from 'lucide-react';
 import {
   lombaList,
   panitiaList,
@@ -326,6 +326,210 @@ export function categorizeKeuangan(k: KeuanganEntry): 'cash' | 'kas' | 'donatur'
 }
 
 // ================== ROOT APP — SHARED STATE ==================
+// ================== PEMUTAR MUSIK (playlist, inline agar push satu file tetap aman) ==================
+const NADA = { G3: 196, C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392, A4: 440, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99 };
+type Note = [number, number, number];
+const MEL1: Note[] = [
+  [NADA.G4, 0, 1], [NADA.E4, 1, 1], [NADA.C4, 2, 1], [NADA.E4, 3, 1], [NADA.G4, 4, 1], [NADA.C5, 5, 2], [NADA.G4, 7, 1],
+  [NADA.A4, 8, 1], [NADA.F4, 9, 1], [NADA.D4, 10, 1], [NADA.F4, 11, 1], [NADA.A4, 12, 1], [NADA.D5, 13, 2], [NADA.B4, 15, 1],
+  [NADA.C5, 16, 1], [NADA.G4, 17, 1], [NADA.E4, 18, 1], [NADA.G4, 19, 1], [NADA.C5, 20, 1], [NADA.E5, 21, 2], [NADA.D5, 23, 1],
+  [NADA.C5, 24, 1], [NADA.D5, 25, 1], [NADA.E5, 26, 1], [NADA.D5, 27, 1], [NADA.C5, 28, 1], [NADA.G4, 29, 1], [NADA.C5, 30, 2], [0, 31, 1],
+];
+const MEL2: Note[] = [
+  [NADA.D4, 0, 1], [NADA.G4, 1, 1], [NADA.B4, 2, 1], [NADA.D5, 3, 1], [NADA.B4, 4, 1], [NADA.G4, 5, 2], [NADA.D4, 7, 1],
+  [NADA.E4, 8, 1], [NADA.A4, 9, 1], [NADA.C5, 10, 1], [NADA.E5, 11, 1], [NADA.D5, 12, 1], [NADA.B4, 13, 2], [NADA.G4, 15, 1],
+  [NADA.C5, 16, 1], [NADA.B4, 17, 1], [NADA.A4, 18, 1], [NADA.G4, 19, 1], [NADA.A4, 20, 1], [NADA.B4, 21, 1], [NADA.C5, 22, 1], [NADA.D5, 23, 1],
+  [NADA.B4, 24, 1], [NADA.A4, 25, 1], [NADA.G4, 26, 2], [0, 28, 1], [NADA.G4, 29, 1], [NADA.D5, 30, 2], [0, 31, 1],
+];
+const BAS: Note[] = [
+  [NADA.C4 / 2, 0, 2], [NADA.G3, 2, 2], [NADA.C4 / 2, 4, 2], [NADA.G3, 6, 2],
+  [NADA.F4 / 2, 8, 2], [NADA.C4 / 2, 10, 2], [NADA.G3, 12, 2], [NADA.G3, 14, 2],
+  [NADA.C4 / 2, 16, 2], [NADA.G3, 18, 2], [NADA.C4 / 2, 20, 2], [NADA.G3, 22, 2],
+  [NADA.F4 / 2, 24, 2], [NADA.G3, 26, 2], [NADA.C4 / 2, 28, 4],
+];
+const MELS = [MEL1, MEL2];
+const BEAT = 0.27;
+const CYCLE = 32 * BEAT;
+interface Track { id: string; title: string; sub: string; kind: 'synth' | 'audio'; melody?: number; url?: string; custom?: boolean; }
+const BUILTIN_TRACKS: Track[] = [
+  { id: 'synth-1', title: 'Mars Merdeka Ceria', sub: 'Bawaan • mars tegas & ceria', kind: 'synth', melody: 0 },
+  { id: 'synth-2', title: 'Semangat Tujuh Belas', sub: 'Bawaan • mengalun & khidmat', kind: 'synth', melody: 1 },
+];
+const LS_MUSIC = 'hutri81-music-tracks';
+const loadCustomTracks = (): Track[] => { try { const s = localStorage.getItem(LS_MUSIC); if (s) return (JSON.parse(s) as Track[]).filter(t => t.url); } catch {} return []; };
+
+function MusicPlayer() {
+  const [custom, setCustom] = useState<Track[]>(loadCustomTracks);
+  const tracks = [...BUILTIN_TRACKS, ...custom];
+  const [idx, setIdx] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(false);
+  const [vol, setVol] = useState(70);
+  const [open, setOpen] = useState(false);
+  const [addTitle, setAddTitle] = useState('');
+  const [addUrl, setAddUrl] = useState('');
+  const ctxRef = useRef<AudioContext | null>(null);
+  const masterRef = useRef<GainNode | null>(null);
+  const timerRef = useRef<number | null>(null);
+  const nextRef = useRef(0);
+  const playingRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const idxRef = useRef(0);
+  idxRef.current = idx;
+  const current = tracks[Math.min(idx, tracks.length - 1)];
+  const gain = () => (muted ? 0 : vol / 100);
+  const ensureCtx = () => {
+    if (!ctxRef.current) {
+      const AC = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AC();
+      const master = ctx.createGain();
+      master.gain.value = gain();
+      master.connect(ctx.destination);
+      ctxRef.current = ctx; masterRef.current = master;
+    }
+    return ctxRef.current!;
+  };
+  const pluck = (ctx: AudioContext, dest: AudioNode, f: number, t: number, d: number, peak: number) => {
+    if (!f) return;
+    const osc = ctx.createOscillator(); const g = ctx.createGain();
+    osc.type = 'triangle'; osc.frequency.value = f;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(peak, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, t + d * BEAT * 1.6);
+    osc.connect(g); g.connect(dest);
+    osc.start(t); osc.stop(t + d * BEAT * 1.8);
+  };
+  const scheduleCycle = (start: number, melIdx: number) => {
+    const ctx = ctxRef.current!; const dest = masterRef.current!;
+    (MELS[melIdx] || MEL1).forEach(([f, s, d]) => pluck(ctx, dest, f, start + s * BEAT, d, 0.22));
+    BAS.forEach(([f, s, d]) => {
+      const osc = ctx.createOscillator(); const g = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = f;
+      g.gain.setValueAtTime(0, start + s * BEAT);
+      g.gain.linearRampToValueAtTime(0.16, start + s * BEAT + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, start + (s + d) * BEAT);
+      osc.connect(g); g.connect(dest);
+      osc.start(start + s * BEAT); osc.stop(start + (s + d) * BEAT + 0.1);
+    });
+  };
+  const stopSynth = () => { playingRef.current = false; if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; } };
+  const startSynth = async (melIdx: number) => {
+    const ctx = ensureCtx();
+    await ctx.resume();
+    stopSynth();
+    playingRef.current = true;
+    nextRef.current = ctx.currentTime + 0.1;
+    const tick = () => { const c = ctxRef.current; if (!c || !playingRef.current) return; while (nextRef.current < c.currentTime + 1.5) { scheduleCycle(nextRef.current, melIdx); nextRef.current += CYCLE; } };
+    tick();
+    timerRef.current = window.setInterval(tick, 400);
+  };
+  const ensureAudio = () => {
+    if (!audioRef.current) { const a = new Audio(); a.loop = true; a.addEventListener('ended', () => goNext()); audioRef.current = a; }
+    return audioRef.current!;
+  };
+  const playTrack = async (i: number) => {
+    const t = tracks[i];
+    stopSynth();
+    audioRef.current?.pause();
+    if (t.kind === 'audio' && t.url) {
+      const a = ensureAudio();
+      if (a.src !== t.url) a.src = t.url;
+      a.volume = gain();
+      try { await a.play(); } catch {}
+    } else {
+      await startSynth(t.melody ?? 0);
+    }
+    setPlaying(true);
+  };
+  const pause = () => { stopSynth(); audioRef.current?.pause(); ctxRef.current?.suspend(); setPlaying(false); };
+  const toggle = () => { if (playing) pause(); else playTrack(idxRef.current); };
+  const goNext = () => { const ni = (idxRef.current + 1) % tracks.length; setIdx(ni); if (playingRef.current || playing) playTrack(ni); };
+  const goPrev = () => { const pi = (idxRef.current - 1 + tracks.length) % tracks.length; setIdx(pi); if (playingRef.current || playing) playTrack(pi); };
+  const selectTrack = (i: number) => { setIdx(i); playTrack(i); };
+  useEffect(() => {
+    const g = gain();
+    if (masterRef.current && ctxRef.current) masterRef.current.gain.setTargetAtTime(g, ctxRef.current.currentTime, 0.05);
+    if (audioRef.current) audioRef.current.volume = g;
+  }, [vol, muted]);
+  const addTrack = () => {
+    if (!addUrl.trim()) return;
+    const t: Track = { id: `custom-${Date.now()}`, title: addTitle.trim() || 'Lagu Kustom', sub: 'Lagu Anda • MP3', kind: 'audio', url: addUrl.trim(), custom: true };
+    const list = [...custom, t];
+    setCustom(list);
+    try { localStorage.setItem(LS_MUSIC, JSON.stringify(list)); } catch {}
+    setAddTitle(''); setAddUrl('');
+    selectTrack(tracks.length);
+  };
+  const removeTrack = (id: string) => {
+    const list = custom.filter(t => t.id !== id);
+    setCustom(list);
+    try { localStorage.setItem(LS_MUSIC, JSON.stringify(list)); } catch {}
+    if (current.id === id) { pause(); setIdx(0); }
+  };
+  useEffect(() => () => { stopSynth(); audioRef.current?.pause(); ctxRef.current?.close(); }, []);
+
+  return (
+    <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-3">
+      {open && (
+        <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-72 animate-in overflow-hidden">
+          <div className="bg-gradient-to-r from-[#C1272D] to-[#8B1A1A] px-4 py-3 flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full bg-white/15 border border-white/25 flex items-center justify-center flex-shrink-0 ${playing ? 'animate-[spin_4s_linear_infinite]' : ''}`}><Music size={17} className="text-white" /></div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-black text-white truncate">{current.title}</div>
+              <div className="text-[10px] text-white/70 truncate">{current.sub}</div>
+            </div>
+            <div className="flex items-end gap-[3px] h-5 flex-shrink-0">
+              {[0, 1, 2, 3].map(i => (<span key={i} className={`w-1 rounded-full bg-yellow-300 ${playing && !muted ? 'eq-bar' : 'h-1 opacity-30'}`} style={{ animationDelay: `${i * 0.13}s` }} />))}
+            </div>
+          </div>
+          <div className="px-4 py-3 flex items-center justify-center gap-4 border-b border-gray-100">
+            <button onClick={goPrev} className="text-gray-500 hover:text-[#C1272D] transition" title="Sebelumnya"><SkipBack size={18} /></button>
+            <button onClick={toggle} className="w-11 h-11 rounded-full bg-[#C1272D] hover:bg-red-700 text-white flex items-center justify-center shadow-md transition active:scale-95">{playing ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}</button>
+            <button onClick={goNext} className="text-gray-500 hover:text-[#C1272D] transition" title="Berikutnya"><SkipForward size={18} /></button>
+          </div>
+          <div className="px-4 py-2.5 flex items-center gap-2 border-b border-gray-100">
+            <button onClick={() => setMuted(m => !m)} className="text-gray-500 hover:text-[#C1272D] transition" title={muted ? 'Bunyikan' : 'Bisukan'}>{muted ? <VolumeX size={15} /> : <Volume2 size={15} />}</button>
+            <input type="range" min={0} max={100} value={vol} onChange={e => setVol(Number(e.target.value))} className="flex-1 accent-[#C1272D] h-1.5" />
+          </div>
+          <div className="max-h-44 overflow-y-auto">
+            <div className="px-4 pt-2.5 pb-1 text-[10px] font-black text-gray-400 uppercase tracking-wider flex items-center gap-1.5"><ListMusic size={11} /> Daftar Lagu ({tracks.length})</div>
+            {tracks.map((t, i) => (
+              <div key={t.id} className={`group flex items-center gap-2 px-4 py-2 cursor-pointer transition ${i === idx ? 'bg-red-50' : 'hover:bg-gray-50'}`} onClick={() => selectTrack(i)}>
+                <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${i === idx ? 'bg-[#C1272D] text-white' : 'bg-gray-100 text-gray-400'}`}>
+                  {i === idx && playing ? <span className="flex items-end gap-[2px] h-3">{[0, 1, 2].map(b => <span key={b} className="w-[2px] bg-white eq-bar" style={{ animationDelay: `${b * 0.12}s` }} />)}</span> : <Music size={11} />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className={`text-xs font-bold truncate ${i === idx ? 'text-[#C1272D]' : 'text-gray-700'}`}>{t.title}</div>
+                  <div className="text-[10px] text-gray-400 truncate">{t.sub}</div>
+                </div>
+                {t.custom && (<button onClick={e => { e.stopPropagation(); removeTrack(t.id); }} className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition" title="Hapus lagu"><Trash2 size={13} /></button>)}
+              </div>
+            ))}
+          </div>
+          <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+            <div className="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">➕ Tambah Lagu Anda (MP3)</div>
+            <input value={addTitle} onChange={e => setAddTitle(e.target.value)} placeholder="Judul (opsional)" className="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs mb-1.5 focus:ring-2 focus:ring-red-200 outline-none" />
+            <div className="flex gap-1.5">
+              <input value={addUrl} onChange={e => setAddUrl(e.target.value)} placeholder="URL file MP3…" className="flex-1 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-red-200 outline-none" />
+              <button onClick={addTrack} className="px-2.5 rounded-lg bg-[#C1272D] hover:bg-red-700 text-white transition" title="Tambah & putar"><Plus size={14} /></button>
+            </div>
+            <p className="text-[9px] text-gray-400 mt-1.5 leading-relaxed">Tempel tautan MP3 (direct link). Tersimpan di browser ini.</p>
+          </div>
+        </div>
+      )}
+      <button
+        onClick={() => { if (!open) { setOpen(true); if (!playing) playTrack(idx); } else toggle(); }}
+        title={playing ? 'Jeda musik' : 'Putar musik perayaan'}
+        className={`group relative w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 ${playing ? 'bg-gradient-to-br from-[#C1272D] to-[#8B1A1A]' : 'bg-gray-800 hover:bg-[#C1272D]'}`}
+      >
+        {playing && <span className="absolute inset-0 rounded-full border-2 border-[#C1272D] animate-ping opacity-40" />}
+        {playing ? <Pause size={22} /> : <Music size={22} />}
+        {tracks.length > 1 && <span className="absolute -top-1 -right-1 bg-yellow-400 text-[#8B1A1A] text-[9px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow">{tracks.length}</span>}
+      </button>
+    </div>
+  );
+}
+
 export default function App() {
   const [page, setPage] = useState<'main' | 'admin' | 'gallery' | 'inventory'>('main');
 
