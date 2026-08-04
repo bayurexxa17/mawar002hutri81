@@ -3,7 +3,7 @@ import HeroSection from './components/HeroSection';
 import LombaSection from './components/LombaSection';
 import AdminPage from './components/AdminPage';
 import GalleryPage from './components/GalleryPage';
-import { Music, Pause, Play, Volume2, VolumeX, SkipBack, SkipForward, ListMusic } from 'lucide-react';
+import { Music, Pause, Play, Volume2, VolumeX, SkipBack, SkipForward, ListMusic, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   lombaList,
   panitiaList,
@@ -359,7 +359,8 @@ const BUILTIN_TRACKS: Track[] = [
   { id: 'synth-2', title: 'Semangat Tujuh Belas', sub: 'Bawaan • mengalun & khidmat', kind: 'synth', melody: 1 },
 ];
 const LS_MUSIC = 'hutri81-music-tracks';
-const loadCustomTracks = (): Track[] => { try { const s = localStorage.getItem(LS_MUSIC); if (s) return (JSON.parse(s) as Track[]).filter(t => t.url); } catch {} return []; };
+// Muat playlist tersimpan (termasuk lagu synth bawaan) agar penghapusan tetap bertahan
+const loadSavedTracks = (): Track[] => { try { const s = localStorage.getItem(LS_MUSIC); if (s) return (JSON.parse(s) as Track[]).filter(t => t.url || t.kind === 'synth'); } catch {} return []; };
 // Konversi link share Google Drive menjadi tautan unduh langsung agar bisa diputar
 const normUrl = (u: string) => {
   const m = (u || '').match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]{10,})/);
@@ -368,12 +369,13 @@ const normUrl = (u: string) => {
 };
 
 function MusicPlayer({ custom }: { custom: Track[] }) {
-  const tracks = [...BUILTIN_TRACKS, ...custom];
+  const tracks = custom; // playlist penuh — dikelola via Panel Panitia
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const [vol, setVol] = useState(70);
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false); // minimize panel (penting di mobile)
   const ctxRef = useRef<AudioContext | null>(null);
   const masterRef = useRef<GainNode | null>(null);
   const timerRef = useRef<number | null>(null);
@@ -481,7 +483,11 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
             <div className="flex items-end gap-[3px] h-5 flex-shrink-0">
               {[0, 1, 2, 3].map(i => (<span key={i} className={`w-1 rounded-full bg-yellow-300 ${playing && !muted ? 'eq-bar' : 'h-1 opacity-30'}`} style={{ animationDelay: `${i * 0.13}s` }} />))}
             </div>
+            <button onClick={() => setCollapsed(c => !c)} className="text-white/70 hover:text-white transition flex-shrink-0" title={collapsed ? 'Perluas' : 'Kecilkan'}>
+              {collapsed ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
           </div>
+          {!collapsed && <>
           {audioErr && (
             <div className="px-4 py-2 bg-red-50 border-b border-red-100 text-[10px] font-semibold text-red-600 leading-relaxed">⚠️ {audioErr}</div>
           )}
@@ -512,6 +518,7 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
           <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100">
             <p className="text-[9px] text-gray-400 leading-relaxed">➕ Tambah / edit / hapus lagu MP3 melalui <strong>Panel Panitia → tab 🎵 Musik</strong>.</p>
           </div>
+          </>}
         </div>
       )}
       <button
@@ -677,17 +684,22 @@ export default function App() {
   const [panitiaCore, setPanitiaCore] = useState(() => defaultSusunanPanitia.map(p => ({ ...p })));
 
   // ===== DAFTAR LAGU KUSTOM (kelola via Panel Panitia → tab Musik) =====
-  const [musicTracks, setMusicTracks] = useState<Track[]>(loadCustomTracks);
+  const [musicTracks, setMusicTracks] = useState<Track[]>(() => { const s = loadSavedTracks(); return s.length > 0 ? s : [...BUILTIN_TRACKS]; });
   const fetchMusic = useCallback(async () => {
     try {
       const { data, error } = await supabase.from('musik').select('*').order('urutan', { ascending: true });
       if (!error && data && data.length > 0) {
-        setMusicTracks(data.map((r: any) => ({ id: `db-${r.id}`, dbId: r.id, title: r.judul || r.title || 'Lagu', sub: r.keterangan || 'MP3 • Supabase', kind: 'audio' as const, url: r.url, custom: true })));
+        // Gabungkan: lagu lokal (termasuk synth) + lagu dari Supabase yang belum ada
+        setMusicTracks(prev => {
+          const haveDb = new Set(prev.map(t => t.dbId).filter(Boolean));
+          const add = data.filter((r: any) => !haveDb.has(r.id)).map((r: any) => ({ id: `db-${r.id}`, dbId: r.id, title: r.judul || r.title || 'Lagu', sub: r.keterangan || 'MP3 • Supabase', kind: 'audio' as const, url: r.url, custom: true }));
+          return add.length ? [...prev, ...add] : prev;
+        });
       }
     } catch { /* tabel musik belum ada → pakai localStorage */ }
   }, []);
-  // Simpan lagu kustom ke localStorage agar tetap ada saat offline / tabel belum ada
-  useEffect(() => { try { localStorage.setItem(LS_MUSIC, JSON.stringify(musicTracks.filter(t => t.custom))); } catch {} }, [musicTracks]);
+  // Simpan SELURUH playlist ke localStorage (termasuk penghapusan lagu bawaan)
+  useEffect(() => { try { localStorage.setItem(LS_MUSIC, JSON.stringify(musicTracks)); } catch {} }, [musicTracks]);
 
   // ===== INFORMASI ACARA, RUNDOWN, PANITIA PELAKSANA (kelola via Admin + Supabase) =====
   const [infoAcara, setInfoAcara] = useState<InfoAcaraData>({ ...defaultInfoAcara });
