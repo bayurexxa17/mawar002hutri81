@@ -381,7 +381,7 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const idxRef = useRef(0);
   idxRef.current = idx;
-  const current = tracks[Math.min(idx, tracks.length - 1)];
+  const current = tracks.length ? tracks[Math.min(idx, tracks.length - 1)] : null;
   const gain = () => (muted ? 0 : vol / 100);
   const ensureCtx = () => {
     if (!ctxRef.current) {
@@ -467,9 +467,6 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
   }, [vol, muted]);
   useEffect(() => () => { stopSynth(); audioRef.current?.pause(); ctxRef.current?.close(); }, []);
 
-  // Jika belum ada lagu sama sekali, jangan render apa pun — tidak menghalangi akses
-  if (tracks.length === 0) return null;
-
   return (
     <div className="fixed bottom-6 left-6 z-40 flex flex-col items-start gap-3">
       {open && (
@@ -477,8 +474,8 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
           <div className="bg-gradient-to-r from-[#C1272D] to-[#8B1A1A] px-4 py-3 flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full bg-white/15 border border-white/25 flex items-center justify-center flex-shrink-0 ${playing ? 'animate-[spin_4s_linear_infinite]' : ''}`}><Music size={17} className="text-white" /></div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-black text-white truncate">{current.title}</div>
-              <div className="text-[10px] text-white/70 truncate">{current.sub}</div>
+              <div className="text-sm font-black text-white truncate">{current ? current.title : 'Belum ada lagu'}</div>
+              <div className="text-[10px] text-white/70 truncate">{current ? current.sub : 'Tambah via Panel Panitia → 🎵 Musik'}</div>
             </div>
             <div className="flex items-end gap-[3px] h-5 flex-shrink-0">
               {[0, 1, 2, 3].map(i => (<span key={i} className={`w-1 rounded-full bg-yellow-300 ${playing && !muted ? 'eq-bar' : 'h-1 opacity-30'}`} style={{ animationDelay: `${i * 0.13}s` }} />))}
@@ -501,6 +498,13 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
           </div>
           <div className="max-h-44 overflow-y-auto">
             <div className="px-4 pt-2.5 pb-1 text-[10px] font-black text-gray-400 uppercase tracking-wider flex items-center gap-1.5"><ListMusic size={11} /> Daftar Lagu ({tracks.length})</div>
+            {tracks.length === 0 && (
+              <div className="px-4 py-5 text-center">
+                <div className="text-2xl mb-1.5">🎵</div>
+                <p className="text-xs font-bold text-gray-600">Belum ada lagu</p>
+                <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">Tambahkan lagu MP3 Anda melalui<br /><strong>Panel Panitia → tab 🎵 Musik</strong></p>
+              </div>
+            )}
             {tracks.map((t, i) => (
               <div key={t.id} className={`group flex items-center gap-2 px-4 py-2 cursor-pointer transition ${i === idx ? 'bg-red-50' : 'hover:bg-gray-50'}`} onClick={() => selectTrack(i)}>
                 <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${i === idx ? 'bg-[#C1272D] text-white' : 'bg-gray-100 text-gray-400'}`}>
