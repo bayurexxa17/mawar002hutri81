@@ -3,7 +3,7 @@ import HeroSection from './components/HeroSection';
 import LombaSection from './components/LombaSection';
 import AdminPage from './components/AdminPage';
 import GalleryPage from './components/GalleryPage';
-import { Music, Pause, Play, Volume2, VolumeX, SkipBack, SkipForward, ListMusic, ChevronDown } from 'lucide-react';
+import { Music, Pause, Play, Volume2, VolumeX, SkipBack, SkipForward, ListMusic } from 'lucide-react';
 import {
   lombaList,
   panitiaList,
@@ -330,16 +330,36 @@ export function categorizeKeuangan(k: KeuanganEntry): 'cash' | 'kas' | 'donatur'
 
 // ================== ROOT APP — SHARED STATE ==================
 // ================== PEMUTAR MUSIK (playlist, inline agar push satu file tetap aman) ==================
-
+const NADA = { G3: 196, C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392, A4: 440, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99 };
+type Note = [number, number, number];
+const MEL1: Note[] = [
+  [NADA.G4, 0, 1], [NADA.E4, 1, 1], [NADA.C4, 2, 1], [NADA.E4, 3, 1], [NADA.G4, 4, 1], [NADA.C5, 5, 2], [NADA.G4, 7, 1],
+  [NADA.A4, 8, 1], [NADA.F4, 9, 1], [NADA.D4, 10, 1], [NADA.F4, 11, 1], [NADA.A4, 12, 1], [NADA.D5, 13, 2], [NADA.B4, 15, 1],
+  [NADA.C5, 16, 1], [NADA.G4, 17, 1], [NADA.E4, 18, 1], [NADA.G4, 19, 1], [NADA.C5, 20, 1], [NADA.E5, 21, 2], [NADA.D5, 23, 1],
+  [NADA.C5, 24, 1], [NADA.D5, 25, 1], [NADA.E5, 26, 1], [NADA.D5, 27, 1], [NADA.C5, 28, 1], [NADA.G4, 29, 1], [NADA.C5, 30, 2], [0, 31, 1],
+];
+const MEL2: Note[] = [
+  [NADA.D4, 0, 1], [NADA.G4, 1, 1], [NADA.B4, 2, 1], [NADA.D5, 3, 1], [NADA.B4, 4, 1], [NADA.G4, 5, 2], [NADA.D4, 7, 1],
+  [NADA.E4, 8, 1], [NADA.A4, 9, 1], [NADA.C5, 10, 1], [NADA.E5, 11, 1], [NADA.D5, 12, 1], [NADA.B4, 13, 2], [NADA.G4, 15, 1],
+  [NADA.C5, 16, 1], [NADA.B4, 17, 1], [NADA.A4, 18, 1], [NADA.G4, 19, 1], [NADA.A4, 20, 1], [NADA.B4, 21, 1], [NADA.C5, 22, 1], [NADA.D5, 23, 1],
+  [NADA.B4, 24, 1], [NADA.A4, 25, 1], [NADA.G4, 26, 2], [0, 28, 1], [NADA.G4, 29, 1], [NADA.D5, 30, 2], [0, 31, 1],
+];
+const BAS: Note[] = [
+  [NADA.C4 / 2, 0, 2], [NADA.G3, 2, 2], [NADA.C4 / 2, 4, 2], [NADA.G3, 6, 2],
+  [NADA.F4 / 2, 8, 2], [NADA.C4 / 2, 10, 2], [NADA.G3, 12, 2], [NADA.G3, 14, 2],
+  [NADA.C4 / 2, 16, 2], [NADA.G3, 18, 2], [NADA.C4 / 2, 20, 2], [NADA.G3, 22, 2],
+  [NADA.F4 / 2, 24, 2], [NADA.G3, 26, 2], [NADA.C4 / 2, 28, 4],
+];
 const MELS = [MEL1, MEL2];
 const BEAT = 0.27;
 const CYCLE = 32 * BEAT;
 interface Track { id: string; title: string; sub: string; kind: 'synth' | 'audio'; melody?: number; url?: string; custom?: boolean; dbId?: number; }
-// Nada bawaan DIHAPUS sesuai permintaan — playlist hanya berisi lagu yang
-// ditambahkan panitia sendiri (via Panel Panitia), tersimpan di Supabase/localStorage.
+const BUILTIN_TRACKS: Track[] = [
+  { id: 'synth-1', title: 'Mars Merdeka Ceria', sub: 'Bawaan • mars tegas & ceria', kind: 'synth', melody: 0 },
+  { id: 'synth-2', title: 'Semangat Tujuh Belas', sub: 'Bawaan • mengalun & khidmat', kind: 'synth', melody: 1 },
+];
 const LS_MUSIC = 'hutri81-music-tracks';
-// Muat playlist tersimpan (termasuk lagu synth bawaan) agar penghapusan tetap bertahan
-const loadSavedTracks = (): Track[] => { try { const s = localStorage.getItem(LS_MUSIC); if (s) return (JSON.parse(s) as Track[]).filter(t => t.url || t.kind === 'synth'); } catch {} return []; };
+const loadCustomTracks = (): Track[] => { try { const s = localStorage.getItem(LS_MUSIC); if (s) return (JSON.parse(s) as Track[]).filter(t => t.url); } catch {} return []; };
 // Konversi link share Google Drive menjadi tautan unduh langsung agar bisa diputar
 const normUrl = (u: string) => {
   const m = (u || '').match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]{10,})/);
@@ -348,7 +368,7 @@ const normUrl = (u: string) => {
 };
 
 function MusicPlayer({ custom }: { custom: Track[] }) {
-  const tracks = custom; // playlist penuh — dikelola via Panel Panitia
+  const tracks = [...BUILTIN_TRACKS, ...custom];
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -362,7 +382,7 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const idxRef = useRef(0);
   idxRef.current = idx;
-  const current = tracks.length ? tracks[Math.min(idx, tracks.length - 1)] : null;
+  const current = tracks[Math.min(idx, tracks.length - 1)];
   const gain = () => (muted ? 0 : vol / 100);
   const ensureCtx = () => {
     if (!ctxRef.current) {
@@ -449,21 +469,18 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
   useEffect(() => () => { stopSynth(); audioRef.current?.pause(); ctxRef.current?.close(); }, []);
 
   return (
-    <div className="fixed bottom-6 left-6 z-40 flex flex-col items-start gap-3">
+    <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-3">
       {open && (
         <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-72 animate-in overflow-hidden">
           <div className="bg-gradient-to-r from-[#C1272D] to-[#8B1A1A] px-4 py-3 flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full bg-white/15 border border-white/25 flex items-center justify-center flex-shrink-0 ${playing ? 'animate-[spin_4s_linear_infinite]' : ''}`}><Music size={17} className="text-white" /></div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-black text-white truncate">{current ? current.title : 'Belum ada lagu'}</div>
-              <div className="text-[10px] text-white/70 truncate">{current ? current.sub : 'Tambah via Panel Panitia → 🎵 Musik'}</div>
+              <div className="text-sm font-black text-white truncate">{current.title}</div>
+              <div className="text-[10px] text-white/70 truncate">{current.sub}</div>
             </div>
             <div className="flex items-end gap-[3px] h-5 flex-shrink-0">
               {[0, 1, 2, 3].map(i => (<span key={i} className={`w-1 rounded-full bg-yellow-300 ${playing && !muted ? 'eq-bar' : 'h-1 opacity-30'}`} style={{ animationDelay: `${i * 0.13}s` }} />))}
             </div>
-            <button onClick={() => setOpen(false)} className="text-white/70 hover:text-white transition flex-shrink-0" title="Tutup (tidak menghalangi)">
-              <ChevronDown size={16} />
-            </button>
           </div>
           {audioErr && (
             <div className="px-4 py-2 bg-red-50 border-b border-red-100 text-[10px] font-semibold text-red-600 leading-relaxed">⚠️ {audioErr}</div>
@@ -479,13 +496,6 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
           </div>
           <div className="max-h-44 overflow-y-auto">
             <div className="px-4 pt-2.5 pb-1 text-[10px] font-black text-gray-400 uppercase tracking-wider flex items-center gap-1.5"><ListMusic size={11} /> Daftar Lagu ({tracks.length})</div>
-            {tracks.length === 0 && (
-              <div className="px-4 py-5 text-center">
-                <div className="text-2xl mb-1.5">🎵</div>
-                <p className="text-xs font-bold text-gray-600">Belum ada lagu</p>
-                <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">Tambahkan lagu MP3 Anda melalui<br /><strong>Panel Panitia → tab 🎵 Musik</strong></p>
-              </div>
-            )}
             {tracks.map((t, i) => (
               <div key={t.id} className={`group flex items-center gap-2 px-4 py-2 cursor-pointer transition ${i === idx ? 'bg-red-50' : 'hover:bg-gray-50'}`} onClick={() => selectTrack(i)}>
                 <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 ${i === idx ? 'bg-[#C1272D] text-white' : 'bg-gray-100 text-gray-400'}`}>
@@ -667,22 +677,17 @@ export default function App() {
   const [panitiaCore, setPanitiaCore] = useState(() => defaultSusunanPanitia.map(p => ({ ...p })));
 
   // ===== DAFTAR LAGU KUSTOM (kelola via Panel Panitia → tab Musik) =====
-  const [musicTracks, setMusicTracks] = useState<Track[]>(() => loadSavedTracks());
+  const [musicTracks, setMusicTracks] = useState<Track[]>(loadCustomTracks);
   const fetchMusic = useCallback(async () => {
     try {
       const { data, error } = await supabase.from('musik').select('*').order('urutan', { ascending: true });
       if (!error && data && data.length > 0) {
-        // Gabungkan: lagu lokal (termasuk synth) + lagu dari Supabase yang belum ada
-        setMusicTracks(prev => {
-          const haveDb = new Set(prev.map(t => t.dbId).filter(Boolean));
-          const add = data.filter((r: any) => !haveDb.has(r.id)).map((r: any) => ({ id: `db-${r.id}`, dbId: r.id, title: r.judul || r.title || 'Lagu', sub: r.keterangan || 'MP3 • Supabase', kind: 'audio' as const, url: r.url, custom: true }));
-          return add.length ? [...prev, ...add] : prev;
-        });
+        setMusicTracks(data.map((r: any) => ({ id: `db-${r.id}`, dbId: r.id, title: r.judul || r.title || 'Lagu', sub: r.keterangan || 'MP3 • Supabase', kind: 'audio' as const, url: r.url, custom: true })));
       }
     } catch { /* tabel musik belum ada → pakai localStorage */ }
   }, []);
-  // Simpan SELURUH playlist ke localStorage (termasuk penghapusan lagu bawaan)
-  useEffect(() => { try { localStorage.setItem(LS_MUSIC, JSON.stringify(musicTracks)); } catch {} }, [musicTracks]);
+  // Simpan lagu kustom ke localStorage agar tetap ada saat offline / tabel belum ada
+  useEffect(() => { try { localStorage.setItem(LS_MUSIC, JSON.stringify(musicTracks.filter(t => t.custom))); } catch {} }, [musicTracks]);
 
   // ===== INFORMASI ACARA, RUNDOWN, PANITIA PELAKSANA (kelola via Admin + Supabase) =====
   const [infoAcara, setInfoAcara] = useState<InfoAcaraData>({ ...defaultInfoAcara });
@@ -1303,7 +1308,7 @@ function MainPage({ shared, onAdminClick, onGalleryClick, onInventoryClick }: { 
       <section id="panitia" className="py-16 px-4 bg-[#F5F5F0]"><div className="max-w-6xl mx-auto"><div className="text-center mb-8"><h2 className="text-3xl font-black text-gray-900">PANITIA PELAKSANA</h2><p className="text-gray-500 mt-1">Struktur Panitia</p></div><div className="grid sm:grid-cols-3 gap-4 mb-6">{pelaksanaCore.map((p, i) => (<a key={i} href={p.hp ? `https://wa.me/62${p.hp.replace(/\D/g, '').replace(/^0/, '')}` : '#'} target="_blank" rel="noopener noreferrer" className="bg-white rounded-2xl shadow-sm border p-5 text-center hover:shadow-lg transition group block"><div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl group-hover:bg-[#C1272D] group-hover:text-white transition">👤</div><div className="text-[10px] text-yellow-600 font-bold">⭐ {p.jabatan}</div><div className="font-bold text-gray-900 mt-1">{p.nama}</div><div className="text-xs text-gray-500 mt-0.5">📱 {p.hp}</div></a>))}</div><h4 className="font-bold text-gray-700 mb-4">Anggota Panitia Lainnya</h4><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">{pelaksanaOthers.map((p, i) => (<div key={i} className="bg-white rounded-xl border p-3 text-center hover:shadow-md transition"><div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2 text-lg">👤</div><div className="font-bold text-sm text-gray-800 truncate">{p.nama}</div><div className="text-[10px] text-gray-500">{p.jabatan}</div>{p.hp && <div className="text-[10px] text-gray-400 mt-0.5">📞 {p.hp}</div>}{p.hp && !p.hp.includes('xxx') && <a href={`https://wa.me/62${p.hp.replace(/\D/g, '').replace(/^0/, '')}`} target="_blank" rel="noopener noreferrer" className="inline-block mt-1 text-green-500 hover:text-green-600 text-lg">💬</a>}</div>))}</div></div></section>
 
       {/* FOOTER */}
-      <footer className="bg-[#1a1a1a] text-white py-12 px-4"><div className="max-w-6xl mx-auto text-center"><div className="flex items-center justify-center gap-3 mb-4"><div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center font-black text-[#C1272D] text-lg shadow">81</div><div className="text-left"><div className="font-bold text-lg">HUT RI Ke-81</div><div className="text-xs text-gray-400">Perumahan Ciptaland Blok Mawar</div></div></div><p className="text-gray-400 text-sm mb-2">RT 002 / RW 014</p><p className="text-gray-500 text-xs mb-4">📧 panitiahutri81.mawar002@gmail.com</p><div className="flex items-center justify-center gap-4 mb-6"><button onClick={onGalleryClick} className="text-xs text-gray-400 hover:text-white transition">📸 Galeri</button><span className="text-gray-700">•</span><button onClick={onAdminClick} className="text-xs text-gray-600 hover:text-gray-400 transition">🔒 Panel Panitia</button></div><div className="border-t border-gray-800 pt-4"><p className="text-gray-600 text-xs">© 2026 Panitia HUT RI ke-81 — Perumahan Ciptaland Blok Mawar 🇮🇩</p><p className="text-gray-700 text-[10px] mt-1.5 font-mono tracking-wide">Build <span className="text-gray-500">{APP_BUILD}</span> — Untuk informasi lebih lanjut, silakan hubungi pengembang web BayuRexxa17</p></div></div></footer>
+      <footer className="bg-[#1a1a1a] text-white py-12 px-4"><div className="max-w-6xl mx-auto text-center"><div className="flex items-center justify-center gap-3 mb-4"><div className="w-12 h-12 rounded-full bg-yellow-400 flex items-center justify-center font-black text-[#C1272D] text-lg shadow">81</div><div className="text-left"><div className="font-bold text-lg">HUT RI Ke-81</div><div className="text-xs text-gray-400">Perumahan Ciptaland Blok Mawar</div></div></div><p className="text-gray-400 text-sm mb-2">RT 002 / RW 014</p><p className="text-gray-500 text-xs mb-4">📧 panitiahutri81.mawar002@gmail.com</p><div className="flex items-center justify-center gap-4 mb-6"><button onClick={onGalleryClick} className="text-xs text-gray-400 hover:text-white transition">📸 Galeri</button><span className="text-gray-700">•</span><button onClick={onAdminClick} className="text-xs text-gray-600 hover:text-gray-400 transition">🔒 Panel Panitia</button></div><div className="border-t border-gray-800 pt-4"><p className="text-gray-600 text-xs">© 2026 Panitia HUT RI ke-81 — Perumahan Ciptaland Blok Mawar 🇮🇩</p><p className="text-gray-700 text-[10px] mt-1.5 font-mono tracking-wide">Build <span className="text-gray-500">{APP_BUILD}</span> — jika tag ini tidak muncul di situs live, berarti deploy belum terbaru</p></div></div></footer>
 
       {/* NATIVE FLOATING WHATSAPP BUTTON */}
       <div className="fixed bottom-6 right-6 z-50">
