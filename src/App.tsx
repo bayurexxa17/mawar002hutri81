@@ -511,7 +511,7 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
             ))}
           </div>
           <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100">
-            <p className="text-[9px] text-gray-400 leading-relaxed">➕ Tambah / edit / hapus lagu MP3 melalui <strong>Panel Panitia → tab 🎵 Musik</strong>.</p>
+            <p className="text-[9px] text-gray-400 leading-relaxed"> <strong> </strong>.</p>
           </div>
         </div>
       )}
