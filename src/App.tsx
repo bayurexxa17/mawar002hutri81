@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+ import { useState, useEffect, useCallback, useRef } from 'react';
 import HeroSection from './components/HeroSection';
 import LombaSection from './components/LombaSection';
 import AdminPage from './components/AdminPage';
@@ -368,7 +368,8 @@ const normUrl = (u: string) => {
 };
 
 function MusicPlayer({ custom }: { custom: Track[] }) {
-  const tracks = [...BUILTIN_TRACKS, ...custom];
+  // Hanya gunakan lagu kustom, hapus BUILTIN_TRACKS
+  const tracks = Array.isArray(custom) ? custom : [];
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
