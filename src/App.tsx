@@ -330,26 +330,7 @@ export function categorizeKeuangan(k: KeuanganEntry): 'cash' | 'kas' | 'donatur'
 
 // ================== ROOT APP — SHARED STATE ==================
 // ================== PEMUTAR MUSIK (playlist, inline agar push satu file tetap aman) ==================
-const NADA = { G3: 196, C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392, A4: 440, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99 };
-type Note = [number, number, number];
-const MEL1: Note[] = [
-  [NADA.G4, 0, 1], [NADA.E4, 1, 1], [NADA.C4, 2, 1], [NADA.E4, 3, 1], [NADA.G4, 4, 1], [NADA.C5, 5, 2], [NADA.G4, 7, 1],
-  [NADA.A4, 8, 1], [NADA.F4, 9, 1], [NADA.D4, 10, 1], [NADA.F4, 11, 1], [NADA.A4, 12, 1], [NADA.D5, 13, 2], [NADA.B4, 15, 1],
-  [NADA.C5, 16, 1], [NADA.G4, 17, 1], [NADA.E4, 18, 1], [NADA.G4, 19, 1], [NADA.C5, 20, 1], [NADA.E5, 21, 2], [NADA.D5, 23, 1],
-  [NADA.C5, 24, 1], [NADA.D5, 25, 1], [NADA.E5, 26, 1], [NADA.D5, 27, 1], [NADA.C5, 28, 1], [NADA.G4, 29, 1], [NADA.C5, 30, 2], [0, 31, 1],
-];
-const MEL2: Note[] = [
-  [NADA.D4, 0, 1], [NADA.G4, 1, 1], [NADA.B4, 2, 1], [NADA.D5, 3, 1], [NADA.B4, 4, 1], [NADA.G4, 5, 2], [NADA.D4, 7, 1],
-  [NADA.E4, 8, 1], [NADA.A4, 9, 1], [NADA.C5, 10, 1], [NADA.E5, 11, 1], [NADA.D5, 12, 1], [NADA.B4, 13, 2], [NADA.G4, 15, 1],
-  [NADA.C5, 16, 1], [NADA.B4, 17, 1], [NADA.A4, 18, 1], [NADA.G4, 19, 1], [NADA.A4, 20, 1], [NADA.B4, 21, 1], [NADA.C5, 22, 1], [NADA.D5, 23, 1],
-  [NADA.B4, 24, 1], [NADA.A4, 25, 1], [NADA.G4, 26, 2], [0, 28, 1], [NADA.G4, 29, 1], [NADA.D5, 30, 2], [0, 31, 1],
-];
-const BAS: Note[] = [
-  [NADA.C4 / 2, 0, 2], [NADA.G3, 2, 2], [NADA.C4 / 2, 4, 2], [NADA.G3, 6, 2],
-  [NADA.F4 / 2, 8, 2], [NADA.C4 / 2, 10, 2], [NADA.G3, 12, 2], [NADA.G3, 14, 2],
-  [NADA.C4 / 2, 16, 2], [NADA.G3, 18, 2], [NADA.C4 / 2, 20, 2], [NADA.G3, 22, 2],
-  [NADA.F4 / 2, 24, 2], [NADA.G3, 26, 2], [NADA.C4 / 2, 28, 4],
-];
+
 const MELS = [MEL1, MEL2];
 const BEAT = 0.27;
 const CYCLE = 32 * BEAT;
