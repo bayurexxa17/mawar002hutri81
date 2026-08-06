@@ -57,10 +57,10 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 1, type: 'photo',
-    thumb: '/images/Screenshot_66.png',
-    full: '/images/Screenshot_66.png',
-    title: 'GoRo Panitia Mawar 002',
-    credit: 'Dokumentasi Eka RT',
+    thumb: '/images/Team%20Putri%20Mawar1.jpeg',
+    full: '/images/Team%20Putri%20Mawar1.jpeg',
+    title: 'Volley Ball Putri, Mawar 002',
+    credit: 'Dokumentasi Warga Mawar',
   },
   {
     id: 1, type: 'photo',
