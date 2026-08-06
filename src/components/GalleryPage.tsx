@@ -106,7 +106,7 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 102, type: 'video',
-    thumb: 'https://images.pexels.com/videos/34373278/karrnafal-17-agustus-desa-beruk-jatiyoso-34373278.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
+    thumb: '/images/Screenshot_67.png',
     full: '/videos/WhatsApp%20Video%202026-08-03%20at%2009.51.01.mp4',
     title: 'Volley Ball Putra, Mawar 002',
     credit: 'Dokumentasi Warga Mawar',
