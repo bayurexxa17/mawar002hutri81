@@ -107,7 +107,7 @@ const initialItems: GalleryItem[] = [
   {
     id: 102, type: 'video',
     thumb: '/images/Screenshot_67.png',
-    full: '/videos/WhatsApp%20Video%202026-08-03%20at%2009.51.01.mp4',
+    full: '/images/WhatsApp%20Video%202026-08-03%20at%2009.51.01.mp4',
     title: 'Volley Ball Putra, Mawar 002',
     credit: 'Dokumentasi Warga Mawar',
   },
