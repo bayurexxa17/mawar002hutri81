@@ -107,9 +107,9 @@ const initialItems: GalleryItem[] = [
   {
     id: 102, type: 'video',
     thumb: 'https://images.pexels.com/videos/34373278/karrnafal-17-agustus-desa-beruk-jatiyoso-34373278.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
-    full: 'https://videos.pexels.com/video-files/34373278/14563041_1920_1080_30fps.mp4',
-    title: 'Karnaval 17 Agustus — Aerial View',
-    credit: 'just a hobby / Pexels',
+    full: '/videos/WhatsApp%20Video%202026-08-03%20at%2009.51.01.mp4',
+    title: 'Volley Ball Putra, Mawar 002',
+    credit: 'Dokumentasi Warga Mawar',
   },
   {
     id: 103, type: 'video',
