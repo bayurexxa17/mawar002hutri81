@@ -43,10 +43,10 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 1, type: 'photo',
-    thumb: '/images/20260726_091556.jpg',
-    full: '/images/20260726_091556.jpg',
-    title: 'GoRo Warga Mawar 002',
-    credit: 'Dokumentasi Bayu',
+    thumb: '/images/20260729_145854.jpg',
+    full: '/images/20260729_145854.jpg',
+    title: 'Kunjungan ke Kantor Dewi samudera Tiban',
+    credit: 'Dokumentasi Aryo',
   },
   {
     id: 1, type: 'photo',
