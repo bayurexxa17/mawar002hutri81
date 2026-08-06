@@ -113,7 +113,7 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 103, type: 'video',
-    thumb: 'https://images.pexels.com/videos/29936584/pexels-photo-29936584.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
+    thumb: '/images/Screenshot_68.png',
     full: 'https://videos.pexels.com/video-files/29936584/12848560_1920_1080_30fps.mp4',
     title: 'Pawai Budaya Kemerdekaan',
     credit: 'Sergei Starostin / Pexels',
