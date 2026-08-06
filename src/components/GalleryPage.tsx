@@ -50,10 +50,10 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 1, type: 'photo',
-    thumb: '/images/20260726_091556.jpg',
-    full: '/images/20260726_091556.jpg',
-    title: 'GoRo Warga Mawar 002',
-    credit: 'Dokumentasi Bayu',
+    thumb: '/images/Screenshot_66.png',
+    full: '/images/Screenshot_66.png',
+    title: 'GoRo Panitia Mawar 002',
+    credit: 'Dokumentasi Eka',
   {
     id: 101, type: 'video',
     thumb: 'https://images.pexels.com/videos/34373272/karrnafal-17-agustus-desa-beruk-jatiyoso-34373272.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
