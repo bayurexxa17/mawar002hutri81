@@ -28,11 +28,11 @@ const initialItems: GalleryItem[] = [
     credit: 'Dokumentasi Bayu',
   },
   {
-    id: 3, type: 'photo',
-    thumb: 'https://images.pexels.com/photos/33807987/pexels-photo-33807987.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
-    full: 'https://images.pexels.com/photos/33807987/pexels-photo-33807987.jpeg?auto=compress&cs=tinysrgb&w=1920',
-    title: 'Panjat Pinang — Semangat Kemerdekaan',
-    credit: 'Rakhmat Suwandi / Pexels',
+    id: 1, type: 'photo',
+    thumb: '/images/20260726_091534.jpg',
+    full: '/images/20260726_091534.jpg',
+    title: 'GoRo Warga Mawar 002',
+    credit: 'Dokumentasi Bayu',
   },
   {
     id: 4, type: 'photo',
