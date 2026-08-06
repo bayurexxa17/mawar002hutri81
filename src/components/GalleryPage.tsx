@@ -22,8 +22,8 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 1, type: 'photo',
-    thumb: '/images/20260726_091521.jpg',
-    full: '/images/20260726_091521.jpg',
+    thumb: '/images/20260726_091534.jpg',
+    full: '/images/20260726_091534.jpg',
     title: 'GoRo Warga Mawar 002',
     credit: 'Dokumentasi Bayu',
   },
