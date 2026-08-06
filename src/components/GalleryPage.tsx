@@ -71,9 +71,9 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 1, type: 'photo',
-    thumb: '/images/Screenshot_66.png',
-    full: '/images/Screenshot_66.png',
-    title: 'GoRo Panitia Mawar 002',
+    thumb: '/images/3.jpeg',
+    full: '/images/3.jpeg',
+    title: 'Volley Ball, Mawar 002',
     credit: 'Dokumentasi Eka RT',
   {
     id: 101, type: 'video',
