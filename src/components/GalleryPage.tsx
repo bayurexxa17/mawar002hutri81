@@ -64,7 +64,7 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 1, type: 'photo',
-    thumb: '/images/Team%20Putri%20Mawar2.jpeg',
+    thumb: '/images/VID-20260726-WA0007.png',
     full: '/images/Team%20Putri%20Mawar2.jpeg',
     title: 'Volley Ball Putri, Mawar 002',
     credit: 'Dokumentasi Warga Mawar',
