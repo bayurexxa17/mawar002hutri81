@@ -75,6 +75,7 @@ const initialItems: GalleryItem[] = [
     full: '/images/3.jpeg',
     title: 'Volley Ball, Mawar 002',
     credit: 'Dokumentasi Eka RT',
+  },
   {
     id: 101, type: 'video',
     thumb: '/images/Video%20Kegiatan%20Pemasangan%20Gapura%20%26%20Umbul-umbul%20bersama%20Panitia%20Remaja%20Blk%20Mawar.mp4',
