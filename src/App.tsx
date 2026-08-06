@@ -354,11 +354,12 @@ const MELS = [MEL1, MEL2];
 const BEAT = 0.27;
 const CYCLE = 32 * BEAT;
 interface Track { id: string; title: string; sub: string; kind: 'synth' | 'audio'; melody?: number; url?: string; custom?: boolean; dbId?: number; }
-// Nada bawaan DIHAPUS sesuai permintaan — playlist hanya berisi lagu yang
-// ditambahkan panitia sendiri (via Panel Panitia), tersimpan di Supabase/localStorage.
+const BUILTIN_TRACKS: Track[] = [
+  { id: 'synth-1', title: 'Mars Merdeka Ceria', sub: 'Bawaan • mars tegas & ceria', kind: 'synth', melody: 0 },
+  { id: 'synth-2', title: 'Semangat Tujuh Belas', sub: 'Bawaan • mengalun & khidmat', kind: 'synth', melody: 1 },
+];
 const LS_MUSIC = 'hutri81-music-tracks';
-// Muat playlist tersimpan (termasuk lagu synth bawaan) agar penghapusan tetap bertahan
-const loadSavedTracks = (): Track[] => { try { const s = localStorage.getItem(LS_MUSIC); if (s) return (JSON.parse(s) as Track[]).filter(t => t.url || t.kind === 'synth'); } catch {} return []; };
+const loadCustomTracks = (): Track[] => { try { const s = localStorage.getItem(LS_MUSIC); if (s) return (JSON.parse(s) as Track[]).filter(t => t.url); } catch {} return []; };
 // Konversi link share Google Drive menjadi tautan unduh langsung agar bisa diputar
 const normUrl = (u: string) => {
   const m = (u || '').match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]{10,})/);
@@ -367,13 +368,13 @@ const normUrl = (u: string) => {
 };
 
 function MusicPlayer({ custom }: { custom: Track[] }) {
-  const tracks = custom; // playlist penuh — dikelola via Panel Panitia
+  // Hanya gunakan lagu kustom, hapus BUILTIN_TRACKS
+  const tracks = Array.isArray(custom) ? custom : [];
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const [vol, setVol] = useState(70);
   const [open, setOpen] = useState(false);
-  const [minimized, setMinimized] = useState(false);
   const ctxRef = useRef<AudioContext | null>(null);
   const masterRef = useRef<GainNode | null>(null);
   const timerRef = useRef<number | null>(null);
@@ -468,11 +469,8 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
   }, [vol, muted]);
   useEffect(() => () => { stopSynth(); audioRef.current?.pause(); ctxRef.current?.close(); }, []);
 
-  // Jika belum ada lagu sama sekali, jangan render apa pun — tidak menghalangi akses
-  if (tracks.length === 0) return null;
-
   return (
-    <div className="fixed bottom-6 left-6 z-40 flex flex-col items-start gap-3">
+    <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-3">
       {open && (
         <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-72 animate-in overflow-hidden">
           <div className="bg-gradient-to-r from-[#C1272D] to-[#8B1A1A] px-4 py-3 flex items-center gap-3">
@@ -484,16 +482,7 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
             <div className="flex items-end gap-[3px] h-5 flex-shrink-0">
               {[0, 1, 2, 3].map(i => (<span key={i} className={`w-1 rounded-full bg-yellow-300 ${playing && !muted ? 'eq-bar' : 'h-1 opacity-30'}`} style={{ animationDelay: `${i * 0.13}s` }} />))}
             </div>
-            <button
-              onClick={() => setMinimized(m => !m)}
-              className="text-white/70 hover:text-white transition flex-shrink-0"
-              title={minimized ? 'Perbesar panel' : 'Minimize panel'}
-            >
-              {minimized ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </button>
           </div>
-          {!minimized && (
-            <>
           {audioErr && (
             <div className="px-4 py-2 bg-red-50 border-b border-red-100 text-[10px] font-semibold text-red-600 leading-relaxed">⚠️ {audioErr}</div>
           )}
@@ -522,10 +511,8 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
             ))}
           </div>
           <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100">
-            <p className="text-[9px] text-gray-400 leading-relaxed">➕ Tambah / edit / hapus lagu MP3 melalui <strong>Panel Panitia → tab 🎵 Musik</strong>.</p>
+            <p className="text-[9px] text-gray-400 leading-relaxed"> <strong> </strong>.</p>
           </div>
-            </>
-          )}
         </div>
       )}
       <button
