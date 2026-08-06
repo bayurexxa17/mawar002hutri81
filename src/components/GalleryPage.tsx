@@ -100,7 +100,7 @@ const initialItems: GalleryItem[] = [
   {
     id: 101, type: 'video',
     thumb: '/images/Screenshot_66.png',
-    full: '/Video%20Kegiatan%20Pemasangan%20Gapura%20%26%20Umbul-umbul%20bersama%20Panitia%20Remaja%20Blk%20Mawar.mp4',
+    full: '/images/vd1.mp4',
     title: 'Video Kegiatan Pemasangan Gapura & Umbul-umbul bersama Panitia Remaja Blk Mawar',
     credit: 'Dokumentasi Eka RT',
   },
