@@ -115,8 +115,8 @@ const initialItems: GalleryItem[] = [
     id: 103, type: 'video',
     thumb: '/images/Screenshot_68.png',
     full: 'https://videos.pexels.com/video-files/29936584/12848560_1920_1080_30fps.mp4',
-    title: 'Pawai Budaya Kemerdekaan',
-    credit: 'Sergei Starostin / Pexels',
+    title: 'Volley Ball Putra, Mawar 002',
+    credit: 'Dokumentasi Eka RT',
   },
 ];
 
