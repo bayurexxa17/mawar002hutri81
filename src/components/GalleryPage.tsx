@@ -53,7 +53,7 @@ const initialItems: GalleryItem[] = [
     thumb: '/images/Screenshot_66.png',
     full: '/images/Screenshot_66.png',
     title: 'GoRo Panitia Mawar 002',
-    credit: 'Dokumentasi Eka ',
+    credit: 'Dokumentasi Eka RT',
   },
   {
     id: 1, type: 'photo',
@@ -79,8 +79,8 @@ const initialItems: GalleryItem[] = [
     id: 101, type: 'video',
     thumb: 'https://images.pexels.com/videos/34373272/karrnafal-17-agustus-desa-beruk-jatiyoso-34373272.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=400&w=600',
     full: 'https://videos.pexels.com/video-files/34373272/14563035_1920_1080_30fps.mp4',
-    title: 'Karnaval 17 Agustus — Parade Desa',
-    credit: 'just a hobby / Pexels',
+    title: 'Video Kegiatan Pemasangan Gapura & Umbul-umbul bersama Panitia Remaja Blk Mawar',
+    credit: 'Dokumentasi Eka RT',
   },
   {
     id: 102, type: 'video',
