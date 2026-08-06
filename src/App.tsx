@@ -436,12 +436,13 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
       const a = new Audio();
       a.loop = true;
       a.addEventListener('ended', () => goNext());
-      a.addEventListener('error', () => { setAudioErr('Audio gagal dimuat — pastikan tautan MP3 bisa diakses publik (link Google Drive sudah dikonversi otomatis).'); setPlaying(false); stopSynth(); });
+      a.addEventListener('error', () => { setAudioErr('Audio gagal dimuat — pastikan tautan MP3 bisa diakses publik.'); setPlaying(false); stopSynth(); });
       audioRef.current = a;
     }
     return audioRef.current!;
   };
   const playTrack = async (i: number) => {
+    if (!tracks || tracks.length === 0) return;
     const t = tracks[i];
     stopSynth();
     audioRef.current?.pause();
@@ -458,9 +459,9 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
     setPlaying(true);
   };
   const pause = () => { stopSynth(); audioRef.current?.pause(); ctxRef.current?.suspend(); setPlaying(false); };
-  const toggle = () => { if (playing) pause(); else playTrack(idxRef.current); };
-  const goNext = () => { const ni = (idxRef.current + 1) % tracks.length; setIdx(ni); if (playingRef.current || playing) playTrack(ni); };
-  const goPrev = () => { const pi = (idxRef.current - 1 + tracks.length) % tracks.length; setIdx(pi); if (playingRef.current || playing) playTrack(pi); };
+  const toggle = () => { if (playing) pause(); else if (tracks.length > 0) playTrack(idxRef.current); };
+  const goNext = () => { if (tracks.length === 0) return; const ni = (idxRef.current + 1) % tracks.length; setIdx(ni); if (playingRef.current || playing) playTrack(ni); };
+  const goPrev = () => { if (tracks.length === 0) return; const pi = (idxRef.current - 1 + tracks.length) % tracks.length; setIdx(pi); if (playingRef.current || playing) playTrack(pi); };
   const selectTrack = (i: number) => { setIdx(i); playTrack(i); };
   useEffect(() => {
     const g = gain();
@@ -476,11 +477,21 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
           <div className="bg-gradient-to-r from-[#C1272D] to-[#8B1A1A] px-4 py-3 flex items-center gap-3">
             <div className={`w-10 h-10 rounded-full bg-white/15 border border-white/25 flex items-center justify-center flex-shrink-0 ${playing ? 'animate-[spin_4s_linear_infinite]' : ''}`}><Music size={17} className="text-white" /></div>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-black text-white truncate">{current.title}</div>
-              <div className="text-[10px] text-white/70 truncate">{current.sub}</div>
+              <div className="text-sm font-black text-white truncate">{current?.title || 'Tidak ada lagu'}</div>
+              <div className="text-[10px] text-white/70 truncate">{current?.sub || '-'}</div>
             </div>
-            <div className="flex items-end gap-[3px] h-5 flex-shrink-0">
-              {[0, 1, 2, 3].map(i => (<span key={i} className={`w-1 rounded-full bg-yellow-300 ${playing && !muted ? 'eq-bar' : 'h-1 opacity-30'}`} style={{ animationDelay: `${i * 0.13}s` }} />))}
+            <div className="flex items-center gap-2">
+              <div className="flex items-end gap-[3px] h-5 flex-shrink-0">
+                {[0, 1, 2, 3].map(i => (<span key={i} className={`w-1 rounded-full bg-yellow-300 ${playing && !muted ? 'eq-bar' : 'h-1 opacity-30'}`} style={{ animationDelay: `${i * 0.13}s` }} />))}
+              </div>
+              {/* Tombol Minimize (Tutup Playlist) */}
+              <button 
+                onClick={() => setOpen(false)} 
+                className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition"
+                title="Tutup / Minimize"
+              >
+                ✕
+              </button>
             </div>
           </div>
           {audioErr && (
@@ -510,14 +521,15 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
               </div>
             ))}
           </div>
-          <div className="px-4 py-2.5 bg-gray-50 border-t border-gray-100">
-            <p className="text-[9px] text-gray-400 leading-relaxed"> <strong> </strong>.</p>
-          </div>
         </div>
       )}
       <button
-        onClick={() => { if (!open) { setOpen(true); if (!playing) playTrack(idx); } else toggle(); }}
-        title={playing ? 'Jeda musik' : 'Putar musik perayaan'}
+        onClick={() => { 
+          // Tombol utama berfungsi sebagai toggle: jika terbuka ditutup, jika tertutup dibuka
+          setOpen(prev => !prev); 
+          if (!open && !playing && tracks.length > 0) playTrack(idx); 
+        }}
+        title={open ? 'Tutup pemutar musik' : 'Buka pemutar musik'}
         className={`group relative w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 ${playing ? 'bg-gradient-to-br from-[#C1272D] to-[#8B1A1A]' : 'bg-gray-800 hover:bg-[#C1272D]'}`}
       >
         {playing && <span className="absolute inset-0 rounded-full border-2 border-[#C1272D] animate-ping opacity-40" />}
@@ -527,7 +539,6 @@ function MusicPlayer({ custom }: { custom: Track[] }) {
     </div>
   );
 }
-
 export default function App() {
   const [page, setPage] = useState<'main' | 'admin' | 'gallery' | 'inventory'>('main');
 
