@@ -112,6 +112,13 @@ const initialItems: GalleryItem[] = [
     credit: 'Dokumentasi Warga Mawar',
   },
   {
+    id: 12, type: 'photo',
+    thumb: '/images/WhatsApp%20Image%202026-08-09%20at%2000.36.59.jpeg',
+    full: '/images/WhatsApp%20Image%202026-08-09%20at%2000.36.59.jpeg',
+    title: 'Volley Ball, Mawar 002',
+    credit: 'Dokumentasi Warga Mawar',
+  },
+  {
     id: 13, type: 'video',
     thumb: '/images/Screenshot_66.png',
     full: '/images/Video%20Kegiatan%20Pemasangan%20Gapura%20%26%20Umbul-umbul%20bersama%20Panitia%20Remaja%20Blk%20Mawar.mp4',
