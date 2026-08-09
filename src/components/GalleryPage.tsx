@@ -94,7 +94,7 @@ const initialItems: GalleryItem[] = [
     id: 12, type: 'photo',
     thumb: '/images/3.jpeg',
     full: '/images/3.jpeg',
-    title: 'Volley Ball, Mawar 002',/images/WhatsApp%20Image%202026-08-09%20at%2000.36.58.jpeg
+    title: 'Volley Ball, Mawar 002',
     credit: 'Dokumentasi Eka RT',
   },
   {
