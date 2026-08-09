@@ -118,10 +118,17 @@ const initialItems: GalleryItem[] = [
     title: 'Volley Ball, Mawar 002',
     credit: 'Dokumentasi Warga Mawar',
   },
-   {
+  {
     id: 12, type: 'photo',
     thumb: '/images/20260808_230913.jpg',
     full: '/images/20260808_230913.jpg',
+    title: 'Volley Ball, Mawar 002',
+    credit: 'Dokumentasi Warga Mawar',
+  },
+  {
+    id: 12, type: 'photo',
+    thumb: '/images/20260808_230908.jpg',
+    full: '/images/20260808_230908.jpg',
     title: 'Volley Ball, Mawar 002',
     credit: 'Dokumentasi Warga Mawar',
   },
