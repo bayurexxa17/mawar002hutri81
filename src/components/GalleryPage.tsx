@@ -155,7 +155,7 @@ const initialItems: GalleryItem[] = [
   },
   {
     id: 15, type: 'video',
-    thumb: '/images/Screenshot_70.png',
+    thumb: '/images/Teaser%20HUT%20RI%2081%20Blok%20Mawar%20002.png',
     full: '/images/Teaser%20HUT%20RI%2081%20Blok%20Mawar%20002%20(1).mp4',
     title: 'Volley Ball Putri, Mawar 002',
     credit: 'Dokumentasi Warga Mawar',
