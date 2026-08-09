@@ -120,8 +120,8 @@ const initialItems: GalleryItem[] = [
   },
    {
     id: 12, type: 'photo',
-    thumb: '/images/20260808_230935.jpg',
-    full: '/images/20260808_230935.jpg',
+    thumb: '/images/20260808_230913.jpg',
+    full: '/images/20260808_230913.jpg',
     title: 'Volley Ball, Mawar 002',
     credit: 'Dokumentasi Warga Mawar',
   },
